@@ -1,0 +1,81 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - ENV=local
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
+    depends_on:
+      - local_server
+
+  local_server:
+    build:
+      context: .
+      dockerfile: ./local_server/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./lambda:/app/lambda
+      - ./local_server:/app/local_server
+    environment:
+      - ENV=local
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - JWT_SECRET=local-dev-secret-change-in-prod
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - AWS_DEFAULT_REGION=eu-west-1
+    depends_on:
+      - dynamodb-local
+      - minio
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8001:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  init-db:
+    build:
+      context: .
+      dockerfile: ./local_server/Dockerfile
+    volumes:
+      - ./scripts:/app/scripts
+      - ./lambda:/app/lambda
+    command: python /app/scripts/init-local-db.py
+    environment:
+      - ENV=local
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    depends_on:
+      dynamodb-local:
+        condition: service_started
+      minio:
+        condition: service_started
