@@ -4,15 +4,18 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { getApiUrl } from '@/lib/api';
+import { useLoadingStore } from '@/store/loadingStore';
 
 export default function PhotoUpload({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { setLoading: setGlobalLoading } = useLoadingStore();
 
     const handleUpload = async () => {
         if (!file) return;
         setUploading(true);
+        setGlobalLoading(true);
         setError(null);
 
         try {
@@ -56,6 +59,7 @@ export default function PhotoUpload({ onUploadSuccess }: { onUploadSuccess?: () 
             }
         } finally {
             setUploading(false);
+            setGlobalLoading(false);
         }
     };
 

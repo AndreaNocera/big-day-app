@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { submitSurvey } from "@/lib/auth";
+import { useLoadingStore } from "@/store/loadingStore";
 
 const formSchema = z.object({
     favoriteSong: z.string().min(1, "Scegli una canzone per farci ballare!"),
@@ -17,6 +18,7 @@ export default function SondaggioPage() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const { setLoading: setGlobalLoading } = useLoadingStore();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -28,6 +30,7 @@ export default function SondaggioPage() {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
+        setGlobalLoading(true);
         setErrorMsg("");
         setSuccess(false);
 
@@ -42,6 +45,7 @@ export default function SondaggioPage() {
             }
         } finally {
             setLoading(false);
+            setGlobalLoading(false);
         }
     };
 

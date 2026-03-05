@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { useEffect, useState } from 'react';
 import './globals.css';
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang={language} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col font-sans">
+        <LoadingOverlay />
         <header className="border-b bg-background sticky top-0 z-50">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="text-xl font-bold tracking-tighter text-primary">

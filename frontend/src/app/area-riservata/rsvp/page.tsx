@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { submitRsvp } from "@/lib/auth";
+import { useLoadingStore } from "@/store/loadingStore";
 
 export default function RsvpPage() {
     const [attending, setAttending] = useState(true);
@@ -12,10 +13,12 @@ export default function RsvpPage() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const { setLoading: setGlobalLoading } = useLoadingStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setGlobalLoading(true);
         setErrorMsg("");
         setSuccess(false);
 
@@ -32,6 +35,7 @@ export default function RsvpPage() {
             }
         } finally {
             setLoading(false);
+            setGlobalLoading(false);
         }
     };
 

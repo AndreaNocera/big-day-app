@@ -6,12 +6,14 @@ import { useAuthStore } from "@/store/authStore";
 import { useI18nStore } from "@/store/i18nStore";
 import { verifyMagicLink } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { useLoadingStore } from "@/store/loadingStore";
 
 function AuthPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { setAuth, token } = useAuthStore();
     const { t } = useI18nStore();
+    const { setLoading } = useLoadingStore();
 
     const [status, setStatus] = useState<"loading" | "success" | "error" | "idle">("idle");
     const [errorMsg, setErrorMsg] = useState("");
@@ -27,6 +29,7 @@ function AuthPageContent() {
     useEffect(() => {
         const handleVerification = async (tokenStr: string, e: string) => {
             setStatus("loading");
+            setLoading(true);
             try {
                 // Pass as object based on the new verifyMagicLink interface
                 const data = await verifyMagicLink({ token: tokenStr, email: e });
@@ -40,6 +43,8 @@ function AuthPageContent() {
                 } else {
                     setErrorMsg(t("auth.errorInvalid"));
                 }
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -53,6 +58,7 @@ function AuthPageContent() {
     const handleManualLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus("loading");
+        setLoading(true);
         setErrorMsg("");
         try {
             const formattedPhone = `${countryCode}${phoneNumber.replace(/\s+/g, '')}`;
@@ -67,11 +73,13 @@ function AuthPageContent() {
             } else {
                 setErrorMsg(t("auth.errorInvalid"));
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     if (status === ("loading" as string)) {
-        return <div className="flex justify-center items-center h-[50vh]">{t("auth.loading")}</div>;
+        return null; // The global LoadingOverlay handles this state
     }
 
     if (status === "success") {

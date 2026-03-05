@@ -23,7 +23,7 @@ export const es = {
         errorInvalid: "Número de teléfono o PIN incorrectos"
     },
     home: {
-        date: "12 de Septiembre de 2026",
+        date: "12 de Septiembre 2026",
         countdown: "Faltan",
         days: "Días",
         hours: "Horas",
