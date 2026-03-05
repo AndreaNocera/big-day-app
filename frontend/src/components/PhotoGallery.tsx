@@ -33,27 +33,27 @@ export default function PhotoGallery({ refreshTrigger }: { refreshTrigger?: numb
     }, [refreshTrigger]);
 
     if (loading && photos.length === 0) return (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground animate-pulse">
-            <Globe className="h-8 w-8 mb-2 opacity-20" />
-            <p>Caricamento galleria...</p>
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-pulse bg-muted/10 rounded-xl border-2 border-dashed">
+            <Globe className="h-10 w-10 mb-3 opacity-20" />
+            <p className="text-sm font-medium">Caricamento galleria...</p>
         </div>
     );
 
     if (error) return (
-        <div className="text-center py-12 px-4 border rounded-lg bg-destructive/5 text-destructive">
-            <p className="font-medium">Ops! Qualcosa è andato storto</p>
-            <p className="text-sm opacity-80">{error}</p>
+        <div className="text-center py-12 px-6 border-2 border-destructive/20 rounded-xl bg-destructive/5 text-destructive">
+            <p className="font-semibold text-lg">Ops! Qualcosa è andato storto</p>
+            <p className="text-sm mt-1 opacity-90">{error}</p>
         </div>
     );
 
     if (photos.length === 0) return (
-        <div className="text-center py-16 px-4 border-2 border-dashed rounded-xl bg-muted/30">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
-                <Globe className="h-6 w-6 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center text-center py-24 px-6 border-2 border-dashed rounded-2xl bg-gray-50/50 border-gray-200">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-sm border mb-6">
+                <Globe className="h-8 w-8 text-primary/60" />
             </div>
-            <h3 className="text-lg font-medium">Ancora nessuna foto</h3>
-            <p className="text-muted-foreground max-w-xs mx-auto mt-2">
-                Sii il primo a condividere un ricordo di questa splendida giornata! Carica la tua foto sopra.
+            <h3 className="text-xl font-semibold text-gray-900">Ancora nessuna foto</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mt-3 leading-relaxed">
+                Questa galleria aspetta solo i tuoi ricordi! Sii il primo a condividere un momento speciale caricando una foto qui sopra.
             </p>
         </div>
     );
@@ -67,9 +67,14 @@ export default function PhotoGallery({ refreshTrigger }: { refreshTrigger?: numb
                         src={p.url}
                         alt="Wedding photo"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
                         onError={(e) => {
-                            // If image fails to load (e.g. deleted from MinIO), hide the container or show a simpler placeholder
-                            (e.target as HTMLImageElement).parentElement?.classList.add('hidden');
+                            // Only hide this specific image container if it fails to load
+                            const target = e.target as HTMLImageElement;
+                            const parent = target.closest('.group');
+                            if (parent) {
+                                parent.classList.add('hidden');
+                            }
                         }}
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

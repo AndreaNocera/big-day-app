@@ -1,4 +1,13 @@
-import Map from "@/components/Map";
+"use client";
+
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+// Caricamento dinamico della mappa per migliorare le performance della pagina
+const Map = dynamic(() => import("@/components/Map"), {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">Caricamento mappa...</div>
+});
 
 export default function LocationPage() {
     return (
@@ -25,9 +34,11 @@ export default function LocationPage() {
                     </div>
                 </div>
 
-                <div className="rounded-lg overflow-hidden shadow-lg h-[400px]">
+                <div className="rounded-lg overflow-hidden shadow-lg h-[400px] border relative">
                     {/* Defaulting to a central position in Italy for demo */}
-                    <Map lng={12.4964} lat={41.9028} zoom={13} />
+                    <Suspense fallback={<div className="w-full h-full bg-muted animate-pulse" />}>
+                        <Map lng={12.4964} lat={41.9028} zoom={13} />
+                    </Suspense>
                 </div>
             </div>
         </div>
