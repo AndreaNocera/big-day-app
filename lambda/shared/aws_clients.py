@@ -35,12 +35,20 @@ def send_email(to: str, subject: str, body_html: str):
     if IS_LOCAL:
         import smtplib
         from email.mime.text import MIMEText
-        msg = MIMEText(body_html, "html")
-        msg["Subject"] = subject
-        msg["From"] = os.getenv("SES_FROM_EMAIL", "noreply@local.domain")
-        msg["To"] = to
-        with smtplib.SMTP("mailhog", 1025) as server:
-            server.sendmail(msg["From"], [to], msg.as_string())
+        print(f"[EMAIL MOCK] Tentativo di invio a: {to} | Oggetto: {subject}")
+        try:
+            msg = MIMEText(body_html, "html")
+            msg["Subject"] = subject
+            msg["From"] = os.getenv("SES_FROM_EMAIL", "noreply@local.domain")
+            msg["To"] = to
+            
+            # Nota: 'mailhog' è l'hostname nel network docker
+            with smtplib.SMTP("mailhog", 1025) as server:
+                server.sendmail(msg["From"], [to], msg.as_string())
+            print(f"[EMAIL MOCK] Email inviata con successo a MailHog!")
+        except Exception as e:
+            print(f"[EMAIL MOCK] Errore critico invio SMTP: {e}")
+            raise e
     else:
         ses = boto3.client("ses", region_name=os.getenv("AWS_REGION", "eu-west-1"))
         ses.send_email(
