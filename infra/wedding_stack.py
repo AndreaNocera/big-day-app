@@ -110,18 +110,39 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        get_photos = _lambda.Function(self, "GetPhotos",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/get_photos"),
+            **lambda_kwargs
+        )
+
+        update_profile = _lambda.Function(self, "UpdateProfile",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/update_profile"),
+            **lambda_kwargs
+        )
+
         # Permissions
         invites_table.grant_read_write_data(send_invites)
         invites_table.grant_read_write_data(verify_magic_link)
         rsvp_table.grant_read_write_data(rsvp_handler)
         rsvp_table.grant_read_write_data(survey_handler)
+        rsvp_table.grant_read_write_data(update_profile)
         photos_table.grant_read_write_data(get_upload_url)
+        photos_table.grant_read_data(get_photos)
         photos_bucket.grant_put(get_upload_url)
         photos_bucket.grant_put_acl(get_upload_url)
+        photos_bucket.grant_read(get_photos)
 
         # Add SNS permissions to send_invites
         send_invites.add_to_role_policy(iam.PolicyStatement(
             actions=["sns:Publish"],
+            resources=["*"]
+        ))
+
+        # Add SES permissions to update_profile
+        update_profile.add_to_role_policy(iam.PolicyStatement(
+            actions=["ses:SendEmail", "ses:SendRawEmail"],
             resources=["*"]
         ))
 
@@ -139,11 +160,16 @@ class WeddingStack(Stack):
         api.root.add_resource("rsvp").add_method("POST", apigw.LambdaIntegration(rsvp_handler))
         api.root.add_resource("survey").add_method("POST", apigw.LambdaIntegration(survey_handler))
         api.root.add_resource("upload").add_resource("url").add_method("POST", apigw.LambdaIntegration(get_upload_url))
+        api.root.add_resource("photos").add_method("GET", apigw.LambdaIntegration(get_photos))
+        
+        profile = api.root.add_resource("profile")
+        profile.add_resource("email").add_method("POST", apigw.LambdaIntegration(update_profile))
         
         # Frontend Hosting
         frontend_bucket = s3.Bucket(self, "WeddingFrontendBucket",
             bucket_name="wedding-frontend-prod-nocera", # Explicit unique name
             website_index_document="index.html",
+            website_error_document="404.html",
             public_read_access=True,
             block_public_access=s3.BlockPublicAccess(
                 block_public_acls=False,

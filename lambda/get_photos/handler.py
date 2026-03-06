@@ -8,18 +8,22 @@ from shared.aws_clients import s3, dynamodb
 from shared.jwt_helper import verify_token
 
 def handler(event, context):
+    cors_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": True
+    }
     try:
         headers = event.get("headers", {})
         auth_header = headers.get("authorization", headers.get("Authorization", ""))
         
         if not auth_header.startswith("Bearer "):
-            return {"statusCode": 401, "body": json.dumps({"error": "Non autorizzato"})}
+            return {"statusCode": 401, "headers": cors_headers, "body": json.dumps({"error": "Non autorizzato"})}
             
         token = auth_header.split(" ")[1]
         payload = verify_token(token)
         
         if not payload:
-            return {"statusCode": 401, "body": json.dumps({"error": "Token invalido o scaduto"})}
+            return {"statusCode": 401, "headers": cors_headers, "body": json.dumps({"error": "Token invalido o scaduto"})}
             
         # Scan for photos
         table = dynamodb.Table("WeddingPhotos")
@@ -60,9 +64,10 @@ def handler(event, context):
                 
         return {
             "statusCode": 200,
+            "headers": cors_headers,
             "body": json.dumps({"photos": photos})
         }
         
     except Exception as e:
         print(f"Errore get_photos: {e}")
-        return {"statusCode": 500, "body": json.dumps({"error": "Errore interno server"})}
+        return {"statusCode": 500, "headers": cors_headers, "body": json.dumps({"error": "Errore interno server"})}
