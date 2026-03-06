@@ -12,23 +12,26 @@ def handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         token = body.get("token")
-        email = body.get("email")
-        phone = body.get("phoneNumber")
+        email_provided = body.get("email") # Legacy magic links might still have this? We'll prioritize phone. But wait, magic links currently have email, we'll change it to phone. Let's look for phone in body payload or url query. Actually body gets it from frontend verifyMagicLink(args). We'll update frontend to pass phone instead of email when verifying magic link.
+        phone = body.get("phoneNumber") or body.get("phone")
         code = body.get("accessCode")
 
         table = dynamodb.Table("WeddingInvites")
         item = None
 
-        if token and email:
-            # Login tramite Magic Link
+        if token and phone:
+            # Login tramite Magic Link usando phone invece di email
             response = table.get_item(Key={"PK": f"TOKEN#{token}"})
             item = response.get("Item")
             
             if not item:
                 return {"statusCode": 404, "body": json.dumps({"error": "Token inesistente"})}
                 
-            if item.get("email") != email:
-                return {"statusCode": 401, "body": json.dumps({"error": "Email non corrispondente"})}
+            if item.get("magicLinkUsed"):
+                return {"statusCode": 401, "body": json.dumps({"error": "Questo magic link è già stato utilizzato. Usa il numero di telefono e il PIN per accedere."})}
+                
+            if item.get("phoneNumber") != phone:
+                return {"statusCode": 401, "body": json.dumps({"error": "Numero di telefono non corrispondente"})}
                 
         elif phone and code:
             # Login tramite Numero di Telefono + PIN
@@ -45,16 +48,24 @@ def handler(event, context):
             if not items:
                 return {"statusCode": 401, "body": json.dumps({"error": "Numero di telefono o PIN errati"})}
             item = items[0]
-            email = item.get("email") # Recuperiamo l'email per il JWT
             
         else:
-            return {"statusCode": 400, "body": json.dumps({"error": "Richiesti (token + email) oppure (phoneNumber + accessCode)"})}
+            return {"statusCode": 400, "body": json.dumps({"error": "Richiesti (token + phoneNumber) oppure (phoneNumber + accessCode)"})}
 
         # Validazione scadenze comuni
         if item.get("expiresAt", 0) < int(time.time()):
             return {"statusCode": 401, "body": json.dumps({"error": "Credenziali o token scaduti"})}
 
-        jwt_token = generate_token(email, item.get("guestName", ""))
+        # Generate token with phone instead of email
+        jwt_token = generate_token(item.get("phoneNumber", phone), item.get("guestName", ""))
+
+        if token and phone:
+            # Invalidiamo il magic link dopo il primo utilizzo
+            table.update_item(
+                Key={"PK": f"TOKEN#{token}"},
+                UpdateExpression="SET magicLinkUsed = :val",
+                ExpressionAttributeValues={":val": True}
+            )
 
         return {
             "statusCode": 200,

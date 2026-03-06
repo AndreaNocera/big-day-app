@@ -24,15 +24,18 @@ function AuthPageContent() {
     const [accessCode, setAccessCode] = useState("");
 
     const urlToken = searchParams.get("token");
-    const urlEmail = searchParams.get("email");
+    const rawPhone = searchParams.get("phone") || searchParams.get("phoneNumber");
+    const urlPhone = rawPhone ? rawPhone.replace(/\s+/g, '+') : null;
+    const urlEmail = searchParams.get("email"); // Fallback for old links
 
     useEffect(() => {
-        const handleVerification = async (tokenStr: string, e: string) => {
+        const handleVerification = async (tokenStr: string, ph: string, em?: string | null) => {
             setStatus("loading");
             setLoading(true);
             try {
                 // Pass as object based on the new verifyMagicLink interface
-                const data = await verifyMagicLink({ token: tokenStr, email: e });
+                const payload = { token: tokenStr, phoneNumber: ph, email: em || undefined };
+                const data = await verifyMagicLink(payload);
                 setAuth(data.jwt, data.guestName);
                 setStatus("success");
                 setTimeout(() => router.push("/area-riservata/rsvp"), 1500);
@@ -50,10 +53,10 @@ function AuthPageContent() {
 
         if (token) {
             router.push("/area-riservata/rsvp");
-        } else if (urlToken && urlEmail) {
-            handleVerification(urlToken, urlEmail);
+        } else if (urlToken && (urlPhone || urlEmail)) {
+            handleVerification(urlToken, urlPhone || "", urlEmail);
         }
-    }, [urlToken, urlEmail, token, router, setAuth, t]);
+    }, [urlToken, urlPhone, urlEmail, token, router, setAuth, t, setLoading]);
 
     const handleManualLogin = async (e: React.FormEvent) => {
         e.preventDefault();

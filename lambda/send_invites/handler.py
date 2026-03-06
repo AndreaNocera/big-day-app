@@ -25,7 +25,8 @@ def handler(event, context):
                 
                 if phone:
                     access_code = item.get("accessCode", "0000")
-                    magic_link = f"{frontend_url}/auth?token={token}&email={item.get('email', '')}"
+                    # Replace email with phone in the magic link URL query params
+                    magic_link = f"{frontend_url}/auth?token={token}&phone={phone}"
                     message = f"Ciao {name}, ecco il tuo invito al matrimonio! Clicca il link: {magic_link}\nOppure entra su {frontend_url}/auth usando il tuo numero e il PIN: {access_code}"
                     send_sms(phone, message)
                     count += 1

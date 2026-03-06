@@ -8,6 +8,8 @@ interface VerifyAuthArgs {
 }
 
 export async function verifyMagicLink(args: VerifyAuthArgs) {
+    // If the frontend has an 'email' from the old magic link, backend will ignore it
+    // if 'phone' is used.
     const response = await fetch(`${getApiUrl()}/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,5 +35,13 @@ export async function submitSurvey(surveyAnswers: unknown) {
     return fetchWithAuth('/survey', {
         method: 'POST',
         body: JSON.stringify({ surveyAnswers })
+    });
+}
+
+export async function submitEmail(email: string) {
+    const { fetchWithAuth } = await import('./api');
+    return fetchWithAuth('/profile/email', {
+        method: 'POST',
+        body: JSON.stringify({ email })
     });
 }

@@ -22,43 +22,28 @@ def handler(event, context):
             return {"statusCode": 401, "body": json.dumps({"error": "Token invalido o scaduto"})}
             
         phone = payload.get("phone")
-        guest_name = payload.get("name")
         
         body = json.loads(event.get("body", "{}"))
-        attending = body.get("attending", False)
-        plus_one = body.get("plusOne", False)
-        dietary_restrictions = body.get("dietaryRestrictions", "")
+        email = body.get("email", "").strip()
+        
+        if not email:
+            return {"statusCode": 400, "body": json.dumps({"error": "Email mancante"})}
         
         table = dynamodb.Table("WeddingRSVP")
         
-        item = {
-            "PK": f"GUEST#{phone}",
-            "guestName": guest_name,
-            "attending": attending,
-            "plusOne": plus_one,
-            "dietaryRestrictions": dietary_restrictions,
-            "phoneNumber": phone,
-            "submittedAt": datetime.utcnow().isoformat()
-        }
-        
-        # In Prod use UpdateItem to preserve surveyAnswers or email if present, but PutItem is fine for now
-        # Actually UpdateItem is safer
+        # UpdateItem to add email securely associated with their phone context
         table.update_item(
             Key={"PK": f"GUEST#{phone}"},
-            UpdateExpression="SET guestName = :n, attending = :a, plusOne = :p, dietaryRestrictions = :d, phoneNumber = :ph, submittedAt = :s",
+            UpdateExpression="SET email = :e, updatedAt = :u",
             ExpressionAttributeValues={
-                ":n": guest_name,
-                ":a": attending,
-                ":p": plus_one,
-                ":d": dietary_restrictions,
-                ":ph": phone,
-                ":s": datetime.utcnow().isoformat()
+                ":e": email,
+                ":u": datetime.utcnow().isoformat()
             }
         )
         
         return {
             "statusCode": 200,
-            "body": json.dumps({"message": "RSVP salvato con successo"})
+            "body": json.dumps({"message": "Profilo aggiornato con successo"})
         }
         
     except Exception as e:

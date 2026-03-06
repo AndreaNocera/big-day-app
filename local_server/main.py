@@ -14,6 +14,7 @@ from rsvp_handler.handler import handler as rsvp_handler
 from survey_handler.handler import handler as survey_handler
 from get_upload_url.handler import handler as get_upload_url_handler
 from get_photos.handler import handler as get_photos_handler
+from update_profile.handler import handler as update_profile_handler
 
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -58,6 +59,9 @@ class UploadUrlRequest(BaseModel):
 
 class InviteTrigger(BaseModel):
     pass
+
+class ProfileRequest(BaseModel):
+    email: str
 
 async def handle_lambda(request: Request, lambda_handler, body_data: Any = None):
     try:
@@ -118,6 +122,11 @@ async def get_upload_url_route(request: Request, body: UploadUrlRequest, auth: H
 async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Recupera la lista delle foto caricate con URL firmati per la visualizzazione."""
     return await handle_lambda(request, get_photos_handler)
+
+@app.post("/profile/email", summary="Aggiorna Profilo (Email)")
+async def update_profile_route(request: Request, body: ProfileRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Salva l'email opzionale nel profilo dell'utente."""
+    return await handle_lambda(request, update_profile_handler, body)
 
 if __name__ == "__main__":
     import uvicorn

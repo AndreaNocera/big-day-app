@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
+import { EmailForm } from "./EmailForm";
 
 export default function AreaRiservataLayout({ children }: { children: React.ReactNode }) {
     const { token } = useAuthStore();
@@ -36,8 +37,16 @@ export default function AreaRiservataLayout({ children }: { children: React.Reac
                 </nav>
 
                 {/* Content */}
-                <div className="flex-1 bg-card rounded-lg border p-6 shadow-sm">
-                    {children}
+                <div className="flex-1 flex flex-col gap-6 min-w-0">
+                    <div className="bg-card rounded-lg border p-6 shadow-sm overflow-hidden min-w-0">
+                        {children}
+                    </div>
+
+                    <div className="bg-muted/30 rounded-lg p-6 border shadow-sm mt-4">
+                        <h3 className="text-lg font-medium mb-1 text-card-foreground">Restiamo in contatto</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Aggiungi la tua email per ricevere notifiche e le foto dell'evento (facoltativo).</p>
+                        <EmailForm />
+                    </div>
                 </div>
             </div>
         </div>
