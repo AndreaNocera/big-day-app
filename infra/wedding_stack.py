@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from aws_cdk import (
     Stack,
     aws_lambda as _lambda,
@@ -48,27 +50,34 @@ class WeddingStack(Stack):
             removal_policy=RemovalPolicy.DESTROY
         )
 
+        # Environment variables from .env.production
+        env_path = os.path.join(os.path.dirname(__file__), "..", ".env.production")
+        load_dotenv(env_path)
+
         shared_env = {
             "ENV": "production",
-            "JWT_SECRET": "your-prod-jwt-secret-override", # override with actual secret in prod
-            "S3_BUCKET": photos_bucket.bucket_name
+            "JWT_SECRET": os.getenv("JWT_SECRET", "change-me-in-prod"),
+            "S3_BUCKET": photos_bucket.bucket_name,
+            "SES_FROM_EMAIL": os.getenv("SES_FROM_EMAIL", "noreply@yourdomain.com"),
+            "SNS_SENDER_ID": os.getenv("SNS_SENDER_ID", "Matrimonio"),
+            "TOKEN_EXPIRY_DAYS": os.getenv("TOKEN_EXPIRY_DAYS", "30")
         }
 
-        # Lambdas
-        lambda_kwargs = {
-            "runtime": _lambda.Runtime.PYTHON_3_12, # Using standard python 3.12, 3.14 not yet in CDK officially
-            "environment": shared_env
-        }
-        
-        # We need a layer for the shared code
+        # Shared Layer for code (must be in python/shared structure)
         shared_layer = _lambda.LayerVersion(self, "SharedCodeLayer",
-            code=_lambda.Code.from_asset("../lambda/shared"),
+            code=_lambda.Code.from_asset("../lambda/layer"),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
             description="Shared helpers and AWS clients"
         )
-        # However, to use the layer effectively the folder structure might need adjusting (python/shared/..)
-        # To avoid complexity, we can use asset bundling if needed, or point code to parent folder.
-        # But we'll point exactly to the spec.
+
+        # Lambdas
+        lambda_kwargs = {
+            "runtime": _lambda.Runtime.PYTHON_3_12, 
+            "environment": shared_env,
+            "layers": [shared_layer]
+        }
+        
+        # (Shared layer moved above)
         
         # Let's map handlers
         send_invites = _lambda.Function(self, "SendInvites",

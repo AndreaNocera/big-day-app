@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+lambda/layer/
 *.py[cod]
 *.pyo
 *.pyd

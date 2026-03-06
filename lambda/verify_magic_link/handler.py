@@ -7,6 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import dynamodb
 from shared.jwt_helper import generate_token
+from shared.api_utils import json_response
 
 def handler(event, context):
     try:
@@ -25,13 +26,13 @@ def handler(event, context):
             item = response.get("Item")
             
             if not item:
-                return {"statusCode": 404, "body": json.dumps({"error": "Token inesistente"})}
+                return json_response(404, {"error": "Token inesistente"})
                 
             if item.get("magicLinkUsed"):
-                return {"statusCode": 401, "body": json.dumps({"error": "Questo magic link è già stato utilizzato. Usa il numero di telefono e il PIN per accedere."})}
+                return json_response(401, {"error": "Questo magic link è già stato utilizzato. Usa il numero di telefono e il PIN per accedere."})
                 
             if item.get("phoneNumber") != phone:
-                return {"statusCode": 401, "body": json.dumps({"error": "Numero di telefono non corrispondente"})}
+                return json_response(401, {"error": "Numero di telefono non corrispondente"})
                 
         elif phone and code:
             # Login tramite Numero di Telefono + PIN
@@ -46,15 +47,15 @@ def handler(event, context):
             )
             items = response.get("Items", [])
             if not items:
-                return {"statusCode": 401, "body": json.dumps({"error": "Numero di telefono o PIN errati"})}
+                return json_response(401, {"error": "Numero di telefono o PIN errati"})
             item = items[0]
             
         else:
-            return {"statusCode": 400, "body": json.dumps({"error": "Richiesti (token + phoneNumber) oppure (phoneNumber + accessCode)"})}
+            return json_response(400, {"error": "Richiesti (token + phoneNumber) oppure (phoneNumber + accessCode)"})
 
         # Validazione scadenze comuni
         if item.get("expiresAt", 0) < int(time.time()):
-            return {"statusCode": 401, "body": json.dumps({"error": "Credenziali o token scaduti"})}
+            return json_response(401, {"error": "Credenziali o token scaduti"})
 
         # Generate token with phone instead of email
         jwt_token = generate_token(item.get("phoneNumber", phone), item.get("guestName", ""))
@@ -67,15 +68,12 @@ def handler(event, context):
                 ExpressionAttributeValues={":val": True}
             )
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "message": "Autenticazione riuscita",
-                "jwt": jwt_token,
-                "guestName": item.get("guestName")
-            })
-        }
+        return json_response(200, {
+            "message": "Autenticazione riuscita",
+            "jwt": jwt_token,
+            "guestName": item.get("guestName")
+        })
         
     except Exception as e:
         print(f"Errore: {e}")
-        return {"statusCode": 500, "body": json.dumps({"error": "Errore interno server"})}
+        return json_response(500, {"error": "Errore interno server"})

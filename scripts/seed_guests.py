@@ -2,6 +2,7 @@ import boto3
 import uuid
 import time
 import random
+import os
 from datetime import datetime
 
 def seed_guests():
@@ -23,12 +24,13 @@ def seed_guests():
     for guest in guests:
         token = str(uuid.uuid4())
         access_code = str(random.randint(1000, 9999))
+        expiry_days = int(os.getenv("TOKEN_EXPIRY_DAYS", "30"))
         item = {
             "PK": f"TOKEN#{token}",
             "guestName": guest["name"],
             "phoneNumber": guest["phone"],
             "accessCode": access_code,
-            "expiresAt": int(time.time()) + (30 * 86400), # 30 days
+            "expiresAt": int(time.time()) + (expiry_days * 86400),
             "createdAt": datetime.now().isoformat()
         }
         table.put_item(Item=item)

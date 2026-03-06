@@ -6,6 +6,7 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import dynamodb
 from shared.jwt_helper import verify_token
+from shared.api_utils import json_response
 
 def handler(event, context):
     try:
@@ -13,13 +14,13 @@ def handler(event, context):
         auth_header = headers.get("authorization", headers.get("Authorization", ""))
         
         if not auth_header.startswith("Bearer "):
-            return {"statusCode": 401, "body": json.dumps({"error": "Non autorizzato"})}
+            return json_response(401, {"error": "Non autorizzato"})
             
         token = auth_header.split(" ")[1]
         payload = verify_token(token)
         
         if not payload:
-            return {"statusCode": 401, "body": json.dumps({"error": "Token invalido o scaduto"})}
+            return json_response(401, {"error": "Token invalido o scaduto"})
             
         phone = payload.get("phone")
         guest_name = payload.get("name")
@@ -56,11 +57,8 @@ def handler(event, context):
             }
         )
         
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"message": "RSVP salvato con successo"})
-        }
+        return json_response(200, {"message": "RSVP salvato con successo"})
         
     except Exception as e:
         print(f"Errore: {e}")
-        return {"statusCode": 500, "body": json.dumps({"error": "Errore interno server"})}
+        return json_response(500, {"error": "Errore interno server"})

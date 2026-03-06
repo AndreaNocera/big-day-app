@@ -25,10 +25,17 @@ def send_sms(phone_number: str, message: str):
         print(f"[SMS MOCK] To: {phone_number} | Message: {message}")
     else:
         sns = boto3.client("sns", region_name=os.getenv("AWS_REGION", "eu-west-1"))
-        sns.publish(PhoneNumber=phone_number, Message=message,
-            MessageAttributes={"AWS.SNS.SMS.SMSType": {
-                "DataType": "String", "StringValue": "Transactional"
-            }}
+        sns.publish(
+            PhoneNumber=phone_number, 
+            Message=message,
+            MessageAttributes={
+                "AWS.SNS.SMS.SMSType": {
+                    "DataType": "String", "StringValue": "Transactional"
+                },
+                "AWS.SNS.SMS.SenderID": {
+                    "DataType": "String", "StringValue": os.getenv("SNS_SENDER_ID", "Matrimonio")
+                }
+            }
         )
 
 def send_email(to: str, subject: str, body_html: str):
