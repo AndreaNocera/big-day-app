@@ -15,6 +15,7 @@ from survey_handler.handler import handler as survey_handler
 from get_upload_url.handler import handler as get_upload_url_handler
 from get_photos.handler import handler as get_photos_handler
 from update_profile.handler import handler as update_profile_handler
+from process_photo.handler import handler as process_photo_handler
 
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -139,6 +140,31 @@ async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials 
 async def update_profile_route(request: Request, body: ProfileRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Salva l'email opzionale nel profilo dell'utente."""
     return await handle_lambda(request, update_profile_handler, body)
+
+@app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")
+async def debug_process_photo(request: Request, body: Dict[str, str], auth: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    Simula il trigger S3 per processare una foto in locale.
+    Passa {"s3Key": "uploads/..."} nel body.
+    """
+    s3_key = body.get("s3Key")
+    bucket_name = "wedding-photos-local"
+    
+    # Costruisci l'evento S3 finto
+    event = {
+        "Records": [{
+            "s3": {
+                "bucket": {"name": bucket_name},
+                "object": {"key": s3_key}
+            }
+        }]
+    }
+    
+    try:
+        process_photo_handler(event, {})
+        return {"status": "success", "message": f"Processed {s3_key}"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 if __name__ == "__main__":
     import uvicorn

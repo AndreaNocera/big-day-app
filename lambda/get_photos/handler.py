@@ -43,7 +43,8 @@ def handler(event, context):
         
         photos = []
         for item in items:
-            s3_key = item.get("s3Key")
+            # Prefer thumbnail for the gallery view
+            s3_key = item.get("thumbKey") or item.get("s3Key")
             if not s3_key:
                 continue
                 
@@ -62,8 +63,10 @@ def handler(event, context):
                 photos.append({
                     "PK": item.get("PK"),
                     "url": url,
+                    "originalUrl": item.get("s3Key"), # Keep track for enlargement if needed
                     "uploadedBy": item.get("uploadedBy"),
-                    "uploadedAt": item.get("uploadedAt")
+                    "uploadedAt": item.get("uploadedAt"),
+                    "isOptimized": "thumbKey" in item
                 })
             except Exception as e:
                 print(f"Errore generazione URL per {s3_key}: {e}")

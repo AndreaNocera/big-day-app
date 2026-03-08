@@ -11,7 +11,8 @@ from aws_cdk import (
     RemovalPolicy,
     aws_s3_deployment as s3_deploy,
     IAspect,
-    Aspects
+    Aspects,
+    Duration
 )
 from constructs import Construct, IConstruct
 import jsii
@@ -66,6 +67,12 @@ class WeddingStack(Stack):
             partition_key=dynamodb.Attribute(name="PK", type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY
+        )
+        
+        photos_table.add_global_secondary_index(
+            index_name="S3KeyIndex",
+            partition_key=dynamodb.Attribute(name="s3Key", type=dynamodb.AttributeType.STRING),
+            projection_type=dynamodb.ProjectionType.ALL
         )
 
         photos_bucket = s3.Bucket(self, "WeddingPhotosBucket",
@@ -144,6 +151,14 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        process_photo = _lambda.Function(self, "ProcessPhoto",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/process_photo"),
+            memory_size=512, # Increase for image processing
+            timeout=Duration.seconds(60),
+            **lambda_kwargs
+        )
+
         update_profile = _lambda.Function(self, "UpdateProfile",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/update_profile"),
@@ -157,10 +172,21 @@ class WeddingStack(Stack):
         rsvp_table.grant_read_write_data(survey_handler)
         rsvp_table.grant_read_write_data(update_profile)
         photos_table.grant_read_write_data(get_upload_url)
+        photos_table.grant_read_write_data(process_photo) # Need write for thumbKey
         photos_table.grant_read_data(get_photos)
+        
         photos_bucket.grant_put(get_upload_url)
         photos_bucket.grant_put_acl(get_upload_url)
         photos_bucket.grant_read(get_photos)
+        photos_bucket.grant_read_write(process_photo) # Read original, write thumb
+
+        # S3 Trigger for process_photo
+        from aws_cdk import aws_s3_notifications as s3n
+        photos_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3n.LambdaDestination(process_photo),
+            s3.NotificationKeyFilter(prefix="uploads/")
+        )
 
         # Add SNS permissions to send_invites
         send_invites.add_to_role_policy(iam.PolicyStatement(

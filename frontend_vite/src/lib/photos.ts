@@ -12,6 +12,13 @@ export async function getUploadUrl(filename: string, contentType: string) {
     });
 }
 
+export async function debugProcessPhoto(s3Key: string) {
+    return fetchWithAuth('/photos/debug-process', {
+        method: 'POST',
+        body: JSON.stringify({ s3Key }),
+    });
+}
+
 export async function uploadToS3(url: string, file: File) {
     const response = await fetch(url, {
         method: 'PUT',
