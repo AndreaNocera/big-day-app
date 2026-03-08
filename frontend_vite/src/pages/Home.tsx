@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Calendar, HelpCircle, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
+import { PhotoFab } from '@/components/PhotoFab';
 
 export default function Home() {
     const { t } = useI18nStore();
@@ -61,7 +62,6 @@ export default function Home() {
                 )}
             </nav>
 
-            {/* RSVP Button */}
             <div className="rsvp-section">
                 <Link
                     to={token ? '/rsvp' : '/accedi'}
@@ -72,6 +72,8 @@ export default function Home() {
                     {token && rsvpCompleted ? t('home.rsvpDone') : t('home.rsvpBtn')}
                 </Link>
             </div>
+
+            {token && <PhotoFab />}
         </main>
     );
 }

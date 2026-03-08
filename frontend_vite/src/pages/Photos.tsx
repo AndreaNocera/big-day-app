@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { Camera, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { BackBar } from '@/components/BackBar';
 import { useI18nStore } from '@/store/i18nStore';
-import { getPhotos, getUploadUrl, uploadToS3 } from '@/lib/photos';
+import { getPhotos } from '@/lib/photos';
 
 export default function Photos() {
     const { t } = useI18nStore();
     const [photos, setPhotos] = useState<any[]>([]);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'uploading' | 'error'>('loading');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadPhotos = async () => {
         try {
@@ -27,57 +26,21 @@ export default function Photos() {
         loadPhotos();
     }, []);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setStatus('uploading');
-        setErrorMsg('');
-
-        try {
-            // 1. Get presigned URL
-            const { uploadUrl } = await getUploadUrl(file.name, file.type);
-
-            // 2. Upload to S3
-            await uploadToS3(uploadUrl, file);
-
-            // 3. Reload photos
-            await loadPhotos();
-            setStatus('idle');
-        } catch (err) {
-            console.error("Upload error:", err);
-            setStatus('error');
-            setErrorMsg(t('rsvp.errorText'));
-        }
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
-    };
+    if (status === 'loading') {
+        return (
+            <>
+                <BackBar title={t('gallery.title')} />
+                <div className="status-box">
+                    <div className="spinner purple" role="status" aria-label="Caricamento..." />
+                </div>
+            </>
+        );
+    }
 
     return (
-        <>
+        <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '40px' }}>
             <BackBar title={t('gallery.title')} />
             <main className="page-content">
-                <div style={{ marginBottom: 24 }}>
-                    <button
-                        className="btn-primary"
-                        onClick={triggerFileInput}
-                        disabled={status === 'uploading'}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    >
-                        {status === 'uploading' ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
-                        {status === 'uploading' ? t('gallery.uploading') : t('gallery.uploadBtn')}
-                    </button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                    />
-                </div>
-
                 {status === 'error' && (
                     <div className="form-error" style={{ marginBottom: 20 }}>
                         <AlertCircle size={18} /> {errorMsg}
@@ -118,7 +81,12 @@ export default function Photos() {
                                     <img
                                         src={photo.url}
                                         alt="Uploaded"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            opacity: photo.isOptimized ? 1 : 0.6
+                                        }}
                                         loading="lazy"
                                     />
                                     <div style={{
@@ -134,19 +102,14 @@ export default function Photos() {
                                         justifyContent: 'space-between'
                                     }}>
                                         <span>{new Date(photo.uploadedAt).toLocaleDateString()}</span>
+                                        {!photo.isOptimized && <span>...</span>}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </section>
-
-                {status === 'loading' && (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                        <div className="loading-spinner" />
-                    </div>
-                )}
             </main>
-        </>
+        </div>
     );
 }
