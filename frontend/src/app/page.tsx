@@ -18,12 +18,12 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 pt-8">
-          <Link href="/location">
+          <Link href="/location/">
             <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 text-base">
               {t("home.whereWhen")}
             </Button>
           </Link>
-          <Link href="/auth">
+          <Link href="/auth/">
             <Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base shadow-lg hover:shadow-primary/25 transition-all">
               {t("home.rsvpBtn")}
             </Button>

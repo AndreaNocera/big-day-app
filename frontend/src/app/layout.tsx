@@ -10,15 +10,12 @@ import { useEffect, useState } from 'react';
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const { guestName, logout } = useAuthStore();
-  const { t, language, setLanguage } = useI18nStore();
+  const { guestName, logout, _hasHydrated: authHydrated } = useAuthStore();
+  const { t, language, setLanguage, _hasHydrated: i18nHydrated } = useI18nStore();
   const [mounted, setMounted] = useState(false);
 
-  // Evita errori di idratazione (hydration mismatch) con Zustand persistito
   useEffect(() => {
-    const handleRehydrate = async () => {
-      await useI18nStore.persist.rehydrate();
-
+    if (i18nHydrated && authHydrated) {
       // Se non c'è una lingua salvata, prova a rilevarla dal browser
       if (!localStorage.getItem('wedding-i18n-storage')) {
         const browserLang = navigator.language.split('-')[0] as any;
@@ -27,10 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }
       }
       setMounted(true);
-    };
-
-    handleRehydrate();
-  }, [setLanguage]);
+    }
+  }, [i18nHydrated, authHydrated, setLanguage]);
 
   return (
     <html lang={language} suppressHydrationWarning>
@@ -44,9 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               <Link href="/" className="hover:text-primary transition-colors">{t('nav.home')}</Link>
-              <Link href="/location" className="hover:text-primary transition-colors">{t('nav.location')}</Link>
-              <Link href="/programma" className="hover:text-primary transition-colors">{t('nav.program')}</Link>
-              <Link href="/faq" className="hover:text-primary transition-colors">{t('nav.faq')}</Link>
+              <Link href="/location/" className="hover:text-primary transition-colors">{t('nav.location')}</Link>
+              <Link href="/programma/" className="hover:text-primary transition-colors">{t('nav.program')}</Link>
+              <Link href="/faq/" className="hover:text-primary transition-colors">{t('nav.faq')}</Link>
 
               <div className="border-l pl-6 ml-2 flex items-center gap-4">
                 {mounted && (
@@ -55,14 +50,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                     {guestName ? (
                       <div className="flex items-center gap-4">
-                        <Link href="/area-riservata/rsvp" className="text-primary hover:underline">{t('nav.reservedArea')}</Link>
+                        <Link href="/area-riservata/rsvp/" className="text-primary hover:underline">{t('nav.reservedArea')}</Link>
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground text-xs">Ciao, {guestName}</span>
                           <Button variant="outline" size="sm" onClick={logout}>{t('nav.logout')}</Button>
                         </div>
                       </div>
                     ) : (
-                      <Link href="/auth">
+                      <Link href="/auth/">
                         <Button variant="default" size="sm">{t('nav.login')}</Button>
                       </Link>
                     )}

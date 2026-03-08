@@ -7,14 +7,20 @@ import { useAuthStore } from "@/store/authStore";
 import { EmailForm } from "./EmailForm";
 
 export default function AreaRiservataLayout({ children }: { children: React.ReactNode }) {
-    const { token } = useAuthStore();
+    const { token, _hasHydrated: authHydrated } = useAuthStore();
     const router = useRouter();
 
     useEffect(() => {
-        if (!token) {
+        if (authHydrated && !token) {
             router.push("/auth");
         }
-    }, [token, router]);
+    }, [token, authHydrated, router]);
+
+    if (!authHydrated) return (
+        <div className="flex justify-center items-center min-h-[50vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+    );
 
     if (!token) return null;
 
@@ -25,13 +31,13 @@ export default function AreaRiservataLayout({ children }: { children: React.Reac
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Sidebar Nav */}
                 <nav className="flex md:flex-col gap-4 overflow-x-auto pb-4 md:pb-0 md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-border md:pr-4">
-                    <Link href="/area-riservata/rsvp" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
+                    <Link href="/area-riservata/rsvp/" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
                         1. RSVP
                     </Link>
-                    <Link href="/area-riservata/sondaggio" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
+                    <Link href="/area-riservata/sondaggio/" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
                         2. Sondaggio
                     </Link>
-                    <Link href="/area-riservata/foto" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
+                    <Link href="/area-riservata/foto/" className="text-foreground hover:text-primary whitespace-nowrap font-medium transition-colors">
                         3. Galleria Foto
                     </Link>
                 </nav>
