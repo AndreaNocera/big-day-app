@@ -25,32 +25,27 @@ def handler(event, context):
         phone = payload.get("phone")
         guest_name = payload.get("name")
         
-        body = json.loads(event.get("body", "{}"))
-        attending = body.get("attending", False)
-        plus_one = body.get("plusOne", False)
-        dietary_restrictions = body.get("dietaryRestrictions", "")
+        method = event.get("httpMethod", "POST")
         
         table = dynamodb.Table("WeddingRSVP")
         
-        item = {
-            "PK": f"GUEST#{phone}",
-            "guestName": guest_name,
-            "attending": attending,
-            "plusOne": plus_one,
-            "dietaryRestrictions": dietary_restrictions,
-            "phoneNumber": phone,
-            "submittedAt": datetime.utcnow().isoformat()
-        }
+        if method == "GET":
+            response = table.get_item(Key={"PK": f"GUEST#{phone}"})
+            item = response.get("Item", {})
+            return json_response(200, item)
+
+        body = json.loads(event.get("body", "{}"))
+        attending = body.get("attending", False)
+        guests = body.get("guests", [])  # List of {name: str, isChild: bool}
+        dietary_restrictions = body.get("dietaryRestrictions", "")
         
-        # In Prod use UpdateItem to preserve surveyAnswers or email if present, but PutItem is fine for now
-        # Actually UpdateItem is safer
         table.update_item(
             Key={"PK": f"GUEST#{phone}"},
-            UpdateExpression="SET guestName = :n, attending = :a, plusOne = :p, dietaryRestrictions = :d, phoneNumber = :ph, submittedAt = :s",
+            UpdateExpression="SET guestName = :n, attending = :a, guests = :g, dietaryRestrictions = :d, phoneNumber = :ph, submittedAt = :s",
             ExpressionAttributeValues={
                 ":n": guest_name,
                 ":a": attending,
-                ":p": plus_one,
+                ":g": guests,
                 ":d": dietary_restrictions,
                 ":ph": phone,
                 ":s": datetime.utcnow().isoformat()

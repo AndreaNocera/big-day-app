@@ -45,9 +45,13 @@ class AuthVerifyRequest(BaseModel):
     phoneNumber: Optional[str] = None
     accessCode: Optional[str] = None
 
+class Guest(BaseModel):
+    name: str
+    isChild: bool
+
 class RSVPRequest(BaseModel):
     attending: bool
-    plusOne: bool = False
+    guests: Optional[list[Guest]] = []
     dietaryRestrictions: str = ""
 
 class SurveyRequest(BaseModel):
@@ -69,6 +73,8 @@ async def handle_lambda(request: Request, lambda_handler, body_data: Any = None)
             # Se body_data è un modello Pydantic, convertilo in JSON string
             if hasattr(body_data, "model_dump_json"):
                 body_str = body_data.model_dump_json()
+            elif hasattr(body_data, "json"): # Vecchia versione pydantic
+                body_str = body_data.json()
             else:
                 body_str = json.dumps(body_data)
         else:
@@ -78,6 +84,7 @@ async def handle_lambda(request: Request, lambda_handler, body_data: Any = None)
         headers = {k.lower(): v for k, v in request.headers.items()}
         
         event = {
+            "httpMethod": request.method,
             "body": body_str,
             "headers": headers,
             "queryStringParameters": dict(request.query_params)
@@ -104,16 +111,21 @@ async def verify_magic_link_route(request: Request, body: AuthVerifyRequest):
     return await handle_lambda(request, verify_magic_link_handler, body)
 
 @app.post("/rsvp", summary="Salva RSVP")
-async def rsvp_route(request: Request, body: RSVPRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+async def rsvp_post_route(request: Request, body: RSVPRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Salva la conferma di partecipazione. Richiede header Authorization."""
     return await handle_lambda(request, rsvp_handler, body)
+
+@app.get("/rsvp", summary="Carica RSVP")
+async def rsvp_get_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Recupera la conferma di partecipazione esistente. Richiede header Authorization."""
+    return await handle_lambda(request, rsvp_handler)
 
 @app.post("/survey", summary="Salva Sondaggio")
 async def survey_route(request: Request, body: SurveyRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Salva le risposte al sondaggio (musica, messaggi). Richiede header Authorization."""
     return await handle_lambda(request, survey_handler, body)
 
-@app.post("/upload/url", summary="Ottieni URL per Upload Foto")
+@app.post("/photos/upload", summary="Ottieni URL per Upload Foto")
 async def get_upload_url_route(request: Request, body: UploadUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Genera un URL firmato di S3/MinIO per caricare direttamente una foto dal browser."""
     return await handle_lambda(request, get_upload_url_handler, body)

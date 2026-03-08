@@ -52,12 +52,17 @@ def handler(event, context):
             ExpiresIn=3600 # 1 hour
         )
         
+        # In local dev, fix the URL if needed so browser can reach it
+        if os.getenv("ENV", "local") == "local":
+            presigned_url = presigned_url.replace("http://minio:9000", "http://localhost:9000")
+        
         # Save placeholder in DB
         table = dynamodb.Table("WeddingPhotos")
         table.put_item(
             Item={
                 "PK": f"PHOTO#{photo_id}",
-                "uploadedBy": email,
+                "uploadedBy": payload.get("phone"),
+                "uploaderName": payload.get("name", "Ospite"),
                 "s3Key": s3_key,
                 "uploadedAt": datetime.utcnow().isoformat(),
                 "approved": False

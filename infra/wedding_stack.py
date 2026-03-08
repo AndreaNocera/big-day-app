@@ -185,10 +185,13 @@ class WeddingStack(Stack):
 
         api.root.add_resource("invites").add_resource("send").add_method("POST", apigw.LambdaIntegration(send_invites))
         api.root.add_resource("auth").add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_magic_link))
-        api.root.add_resource("rsvp").add_method("POST", apigw.LambdaIntegration(rsvp_handler))
+        rsvp = api.root.add_resource("rsvp")
+        rsvp.add_method("POST", apigw.LambdaIntegration(rsvp_handler))
+        rsvp.add_method("GET", apigw.LambdaIntegration(rsvp_handler))
         api.root.add_resource("survey").add_method("POST", apigw.LambdaIntegration(survey_handler))
-        api.root.add_resource("upload").add_resource("url").add_method("POST", apigw.LambdaIntegration(get_upload_url))
-        api.root.add_resource("photos").add_method("GET", apigw.LambdaIntegration(get_photos))
+        photos = api.root.add_resource("photos")
+        photos.add_method("GET", apigw.LambdaIntegration(get_photos))
+        photos.add_resource("upload").add_method("POST", apigw.LambdaIntegration(get_upload_url))
         
         profile = api.root.add_resource("profile")
         profile.add_resource("email").add_method("POST", apigw.LambdaIntegration(update_profile))

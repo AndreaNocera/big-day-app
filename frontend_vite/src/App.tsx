@@ -7,6 +7,7 @@ import Programma from '@/pages/Programma';
 import Faq from '@/pages/Faq';
 import Rsvp from '@/pages/Rsvp';
 import Profilo from '@/pages/Profilo';
+import Photos from '@/pages/Photos';
 import { useAuthStore } from '@/store/authStore';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,14 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <Profilo />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/foto"
+                    element={
+                        <ProtectedRoute>
+                            <Photos />
                         </ProtectedRoute>
                     }
                 />
