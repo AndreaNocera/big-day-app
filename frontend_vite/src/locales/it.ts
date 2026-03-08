@@ -27,14 +27,16 @@ export const it = {
         location: "Firenze, Italia",
         heroTitle: "Ci Sposiamo! 🎉",
         subtitle: "Siamo felici di invitarvi al nostro matrimonio.",
-        rsvpBtn: "✅ Conferma la tua presenza",
+        rsvpBtn: "Conferma la tua presenza",
         rsvpDone: "✓ Presenza confermata",
         cardLocation: "Location",
         cardLocationSub: "Dove e come arrivare",
         cardProgram: "Programma",
         cardProgramSub: "La giornata ora per ora",
         cardFaq: "FAQ",
-        cardFaqSub: "Domande frequenti"
+        cardFaqSub: "Domande frequenti",
+        cardGallery: "Galleria Foto",
+        cardGallerySub: "I tuoi ricordi della giornata"
     },
     location: {
         title: "Location",
@@ -75,7 +77,11 @@ export const it = {
         title: "Conferma Presenza",
         attending: "Sarò presente 🎉",
         notAttending: "Purtroppo non potrò esserci",
-        plusOneLabel: "Vengo con un accompagnatore",
+        plusOneLabel: "Se vuoi, aggiungi le persone che ti accompagneranno a celebrare questa magnifica giornata :)",
+        addGuestBtn: "+ Aggiungi persona",
+        guestNamePlaceholder: "Nome completo",
+        isChild: "Bambino/a",
+        isAdult: "Adulto",
         dietLabel: "Allergie o esigenze alimentari (opzionale)",
         dietPlaceholder: "Es. vegetariano, senza glutine, allergia alla frutta secca...",
         submit: "Conferma la tua risposta",
@@ -83,6 +89,13 @@ export const it = {
         successTitle: "Risposta inviata!",
         successText: "Grazie, abbiamo ricevuto la tua conferma.",
         errorText: "Qualcosa è andato storto. Riprova."
+    },
+    gallery: {
+        title: "Galleria Foto",
+        uploadBtn: "Carica Foto",
+        uploading: "Caricamento...",
+        empty: "Non hai ancora caricato nessuna foto.",
+        myPhotos: "Le mie foto"
     },
     profile: {
         title: "Il tuo profilo",

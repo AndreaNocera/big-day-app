@@ -12,9 +12,9 @@ export type Dictionary = typeof it;
 
 export const LANGUAGES = [
     { code: 'it' as Language, flag: '🇮🇹', label: 'Italiano' },
+    { code: 'es' as Language, flag: '🇪🇸', label: 'Español' },
     { code: 'en' as Language, flag: '🇬🇧', label: 'English' },
     { code: 'fr' as Language, flag: '🇫🇷', label: 'Français' },
-    { code: 'es' as Language, flag: '🇪🇸', label: 'Español' },
 ];
 
 // Helper type for nested keys (e.g. 'nav.home')

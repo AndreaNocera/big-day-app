@@ -19,14 +19,20 @@ export async function verifyMagicLink(args: VerifyAuthArgs) {
     return data;
 }
 
+export async function getRsvp() {
+    return fetchWithAuth('/rsvp', {
+        method: 'GET',
+    });
+}
+
 export async function submitRsvp(
     attending: boolean,
-    plusOne: boolean,
+    guests: Array<{ name: string; isChild: boolean }>,
     dietaryRestrictions: string
 ) {
     return fetchWithAuth('/rsvp', {
         method: 'POST',
-        body: JSON.stringify({ attending, plusOne, dietaryRestrictions }),
+        body: JSON.stringify({ attending, guests, dietaryRestrictions }),
     });
 }
 

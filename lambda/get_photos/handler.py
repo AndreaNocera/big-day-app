@@ -25,9 +25,15 @@ def handler(event, context):
         if not payload:
             return {"statusCode": 401, "headers": cors_headers, "body": json.dumps({"error": "Token invalido o scaduto"})}
             
-        # Scan for photos
+        # Filter photos by the current user's phone
+        phone = payload.get("phone")
         table = dynamodb.Table("WeddingPhotos")
-        response = table.scan()
+        
+        # Using scan with FilterExpression for simplicity in local dev (no GSI)
+        response = table.scan(
+            FilterExpression="uploadedBy = :phone",
+            ExpressionAttributeValues={":phone": phone}
+        )
         items = response.get("Items", [])
         
         # Sort by date

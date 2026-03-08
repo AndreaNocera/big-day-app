@@ -40,35 +40,37 @@ export default function Home() {
 
                 <Link
                     to="/faq"
-                    className="nav-card full-width"
+                    className="nav-card"
                     aria-label="Vai alle domande frequenti"
                 >
                     <HelpCircle size={32} className="nav-card-icon" aria-hidden="true" />
                     <span className="nav-card-title">{t('home.cardFaq')}</span>
                     <span className="nav-card-subtitle">{t('home.cardFaqSub')}</span>
                 </Link>
+
+                {token && (
+                    <Link
+                        to="/foto"
+                        className="nav-card"
+                        aria-label="Vai alla galleria foto"
+                    >
+                        <Calendar size={32} className="nav-card-icon" aria-hidden="true" />
+                        <span className="nav-card-title">{t('home.cardGallery')}</span>
+                        <span className="nav-card-subtitle">{t('home.cardGallerySub')}</span>
+                    </Link>
+                )}
             </nav>
 
             {/* RSVP Button */}
             <div className="rsvp-section">
-                {token && rsvpCompleted ? (
-                    <div
-                        className="btn-primary success"
-                        role="status"
-                        aria-live="polite"
-                    >
-                        <CheckCircle2 size={22} aria-hidden="true" />
-                        {t('home.rsvpDone')}
-                    </div>
-                ) : (
-                    <Link
-                        to={token ? '/rsvp' : '/accedi'}
-                        className="btn-primary"
-                        aria-label="Conferma la tua presenza al matrimonio"
-                    >
-                        {t('home.rsvpBtn')}
-                    </Link>
-                )}
+                <Link
+                    to={token ? '/rsvp' : '/accedi'}
+                    className={`btn-primary${token && rsvpCompleted ? ' success' : ''}`}
+                    aria-label="Conferma la tua presenza al matrimonio"
+                >
+                    {token && rsvpCompleted && <CheckCircle2 size={22} aria-hidden="true" />}
+                    {token && rsvpCompleted ? t('home.rsvpDone') : t('home.rsvpBtn')}
+                </Link>
             </div>
         </main>
     );

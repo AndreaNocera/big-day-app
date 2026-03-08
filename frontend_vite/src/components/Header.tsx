@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, ChevronDown, Globe } from 'lucide-react';
+import { User, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore, LANGUAGES } from '@/store/i18nStore';
 
@@ -49,7 +49,7 @@ export function Header() {
                         aria-expanded={langOpen}
                         aria-label="Seleziona lingua"
                     >
-                        <Globe size={16} aria-hidden="true" />
+                        {/* <Globe size={16} aria-hidden="true" /> */}
                         <span>{currentLang?.flag}</span>
                         <span>{currentLang?.code.toUpperCase()}</span>
                         <ChevronDown size={14} aria-hidden="true" />
