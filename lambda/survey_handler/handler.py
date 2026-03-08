@@ -33,10 +33,11 @@ def handler(event, context):
         
         table.update_item(
             Key={"PK": f"GUEST#{email}"},
-            UpdateExpression="SET surveyAnswers = :sa, submittedAt = :s",
+            UpdateExpression="SET surveyAnswers = :sa, submittedAt = :s, itemType = :t",
             ExpressionAttributeValues={
                 ":sa": survey_answers,
-                ":s": datetime.utcnow().isoformat()
+                ":s": datetime.utcnow().isoformat(),
+                ":t": "SURVEY"
             }
         )
         

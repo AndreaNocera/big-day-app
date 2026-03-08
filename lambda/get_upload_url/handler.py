@@ -65,7 +65,8 @@ def handler(event, context):
                 "uploaderName": payload.get("name", "Ospite"),
                 "s3Key": s3_key,
                 "uploadedAt": datetime.utcnow().isoformat(),
-                "approved": False
+                "approved": False,
+                "type": "PHOTO"
             }
         )
         
