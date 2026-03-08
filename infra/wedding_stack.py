@@ -9,9 +9,37 @@ from aws_cdk import (
     aws_iam as iam,
     CfnOutput,
     RemovalPolicy,
-    aws_s3_deployment as s3_deploy
+    aws_s3_deployment as s3_deploy,
+    IAspect,
+    Aspects
 )
-from constructs import Construct
+from constructs import Construct, IConstruct
+import jsii
+@jsii.implements(IAspect)
+class LambdaRuntimeAspect:
+    def visit(self, node: IConstruct) -> None:
+        # 1. Handle direct CfnFunction
+        if isinstance(node, _lambda.CfnFunction):
+            if node.runtime and "nodejs" in str(node.runtime) and "nodejs24.x" not in str(node.runtime):
+                node.runtime = "nodejs24.x"
+        
+        # 2. Handle constructs with a default child that might be a CfnFunction
+        elif hasattr(node, "node") and node.node.default_child:
+            child = node.node.default_child
+            if isinstance(child, _lambda.CfnFunction):
+                if child.runtime and "nodejs" in str(child.runtime) and "nodejs24.x" not in str(child.runtime):
+                    child.runtime = "nodejs24.x"
+        
+        # 3. Handle Generic Custom Resource Providers or other wrappers
+        elif hasattr(node, "runtime") and node.runtime:
+             try:
+                 r = str(node.runtime)
+                 if "nodejs" in r and "nodejs24.x" not in r:
+                     for c in node.node.find_all():
+                         if isinstance(c, _lambda.CfnFunction):
+                             c.runtime = "nodejs24.x"
+             except:
+                 pass
 
 class WeddingStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -182,7 +210,7 @@ class WeddingStack(Stack):
         )
 
         s3_deploy.BucketDeployment(self, "DeployFrontend",
-            sources=[s3_deploy.Source.asset("../frontend/out")],
+            sources=[s3_deploy.Source.asset("../frontend_vite/dist")],
             destination_bucket=frontend_bucket
         )
 

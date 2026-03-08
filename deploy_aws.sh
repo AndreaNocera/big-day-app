@@ -5,8 +5,8 @@ cp -r lambda/shared lambda/layer/python/
 # Install dependencies directly into the layer directory
 ./.venv/bin/pip install -r lambda/shared/requirements.txt -t lambda/layer/python/
 
-# 2. Build del frontend (usando le variabili prod)
-cd frontend
+# 2. Build del frontend (Vite - usa le variabili prod)
+cd frontend_vite
 export $(grep -v '^#' ../.env.production | xargs) && npm run build
 cd ..
 

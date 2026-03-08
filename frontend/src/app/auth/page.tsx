@@ -11,7 +11,7 @@ import { useLoadingStore } from "@/store/loadingStore";
 function AuthPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { setAuth, token } = useAuthStore();
+    const { setAuth, token, _hasHydrated: authHydrated } = useAuthStore();
     const { t } = useI18nStore();
     const { setLoading } = useLoadingStore();
 
@@ -38,7 +38,7 @@ function AuthPageContent() {
                 const data = await verifyMagicLink(payload);
                 setAuth(data.jwt, data.guestName);
                 setStatus("success");
-                setTimeout(() => router.push("/area-riservata/rsvp"), 1500);
+                setTimeout(() => router.push("/area-riservata/rsvp/"), 1500);
             } catch (err: unknown) {
                 setStatus("error");
                 if (err instanceof Error) {
@@ -51,12 +51,14 @@ function AuthPageContent() {
             }
         };
 
-        if (token) {
-            router.push("/area-riservata/rsvp");
-        } else if (urlToken && (urlPhone || urlEmail)) {
-            handleVerification(urlToken, urlPhone || "", urlEmail);
+        if (authHydrated) {
+            if (token) {
+                router.push("/area-riservata/rsvp/");
+            } else if (urlToken && (urlPhone || urlEmail)) {
+                handleVerification(urlToken, urlPhone || "", urlEmail);
+            }
         }
-    }, [urlToken, urlPhone, urlEmail, token, router, setAuth, t, setLoading]);
+    }, [urlToken, urlPhone, urlEmail, token, authHydrated, router, setAuth, t, setLoading]);
 
     const handleManualLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,7 +70,7 @@ function AuthPageContent() {
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
             setAuth(data.jwt, data.guestName);
             setStatus("success");
-            setTimeout(() => router.push("/area-riservata/rsvp"), 1500);
+            setTimeout(() => router.push("/area-riservata/rsvp/"), 1500);
         } catch (err: unknown) {
             setStatus("error");
             if (err instanceof Error) {
@@ -100,7 +102,7 @@ function AuthPageContent() {
                 <h2 className="text-2xl font-semibold text-destructive">{t("auth.errorTitle")}</h2>
                 <p className="text-muted-foreground">{errorMsg}</p>
                 <p className="text-sm mt-4">{t("auth.errorCheck")}</p>
-                <Button onClick={() => router.push("/auth")} variant="outline" className="mt-8">{t("auth.errorTryManual")}</Button>
+                <Button onClick={() => router.push("/auth/")} variant="outline" className="mt-8">{t("auth.errorTryManual")}</Button>
             </div>
         );
     }

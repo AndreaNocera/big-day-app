@@ -2,16 +2,16 @@ version: '3.8'
 services:
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend_vite
     ports:
-      - "3000:3000"
+      - "5173:5173"
     volumes:
-      - ./frontend:/app
+      - ./frontend_vite:/app
       - /app/node_modules
     environment:
       - ENV=local
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
+      - VITE_API_URL=http://localhost:8000
+      - VITE_MAPBOX_TOKEN=${VITE_MAPBOX_TOKEN}
     depends_on:
       - local_server
 
