@@ -28,7 +28,7 @@ export const it = {
         heroTitle: "Ci Sposiamo! 🎉",
         subtitle: "Siamo felici di invitarvi al nostro matrimonio.",
         rsvpBtn: "Conferma la tua presenza",
-        rsvpDone: "✓ Presenza confermata",
+        rsvpDone: "Presenza confermata",
         cardLocation: "Location",
         cardLocationSub: "Dove e come arrivare",
         cardProgram: "Programma",
