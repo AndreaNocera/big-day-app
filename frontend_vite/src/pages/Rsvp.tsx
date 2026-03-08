@@ -28,6 +28,7 @@ export default function Rsvp() {
                     setAttending(data.attending ?? null);
                     setGuests(data.guests ?? []);
                     setDietaryRestrictions(data.dietaryRestrictions ?? '');
+                    setRsvpCompleted(true);
                 }
                 setStatus('idle');
             } catch (err) {
