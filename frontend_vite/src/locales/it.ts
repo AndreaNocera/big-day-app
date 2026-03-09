@@ -35,7 +35,7 @@ export const it = {
         cardProgramSub: "La giornata ora per ora",
         cardFaq: "FAQ",
         cardFaqSub: "Domande frequenti",
-        cardGallery: "Galleria Foto",
+        cardGallery: "Mia Galleria",
         cardGallerySub: "I tuoi ricordi della giornata"
     },
     location: {

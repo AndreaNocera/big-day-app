@@ -1,10 +1,8 @@
 import { getApiUrl, fetchWithAuth } from './api';
 
 interface VerifyAuthArgs {
-    token?: string;
-    email?: string;
-    phoneNumber?: string;
-    accessCode?: string;
+    phoneNumber: string;
+    accessCode: string;
 }
 
 export async function verifyMagicLink(args: VerifyAuthArgs) {

@@ -13,7 +13,8 @@ fi
 
 # 2. Build del frontend (Vite - usa le variabili prod)
 cd frontend_vite
-export $(grep -v '^#' ../.env.production | xargs) && npm run build
+cp ../.env.production .env.production
+npm run build
 cd ..
 
 # 2. Deploy con CDK
