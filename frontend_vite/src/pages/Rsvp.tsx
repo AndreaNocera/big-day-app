@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, UserPlus, Trash2, Baby, User } from 'lucide-react';
+import { UserPlus, Trash2, Baby, User } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
 import { submitRsvp, getRsvp } from '@/lib/auth';
+import { StatusModal } from '@/components/StatusModal';
+import { Loader } from '@/components/Loader';
 
 interface Guest {
     name: string;
@@ -18,6 +20,7 @@ export default function Rsvp() {
     const [dietaryRestrictions, setDietaryRestrictions] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'submitting' | 'success' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const loadRsvp = async () => {
@@ -61,23 +64,15 @@ export default function Rsvp() {
             await submitRsvp(attending, guests, dietaryRestrictions);
             setRsvpCompleted(true);
             setStatus('success');
-            // Reset success status after 3 seconds to show the form again if they want
+            setShowModal(true);
+            // Reset state to allow further edits if needed
             setTimeout(() => setStatus('idle'), 3000);
         } catch (err: unknown) {
             setStatus('error');
             setErrorMsg(err instanceof Error ? err.message : t('rsvp.errorText'));
+            setShowModal(true);
         }
     };
-
-    if (status === 'loading') {
-        return (
-            <>
-                <div className="page-content" style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                    <div className="loading-spinner" />
-                </div>
-            </>
-        );
-    }
 
     return (
         <main className="page-content">
@@ -85,19 +80,18 @@ export default function Rsvp() {
                 {t('rsvp.title')}
             </h1>
 
+            {(status === 'loading' || status === 'submitting') && <Loader />}
+
+            {showModal && (
+                <StatusModal
+                    status={status === 'success' || status === 'error' ? status : null}
+                    message={status === 'success' ? t('rsvp.successText') : errorMsg}
+                    onClose={() => setShowModal(false)}
+                />
+            )}
+
             {/* Attendance Step */}
             <form onSubmit={handleSubmit} noValidate>
-                {status === 'error' && (
-                    <div className="form-error" role="alert">{errorMsg}</div>
-                )}
-                {status === 'success' && (
-                    <div className="status-box" style={{ marginBottom: 20, padding: '16px' }}>
-                        <div className="status-icon-circle success" style={{ width: 40, height: 40 }} aria-hidden="true">
-                            <CheckCircle2 size={24} />
-                        </div>
-                        <h2 className="status-title" style={{ fontSize: 18 }}>{t('rsvp.successTitle')}</h2>
-                    </div>
-                )}
 
                 {/* Attending options */}
                 <div style={{ marginBottom: 20 }}>

@@ -51,7 +51,7 @@ export default function Photos() {
                     </div>
                 )}
 
-                <section>
+                <section className="section-card">
                     <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: 'var(--color-primary)' }}>
                         {t('gallery.myPhotos')}
                     </h2>
