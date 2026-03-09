@@ -13,7 +13,7 @@ def handler(event, context):
         response = table.scan()
         items = response.get("Items", [])
         
-        frontend_url = os.getenv("NEXT_PUBLIC_FRONTEND_URL", "http://localhost:3000")
+        frontend_url = os.getenv("VITE_PUBLIC_FRONTEND_URL", "http://localhost:5173")
         
         count = 0
         for item in items:
@@ -24,10 +24,8 @@ def handler(event, context):
                 name = item.get("guestName", "Ospite")
                 
                 if phone:
-                    access_code = item.get("accessCode", "0000")
-                    # Replace email with phone in the magic link URL query params
-                    magic_link = f"{frontend_url}/auth?token={token}&phone={phone}"
-                    message = f"Ciao {name}, ecco il tuo invito al matrimonio! Clicca il link: {magic_link}\nOppure entra su {frontend_url}/auth usando il tuo numero e il PIN: {access_code}"
+                    # Magic link is removed. Only provide instructions for Phone + PIN login.
+                    message = f"Ciao {name}, ecco il tuo invito al matrimonio! Entra su {frontend_url}/accedi usando il tuo numero di telefono e il PIN: {access_code}"
                     send_sms(phone, message)
                     count += 1
                     

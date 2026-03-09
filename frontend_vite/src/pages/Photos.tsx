@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { BackBar } from '@/components/BackBar';
 import { useI18nStore } from '@/store/i18nStore';
 import { getPhotos } from '@/lib/photos';
 
@@ -28,19 +27,24 @@ export default function Photos() {
 
     if (status === 'loading') {
         return (
-            <>
-                <BackBar title={t('gallery.title')} />
+            <main className="page-content">
+                <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
+                    Il tuo Album
+                </h1>
                 <div className="status-box">
                     <div className="spinner purple" role="status" aria-label="Caricamento..." />
                 </div>
-            </>
+            </main>
         );
     }
 
     return (
         <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '40px' }}>
-            <BackBar title={t('gallery.title')} />
             <main className="page-content">
+                <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
+                    Il tuo Album
+                </h1>
+
                 {status === 'error' && (
                     <div className="form-error" style={{ marginBottom: 20 }}>
                         <AlertCircle size={18} /> {errorMsg}

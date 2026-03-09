@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { BackBar } from '@/components/BackBar';
 import { useI18nStore } from '@/store/i18nStore';
 import { it } from '@/locales/it';
 import { en } from '@/locales/en';
@@ -21,40 +20,41 @@ export default function Faq() {
     const items: FaqItem[] = LOCALES[language].faq.items;
 
     return (
-        <>
-            <BackBar title={t('faq.title')} />
-            <main className="page-content">
-                <div className="section-card">
-                    {items.map((item, i) => (
-                        <div className="faq-item" key={i}>
-                            <button
-                                className={`faq-q${openIndex === i ? ' open' : ''}`}
-                                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                aria-expanded={openIndex === i}
-                                aria-controls={`faq-a-${i}`}
-                                id={`faq-q-${i}`}
+        <main className="page-content">
+            <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
+                {t('faq.title')}
+            </h1>
+
+            <section className="section-card" aria-label="Domande frequenti">
+                {items.map((item, i) => (
+                    <div className="faq-item" key={i}>
+                        <button
+                            className={`faq-q${openIndex === i ? ' open' : ''}`}
+                            onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                            aria-expanded={openIndex === i}
+                            aria-controls={`faq-a-${i}`}
+                            id={`faq-q-${i}`}
+                        >
+                            <span>{item.q}</span>
+                            <ChevronDown
+                                size={20}
+                                className={`faq-chevron${openIndex === i ? ' open' : ''}`}
+                                aria-hidden="true"
+                            />
+                        </button>
+                        {openIndex === i && (
+                            <div
+                                id={`faq-a-${i}`}
+                                className="faq-a"
+                                role="region"
+                                aria-labelledby={`faq-q-${i}`}
                             >
-                                <span>{item.q}</span>
-                                <ChevronDown
-                                    size={20}
-                                    className={`faq-chevron${openIndex === i ? ' open' : ''}`}
-                                    aria-hidden="true"
-                                />
-                            </button>
-                            {openIndex === i && (
-                                <div
-                                    id={`faq-a-${i}`}
-                                    className="faq-a"
-                                    role="region"
-                                    aria-labelledby={`faq-q-${i}`}
-                                >
-                                    {item.a}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </main>
-        </>
+                                {item.a}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </section>
+        </main>
     );
 }

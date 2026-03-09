@@ -1,5 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 import Home from '@/pages/Home';
 import Auth from '@/pages/Auth';
 import Location from '@/pages/Location';
@@ -15,6 +16,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (!_hasHydrated) return null; // wait for hydration
     if (!token) return <Navigate to="/accedi" replace />;
     return <>{children}</>;
+}
+
+function SearchRedirect({ to }: { to: string }) {
+    const [searchParams] = useSearchParams();
+    return <Navigate to={`${to}?${searchParams.toString()}`} replace />;
 }
 
 export default function App() {
@@ -52,10 +58,10 @@ export default function App() {
                     }
                 />
                 {/* Legacy redirects from the old Next.js paths */}
-                <Route path="/auth" element={<Navigate to="/accedi" replace />} />
-                <Route path="/area-riservata/rsvp" element={<Navigate to="/rsvp" replace />} />
+                <Route path="/area-riservata/rsvp" element={<SearchRedirect to="/rsvp" />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            <BottomNav />
         </div>
     );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BackBar } from '@/components/BackBar';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
 import { verifyMagicLink } from '@/lib/auth';
@@ -18,36 +17,24 @@ export default function Auth() {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [accessCode, setAccessCode] = useState('');
 
-    const urlToken = searchParams.get('token');
     const rawPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
     const urlPhone = rawPhone ? rawPhone.replace(/\s+/g, '+') : null;
-    const urlEmail = searchParams.get('email');
 
-    // Auto-verify magic link from URL
+    // Redirect se già loggato
     useEffect(() => {
         if (!_hasHydrated) return;
         if (token) {
             navigate('/rsvp', { replace: true });
-            return;
         }
-        if (urlToken && (urlPhone || urlEmail)) {
-            setStatus('loading');
-            setIsLoading(true);
-            verifyMagicLink({ token: urlToken, phoneNumber: urlPhone || '', email: urlEmail || undefined })
-                .then((data) => {
-                    setAuth(data.jwt, data.guestName);
-                    setStatus('success');
-                    setIsLoading(false);
-                    setTimeout(() => navigate('/rsvp', { replace: true }), 1500);
-                })
-                .catch((err: Error) => {
-                    setStatus('error');
-                    setIsLoading(false);
-                    setErrorMsg(err.message || t('auth.errorInvalid'));
-                });
+    }, [token, _hasHydrated, navigate]);
+
+    // Se esiste urlPhone e non è ancora stato impostato manualmente, possiamo precompilarlo
+    useEffect(() => {
+        if (urlPhone && !phoneNumber) {
+            setPhoneNumber(urlPhone.replace(/^\+39/, '')); // Semplificazione per mostrare solo il numero se italiano
+            if (urlPhone.startsWith('+39')) setCountryCode('+39');
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [_hasHydrated]);
+    }, [urlPhone, phoneNumber]);
 
     const handleManualLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,6 +43,7 @@ export default function Auth() {
         setErrorMsg('');
         try {
             const formattedPhone = `${countryCode}${phoneNumber.replace(/\s+/g, '')}`;
+            // We still use the library function, which we will update next to drop token
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
             setAuth(data.jwt, data.guestName);
             setStatus('success');
@@ -86,93 +74,75 @@ export default function Auth() {
         );
     }
 
-    if (status === 'error' && urlToken) {
-        return (
-            <>
-                <BackBar title={t('auth.title')} />
-                <div className="page-content">
-                    <div className="status-box">
-                        <div className="status-icon-circle error" aria-hidden="true">✕</div>
-                        <h2 className="status-title">{t('auth.errorTitle')}</h2>
-                        <p className="status-text">{errorMsg}</p>
-                        <p className="status-text">{t('auth.errorCheck')}</p>
-                        <button className="btn-secondary mt-4" onClick={() => setStatus('idle')}>
-                            {t('auth.errorTryManual')}
-                        </button>
-                    </div>
-                </div>
-            </>
-        );
-    }
-
+    // The error is now shown inline within the form for manual login.
     return (
-        <>
-            <BackBar title={t('auth.title')} />
-            <div className="page-content">
-                <p className="text-muted mb-4" style={{ fontSize: '16px', lineHeight: '1.6' }}>
-                    {t('auth.subtitle')}
-                </p>
+        <div className="page-content">
+            <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
+                {t('auth.title')}
+            </h1>
+            <p className="text-muted mb-4" style={{ fontSize: '16px', lineHeight: '1.6' }}>
+                {t('auth.subtitle')}
+            </p>
 
-                <form onSubmit={handleManualLogin} className="form-card" noValidate>
-                    {status === 'error' && (
-                        <div className="form-error" role="alert">{errorMsg}</div>
-                    )}
+            <form onSubmit={handleManualLogin} className="form-card" noValidate>
+                {status === 'error' && (
+                    <div className="form-error" role="alert">{errorMsg}</div>
+                )}
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="phone-number">{t('auth.phoneLabel')}</label>
-                        <div className="phone-row">
-                            <select
-                                id="country-code"
-                                className="form-input select"
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                aria-label="Prefisso internazionale"
-                            >
-                                <option value="+39">🇮🇹 +39</option>
-                                <option value="+34">🇪🇸 +34</option>
-                                <option value="+33">🇫🇷 +33</option>
-                                <option value="+44">🇬🇧 +44</option>
-                                <option value="+54">🇦🇷 +54</option>
-                            </select>
-                            <input
-                                id="phone-number"
-                                type="tel"
-                                className="form-input"
-                                required
-                                placeholder="333 123 4567"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                autoComplete="tel-national"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="pin">{t('auth.pinLabel')}</label>
+                <div className="form-group">
+                    <label className="form-label" htmlFor="phone-number">{t('auth.phoneLabel')}</label>
+                    <div className="phone-row">
+                        <select
+                            id="country-code"
+                            className="form-input select"
+                            value={countryCode}
+                            onChange={(e) => setCountryCode(e.target.value)}
+                            aria-label="Prefisso internazionale"
+                        >
+                            <option value="+39">🇮🇹 +39</option>
+                            <option value="+34">🇪🇸 +34</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+54">🇦🇷 +54</option>
+                        </select>
                         <input
-                            id="pin"
-                            type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            maxLength={4}
+                            id="phone-number"
+                            type="tel"
+                            className="form-input"
                             required
-                            placeholder="1234"
-                            className="form-input pin"
-                            value={accessCode}
-                            onChange={(e) => setAccessCode(e.target.value.replace(/\D/g, ''))}
-                            autoComplete="one-time-code"
+                            placeholder="333 123 4567"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            autoComplete="tel-national"
                         />
                     </div>
+                </div>
 
-                    <button
-                        type="submit"
-                        className="btn-primary mt-6"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? t('auth.loading') : t('auth.loginBtn')}
-                    </button>
-                </form>
-            </div>
-        </>
+                <div className="form-group">
+                    <label className="form-label" htmlFor="pin">{t('auth.pinLabel')}</label>
+                    <input
+                        id="pin"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={4}
+                        required
+                        placeholder="1234"
+                        className="form-input pin"
+                        value={accessCode}
+                        onChange={(e) => setAccessCode(e.target.value.replace(/\D/g, ''))}
+                        autoComplete="one-time-code"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    className="btn-primary mt-6"
+                    disabled={isLoading}
+                >
+                    {isLoading ? t('auth.loading') : t('auth.loginBtn')}
+                </button>
+            </form>
+        </div>
     );
 }

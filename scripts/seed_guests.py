@@ -23,7 +23,7 @@ def seed_guests():
     
     for guest in guests:
         token = str(uuid.uuid4())
-        access_code = str(random.randint(1000, 9999))
+        access_code = "0000"
         expiry_days = int(os.getenv("TOKEN_EXPIRY_DAYS", "30"))
         item = {
             "PK": f"TOKEN#{token}",
@@ -34,7 +34,7 @@ def seed_guests():
             "createdAt": datetime.now().isoformat()
         }
         table.put_item(Item=item)
-        print(f"Invito generato per {guest['name']} - Token: {token} - PIN: {access_code} - Telefono: {guest['phone']}")
+        print(f"Invito generato per {guest['name']} - PIN: {access_code} - Telefono: {guest['phone']}")
 
 if __name__ == "__main__":
     seed_guests()
