@@ -25,15 +25,63 @@ export default function Home() {
     };
 
     return (
-        <main>
-            {/* Hero */}
-            <section className="hero-section" aria-labelledby="hero-title">
-                <h1 id="hero-title" className="hero-title">{t('home.heroTitle')}</h1>
-                <p className="hero-date">{t('home.date')}</p>
-                <p className="hero-location">{t('home.location')}</p>
-            </section>
+        <main className="home-page-container">
+            {/* Contenuto Principale */}
+            <div className="home-content-wrapper">
+                {/* Frase / Citazione */}
+                <div className="home-quote">
+                    {t('home.quote').split('\n').map((line, i) => (
+                        <p key={i}>{line}</p>
+                    ))}
+                </div>
 
-            <div className="rsvp-section">
+                {/* Foto Sposi */}
+                <div className="home-hero-image-wrapper">
+                    {/* Placeholder invece della foto reale, come da richiesta */}
+                    <img
+                        src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop"
+                        alt="Foto Sposi"
+                        className="home-hero-image"
+                        loading="eager"
+                    />
+                </div>
+
+                {/* Card "Ci sposiamo / Condividi la storia" */}
+                <div className="home-story-card">
+                    <h2 className="home-story-title">{t('home.storyTitle')}</h2>
+                    <span className="emoji-inline emoji-under-story">✨</span>
+                </div>
+
+                {/* Lista "Immagini - descrizione" 5 righe */}
+                <div className="home-alternating-list">
+                    {[1, 2, 3, 4, 5].map((item, idx) => (
+                        <div key={item} className={`alternating-row ${idx % 2 !== 0 ? 'reverse' : ''}`}>
+                            {idx === 0 && <span className="emoji-inline emoji-tl">⭐</span>}
+                            {idx === 0 && <span className="emoji-inline emoji-bl">💙</span>}
+                            {idx === 1 && <span className="emoji-inline emoji-mid-bottom">🎉</span>}
+                            {idx === 3 && <span className="emoji-inline emoji-desc-tr">💜</span>}
+                            {idx === 4 && <span className="emoji-inline emoji-mid-top">🎉</span>}
+                            <div className="alt-image-box">
+                                <img src={`https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop&sig=${item}`} alt="Momento" />
+                            </div>
+                            <div className="alt-text-box">
+                                <p>{t('home.placeholderTitle')}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Card Testo Dettagli */}
+                <div className="home-details-card">
+                    {t('home.storyText').split('\n').map((line, i) => (
+                        <p key={i} className="home-details-text">{line}</p>
+                    ))}
+                    <span className="emoji-inline emoji-details-br">💜</span>
+                </div>
+            </div>
+
+            {/* Area Pulsanti (Upload / RSVP) */}
+            <div className="rsvp-section home-actions">
                 {photosEnabled ? (
                     <>
                         {status === 'loading' && (
@@ -56,7 +104,7 @@ export default function Home() {
 
                         <button
                             onClick={token ? triggerFileInput : undefined}
-                            className="btn-primary"
+                            className="btn-primary inverted"
                             aria-label="Carica una foto del matrimonio"
                         >
                             <Camera size={22} aria-hidden="true" style={{ marginRight: '8px' }} />
@@ -73,7 +121,7 @@ export default function Home() {
                 ) : (
                     <Link
                         to={token ? '/rsvp' : '/accedi'}
-                        className={`btn-primary${token && rsvpCompleted ? ' success' : ''}`}
+                        className={`btn-primary inverted ${token && rsvpCompleted ? 'success' : ''}`}
                         aria-label="Conferma la tua presenza al matrimonio"
                     >
                         {token && rsvpCompleted && <CheckCircle2 size={22} aria-hidden="true" />}
