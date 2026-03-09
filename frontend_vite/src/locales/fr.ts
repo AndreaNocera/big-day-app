@@ -34,7 +34,11 @@ export const fr = {
         cardProgram: "Programme",
         cardProgramSub: "La journée heure par heure",
         cardFaq: "FAQ",
-        cardFaqSub: "Questions fréquentes"
+        cardFaqSub: "Questions fréquentes",
+        quote: "“La vie est une histoire qui mérite d'être partagée.”\n— Almudena Grandes",
+        storyTitle: "Et c'est pourquoi nous voulons partager notre histoire avec vous \u2764",
+        storyText: "Nous nous marions ! 🎉\nNous sommes si heureux de pouvoir célébrer ce jour avec vous tous.\nLe 12 septembre 2026, nous nous réunirons au Castillo del Buen Amor (Salamanca) pour célébrer notre mariage entourés de notre famille et de nos amis.\nSur cette page, vous trouverez tous les détails et les informations que nous mettrons à jour petit à petit.",
+        placeholderTitle: "Un moment de lorem ipsum dolor sit consectetur. Le 14 juin 2026..."
     },
     location: {
         title: "Lieu",

@@ -34,7 +34,11 @@ export const en = {
         cardProgram: "Schedule",
         cardProgramSub: "The day hour by hour",
         cardFaq: "FAQ",
-        cardFaqSub: "Frequently asked questions"
+        cardFaqSub: "Frequently asked questions",
+        quote: "“Life is a story that deserves to be shared.”\n— Almudena Grandes",
+        storyTitle: "And that's why we want to share our story with you \u2764",
+        storyText: "We're getting married! 🎉\nWe are so happy to celebrate this day with all of you.\nOn September 12, 2026, we will gather at Castillo del Buen Amor (Salamanca) to celebrate our wedding surrounded by family and friends.\nOn this page you will find all the details and information that we will be updating little by little.",
+        placeholderTitle: "A moment of lorem ipsum dolor sit consectetur. June 14, 2026..."
     },
     location: {
         title: "Venue",

@@ -31,10 +31,14 @@ export const es = {
         rsvpDone: "✓ Asistencia confirmada",
         cardLocation: "Lugar",
         cardLocationSub: "Dónde y cómo llegar",
-        cardProgram: "Programa",
-        cardProgramSub: "El día hora por hora",
+        cardPrograma: "Programa",
+        cardProgramaSub: "El día hora por hora",
         cardFaq: "FAQ",
-        cardFaqSub: "Preguntas frecuentes"
+        cardFaqSub: "Preguntas frecuentes",
+        quote: "“La vida es una historia que merece ser compartida.”\n— Almudena Grandes",
+        storyTitle: "Y por esto queremos compartir nuestra historia con vosotros \u2764",
+        storyText: "¡Nos casamos! 🎉\nEstamos muy felices de poder celebrar este día con todos vosotros.\nEl 12 de septiembre de 2026 nos reuniremos en el Castillo del Buen Amor (Salamanca) para celebrar nuestra boda rodeados de familia y amigos.\nEn esta página encontraréis todos los detalles y la información que iremos actualizando poco a poco.",
+        placeholderTitle: "Un momento de lorem ipsum dolor sit consectetur. El 14 de junio de 2026..."
     },
     location: {
         title: "Lugar",
