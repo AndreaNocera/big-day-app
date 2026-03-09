@@ -26,23 +26,25 @@ export default function Programma() {
 
             <p className="section-text mb-4">{t('program.intro')}</p>
 
-            <div className="timeline" role="list" aria-label="Programma della giornata">
-                {events.map((event, i) => {
-                    const Icon = ICONS[i % ICONS.length];
-                    return (
-                        <div className="timeline-item" key={i} role="listitem">
-                            <div className="timeline-dot" aria-hidden="true">
-                                <Icon size={18} />
+            <section className="section-card">
+                <div className="timeline" role="list" aria-label="Programma della giornata">
+                    {events.map((event, i) => {
+                        const Icon = ICONS[i % ICONS.length];
+                        return (
+                            <div className="timeline-item" key={i} role="listitem">
+                                <div className="timeline-dot" aria-hidden="true">
+                                    <Icon size={18} />
+                                </div>
+                                <div className="timeline-content">
+                                    <span className="timeline-time">{event.time}</span>
+                                    <h3 className="timeline-title">{event.label}</h3>
+                                    {event.desc && <p className="timeline-text">{event.desc}</p>}
+                                </div>
                             </div>
-                            <div className="timeline-content">
-                                <span className="timeline-time">{event.time}</span>
-                                <h3 className="timeline-title">{event.label}</h3>
-                                {event.desc && <p className="timeline-text">{event.desc}</p>}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            </section>
         </main>
     );
 }

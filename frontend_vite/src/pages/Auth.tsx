@@ -24,9 +24,10 @@ export default function Auth() {
     useEffect(() => {
         if (!_hasHydrated) return;
         if (token) {
-            navigate('/rsvp', { replace: true });
+            const redirectTo = searchParams.get('redirect') || '/rsvp';
+            navigate(redirectTo, { replace: true });
         }
-    }, [token, _hasHydrated, navigate]);
+    }, [token, _hasHydrated, navigate, searchParams]);
 
     // Se esiste urlPhone e non è ancora stato impostato manualmente, possiamo precompilarlo
     useEffect(() => {
@@ -47,7 +48,8 @@ export default function Auth() {
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
             setAuth(data.jwt, data.guestName);
             setStatus('success');
-            setTimeout(() => navigate('/rsvp', { replace: true }), 1500);
+            const redirectTo = searchParams.get('redirect') || '/rsvp';
+            setTimeout(() => navigate(redirectTo, { replace: true }), 1500);
         } catch (err: unknown) {
             setStatus('error');
             setErrorMsg(err instanceof Error ? err.message : t('auth.errorInvalid'));
