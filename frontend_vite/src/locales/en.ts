@@ -37,7 +37,7 @@ export const en = {
         cardFaqSub: "Frequently asked questions",
         cardGallery: "My Gallery",
         cardGallerySub: "Your memories of the day",
-        quote: "“Life is a story that deserves to be shared.”\n— Almudena Grandes",
+        quote: "“Life is a story that deserves to be shared.”\n—Unknown, but surely very intelligent",
         storyTitle: "And that's why we want to share our story with you \u2764",
         storyText: "As you may have gathered,\nWe're getting married! 🎉\n\nWe are so happy to celebrate this day with all of you.\nOn **September 12, 2026**, we will gather at Castillo del Buen Amor (Salamanca) to celebrate our wedding surrounded by family and friends.\nOn this page you will find all the details and information that we will be updating as we go.\nLet us know as soon as possible if you will be able to join us by clicking below!",
         textRow1: "It all started in 2016 in the wonderful setting of Bergen, where you won't believe it but we often found the sun...",

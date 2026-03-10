@@ -37,7 +37,7 @@ export const es = {
         cardFaqSub: "Preguntas frecuentes",
         cardGallery: "Mi Galería",
         cardGallerySub: "Tus recuerdos del día",
-        quote: "“La vida es una historia que merece ser compartida.”\n— Almudena Grandes",
+        quote: "“La vida es una historia que merece ser compartida.”\n—Desconocido, pero seguramente muy inteligente",
         storyTitle: "Y por esto queremos compartir nuestra historia con vosotros \u2764",
         storyText: "Como habréis imaginado,\n¡Nos casamos! 🎉\n\nEstamos muy felices de poder celebrar este día con todos vosotros.\nEl **12 de septiembre de 2026** nos reuniremos en el Castillo del Buen Amor (Salamanca) para celebrar nuestra boda rodeados de familia y amigos.\nEn esta página encontraréis todos los detalles y la información que iremos actualizando poco a poco.\nCuanto antes nos digáis si podréis acompañarnos clicando abajo!",
         textRow1: "Todo comienza en 2016 en el maravilloso entorno de Bergen, donde no lo creeréis pero a menudo encontramos el sol...",
