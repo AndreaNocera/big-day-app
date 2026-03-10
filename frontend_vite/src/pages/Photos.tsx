@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { getPhotos } from '@/lib/photos';
+import { Loader } from '@/components/Loader';
 
 export default function Photos() {
     const { t } = useI18nStore();
@@ -26,16 +27,7 @@ export default function Photos() {
     }, []);
 
     if (status === 'loading') {
-        return (
-            <main className="page-content">
-                <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
-                    Il tuo Album
-                </h1>
-                <div className="status-box">
-                    <div className="spinner purple" role="status" aria-label="Caricamento..." />
-                </div>
-            </main>
-        );
+        return <Loader />;
     }
 
     return (

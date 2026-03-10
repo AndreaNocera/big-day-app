@@ -7,7 +7,6 @@ import Location from '@/pages/Location';
 import Programma from '@/pages/Programma';
 import Faq from '@/pages/Faq';
 import Rsvp from '@/pages/Rsvp';
-import Profilo from '@/pages/Profilo';
 import Photos from '@/pages/Photos';
 import { useAuthStore } from '@/store/authStore';
 
@@ -38,14 +37,6 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <Rsvp />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/profilo"
-                    element={
-                        <ProtectedRoute>
-                            <Profilo />
                         </ProtectedRoute>
                     }
                 />
