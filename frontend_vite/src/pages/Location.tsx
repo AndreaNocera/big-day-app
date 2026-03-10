@@ -4,7 +4,7 @@ import { useI18nStore } from '@/store/i18nStore';
 export default function Location() {
     const { t } = useI18nStore();
 
-    const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=Villa+Medicea+di+Lilliano+Firenze';
+    const mapsUrl = 'https://www.google.com/maps/place/Castillo+del+Buen+Amor/@41.157122,-5.67058,17z/data=!3m1!4b1!4m9!3m8!1s0xd38d4c13011de8b:0x5aefc0f923b46c4b!5m2!4m1!1i2!8m2!3d41.157122!4d-5.67058!16s%2Fg%2F122qyhdd?entry=ttu&g_ep=EgoyMDI2MDMwOC4wIKXMDSoASAFQAw%3D%3D';
 
     return (
         <main className="page-content">

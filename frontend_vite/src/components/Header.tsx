@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, ChevronDown } from 'lucide-react';
+import { User, ChevronDown, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore, LANGUAGES } from '@/store/i18nStore';
 
 export function Header() {
-    const { token, guestName } = useAuthStore();
-    const { language, setLanguage } = useI18nStore();
+    const { token, guestName, logout } = useAuthStore();
+    const { language, setLanguage, t } = useI18nStore();
     const navigate = useNavigate();
     const [langOpen, setLangOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -78,15 +78,21 @@ export function Header() {
 
                 {/* Profile / Auth button */}
                 {token ? (
-                    <button
-                        className="profile-btn"
-                        onClick={() => navigate('/profilo')}
-                        aria-label={`Profilo di ${guestName}`}
-                    >
-                        <div className="profile-avatar" aria-hidden="true">
+                    <div className="profile-logout-container">
+                        <div className="profile-avatar" aria-hidden="true" onClick={() => navigate('/rsvp')}>
                             {initials}
                         </div>
-                    </button>
+                        <button
+                            className="logout-btn"
+                            onClick={() => {
+                                logout();
+                                navigate('/', { replace: true });
+                            }}
+                            aria-label={t('profile.logout')}
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    </div>
                 ) : (
                     <button
                         className="profile-btn"

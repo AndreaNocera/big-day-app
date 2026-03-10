@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
 import { verifyMagicLink } from '@/lib/auth';
+import { Loader } from '@/components/Loader';
 
 export default function Auth() {
     const navigate = useNavigate();
@@ -59,11 +60,7 @@ export default function Auth() {
     };
 
     if (status === 'loading') {
-        return (
-            <div className="status-box">
-                <div className="spinner purple" role="status" aria-label="Caricamento..." />
-            </div>
-        );
+        return <Loader />;
     }
 
     if (status === 'success') {

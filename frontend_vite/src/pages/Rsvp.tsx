@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Baby, User } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
-import { submitRsvp, getRsvp } from '@/lib/auth';
+import { submitRsvp, getRsvp, submitEmail } from '@/lib/auth';
 import { StatusModal } from '@/components/StatusModal';
 import { Loader } from '@/components/Loader';
+import { Mail } from 'lucide-react';
 
 interface Guest {
     name: string;
@@ -21,6 +22,11 @@ export default function Rsvp() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'submitting' | 'success' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
     const [showModal, setShowModal] = useState(false);
+
+    // Email state from Profilo
+    const [email, setEmail] = useState('');
+    const [emailStatus, setEmailStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+    const [emailError, setEmailError] = useState('');
 
     useEffect(() => {
         const loadRsvp = async () => {
@@ -74,13 +80,28 @@ export default function Rsvp() {
         }
     };
 
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEmailStatus('saving');
+        setEmailError('');
+        try {
+            await submitEmail(email);
+            setEmailStatus('success');
+            setEmail('');
+        } catch (err: unknown) {
+            setEmailStatus('error');
+            setEmailError(err instanceof Error ? err.message : 'Errore');
+        }
+    };
+
     return (
         <main className="page-content">
             <h1 className="hero-title" style={{ fontSize: '32px', marginBottom: '24px' }}>
                 {t('rsvp.title')}
             </h1>
 
-            {(status === 'loading' || status === 'submitting') && <Loader />}
+            {status === 'loading' && <Loader />}
+            {status === 'submitting' && <Loader message={t('rsvp.submitting')} />}
 
             {showModal && (
                 <StatusModal
@@ -257,6 +278,51 @@ export default function Rsvp() {
                     {status === 'submitting' ? t('rsvp.submitting') : t('rsvp.submit')}
                 </button>
             </form>
+
+            <div style={{ marginTop: '32px' }}>
+                <section className="form-card" aria-labelledby="email-section-title">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                        <Mail size={20} color="var(--color-primary)" aria-hidden="true" />
+                        <h2 id="email-section-title" className="section-title" style={{ margin: 0 }}>
+                            {t('profile.emailTitle')}
+                        </h2>
+                    </div>
+
+                    {emailStatus === 'success' ? (
+                        <p style={{ color: 'var(--color-success)', fontWeight: 500 }}>
+                            ✓ {t('profile.emailSuccess')}
+                        </p>
+                    ) : (
+                        <form onSubmit={handleEmailSubmit} noValidate>
+                            {emailStatus === 'error' && (
+                                <div className="form-error">{emailError}</div>
+                            )}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="email">
+                                    {t('profile.emailLabel')}
+                                </label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    className="form-input"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="tu@email.com"
+                                    required
+                                    autoComplete="email"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="btn-primary"
+                                disabled={emailStatus === 'saving'}
+                            >
+                                {emailStatus === 'saving' ? t('profile.emailSaving') : t('profile.emailBtn')}
+                            </button>
+                        </form>
+                    )}
+                </section>
+            </div>
         </main>
     );
 }
