@@ -31,14 +31,20 @@ export const es = {
         rsvpDone: "Asistencia confirmada",
         cardLocation: "Lugar",
         cardLocationSub: "Dónde y cómo llegar",
-        cardPrograma: "Programa",
-        cardProgramaSub: "El día hora por hora",
+        cardProgram: "Programa",
+        cardProgramSub: "El día hora por hora",
         cardFaq: "FAQ",
         cardFaqSub: "Preguntas frecuentes",
+        cardGallery: "Mi Galería",
+        cardGallerySub: "Tus recuerdos del día",
         quote: "“La vida es una historia que merece ser compartida.”\n— Almudena Grandes",
         storyTitle: "Y por esto queremos compartir nuestra historia con vosotros \u2764",
-        storyText: "¡Nos casamos! 🎉\nEstamos muy felices de poder celebrar este día con todos vosotros.\nEl 12 de septiembre de 2026 nos reuniremos en el Castillo del Buen Amor (Salamanca) para celebrar nuestra boda rodeados de familia y amigos.\nEn esta página encontraréis todos los detalles y la información que iremos actualizando poco a poco.",
-        placeholderTitle: "Un momento de lorem ipsum dolor sit consectetur. El 14 de junio de 2026..."
+        storyText: "Como habréis imaginado,\n¡Nos casamos! 🎉\n\nEstamos muy felices de poder celebrar este día con todos vosotros.\nEl **12 de septiembre de 2026** nos reuniremos en el Castillo del Buen Amor (Salamanca) para celebrar nuestra boda rodeados de familia y amigos.\nEn esta página encontraréis todos los detalles y la información que iremos actualizando poco a poco.\nCuanto antes nos digáis si podréis acompañarnos clicando abajo!",
+        textRow1: "Todo comienza en 2016 en el maravilloso entorno de Bergen, donde no lo creeréis pero a menudo encontramos el sol...",
+        textRow2: "Desde ese momento no hemos parado ni un segundo, hemos vivido aventuras increíbles",
+        textRow3: "Y hemos viajado mucho, buscando los lugares más increíbles, hasta el fin del mundo",
+        textRow4: "¡Pero siempre juntos, de la mano! Con un estilo increíble :)",
+        textRow5: "¡Y aquí estamos, listos para celebrar con todos vosotros este día que esperamos sea inolvidable!"
     },
     location: {
         title: "Lugar",
@@ -79,7 +85,11 @@ export const es = {
         title: "Confirmación de Asistencia",
         attending: "Asistiré 🎉",
         notAttending: "Desgraciadamente no podré asistir",
-        plusOneLabel: "Vengo con un acompañante",
+        plusOneLabel: "Si quieres, añade a las personas que te acompañarán a celebrar este magnífico día :)",
+        addGuestBtn: "+ Añadir persona",
+        guestNamePlaceholder: "Nombre completo",
+        isChild: "Niño/a",
+        isAdult: "Adulto",
         dietLabel: "Alergias o requisitos dietéticos (opcional)",
         dietPlaceholder: "Ej. vegetariano, sin gluten, alergia a los frutos secos...",
         submit: "Confirmar respuesta",
@@ -88,6 +98,13 @@ export const es = {
         successText: "Gracias, hemos recibido tu confirmación.",
         errorText: "Algo salió mal. Por favor inténtalo de nuevo."
     },
+    gallery: {
+        title: "Galería de Fotos",
+        uploadBtn: "Subir Foto",
+        uploading: "Subiendo...",
+        empty: "Aún no has subido ninguna foto.",
+        myPhotos: "Mis fotos"
+    },
     profile: {
         title: "Tu perfil",
         emailTitle: "Añadir email",
@@ -95,6 +112,6 @@ export const es = {
         emailBtn: "Guardar email",
         emailSaving: "Guardando...",
         emailSuccess: "¡Email guardado!",
-        logout: "Cerrar sesión"
+        logout: "Cerrar sesión de la cuenta"
     }
 };

@@ -35,10 +35,16 @@ export const en = {
         cardProgramSub: "The day hour by hour",
         cardFaq: "FAQ",
         cardFaqSub: "Frequently asked questions",
+        cardGallery: "My Gallery",
+        cardGallerySub: "Your memories of the day",
         quote: "“Life is a story that deserves to be shared.”\n— Almudena Grandes",
         storyTitle: "And that's why we want to share our story with you \u2764",
-        storyText: "We're getting married! 🎉\nWe are so happy to celebrate this day with all of you.\nOn September 12, 2026, we will gather at Castillo del Buen Amor (Salamanca) to celebrate our wedding surrounded by family and friends.\nOn this page you will find all the details and information that we will be updating little by little.",
-        placeholderTitle: "A moment of lorem ipsum dolor sit consectetur. June 14, 2026..."
+        storyText: "As you may have gathered,\nWe're getting married! 🎉\n\nWe are so happy to celebrate this day with all of you.\nOn **September 12, 2026**, we will gather at Castillo del Buen Amor (Salamanca) to celebrate our wedding surrounded by family and friends.\nOn this page you will find all the details and information that we will be updating as we go.\nLet us know as soon as possible if you will be able to join us by clicking below!",
+        textRow1: "It all started in 2016 in the wonderful setting of Bergen, where you won't believe it but we often found the sun...",
+        textRow2: "From that moment on we haven't stood still for a second, we've lived incredible adventures",
+        textRow3: "And we've traveled a lot, searching for the most incredible places, to the end of the world",
+        textRow4: "But always together, hand in hand! With incredible style :)",
+        textRow5: "And so here we are, ready to celebrate with all of you this day that we hope will be unforgettable!"
     },
     location: {
         title: "Venue",
@@ -79,7 +85,11 @@ export const en = {
         title: "RSVP",
         attending: "I will attend 🎉",
         notAttending: "Unfortunately I cannot attend",
-        plusOneLabel: "I'm bringing a plus one",
+        plusOneLabel: "If you want, add the people who will accompany you to celebrate this magnificent day :)",
+        addGuestBtn: "+ Add person",
+        guestNamePlaceholder: "Full name",
+        isChild: "Child",
+        isAdult: "Adult",
         dietLabel: "Allergies or dietary requirements (optional)",
         dietPlaceholder: "E.g. vegetarian, gluten-free, nut allergy...",
         submit: "Confirm your response",
@@ -88,6 +98,13 @@ export const en = {
         successText: "Thank you, we have received your confirmation.",
         errorText: "Something went wrong. Please try again."
     },
+    gallery: {
+        title: "Photo Gallery",
+        uploadBtn: "Upload Photo",
+        uploading: "Uploading...",
+        empty: "You haven't uploaded any photos yet.",
+        myPhotos: "My photos"
+    },
     profile: {
         title: "Your profile",
         emailTitle: "Add your email",
@@ -95,6 +112,6 @@ export const en = {
         emailBtn: "Save email",
         emailSaving: "Saving...",
         emailSuccess: "Email saved!",
-        logout: "Log out"
+        logout: "Log out from account"
     }
 };
