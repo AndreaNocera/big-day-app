@@ -2,9 +2,25 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Camera, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { useI18nStore } from '@/store/i18nStore';
+import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { Loader } from '@/components/Loader';
+
+const HERO_IMAGE = "/photos/PXL_20250331_120242708.webp";
+
+interface HomeRow {
+    image: string;
+    title: NestedKeyOf<Dictionary>;
+}
+
+const rows: HomeRow[] = [
+    { image: "/photos/IMG_20170517_122100.webp", title: 'home.textRow1' },
+    { image: "/photos/IMG_5133.webp", title: 'home.textRow2' },
+    { image: "/photos/PXL_20250323_132309900.webp", title: 'home.textRow3' },
+    { image: "/photos/IMG_9811.webp", title: 'home.textRow4' },
+    { image: "/photos/PXL_20250723_142636501.webp", title: 'home.textRow5' },
+];
+// const HERO_IMAGE = "/photos/PXL_20250323_132309900.webp";
 
 export default function Home() {
     const { t } = useI18nStore();
@@ -40,7 +56,7 @@ export default function Home() {
                 <div className="home-hero-image-wrapper">
                     {/* Placeholder invece della foto reale, come da richiesta */}
                     <img
-                        src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop"
+                        src={HERO_IMAGE}
                         alt="Foto Sposi"
                         className="home-hero-image"
                         loading="eager"
@@ -55,18 +71,18 @@ export default function Home() {
 
                 {/* Lista "Immagini - descrizione" 5 righe */}
                 <div className="home-alternating-list">
-                    {[1, 2, 3, 4, 5].map((item, idx) => (
-                        <div key={item} className={`alternating-row ${idx % 2 !== 0 ? 'reverse' : ''}`}>
+                    {rows.map((item, idx) => (
+                        <div key={idx} className={`alternating-row ${idx % 2 !== 0 ? 'reverse' : ''}`}>
                             {idx === 0 && <span className="emoji-inline emoji-tl">⭐</span>}
                             {idx === 0 && <span className="emoji-inline emoji-bl">💙</span>}
                             {idx === 1 && <span className="emoji-inline emoji-mid-bottom">🎉</span>}
                             {idx === 3 && <span className="emoji-inline emoji-desc-tr">💜</span>}
                             {idx === 4 && <span className="emoji-inline emoji-mid-top">🎉</span>}
                             <div className="alt-image-box">
-                                <img src={`https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop&sig=${item}`} alt="Momento" />
+                                <img src={item.image} alt="Momento" />
                             </div>
                             <div className="alt-text-box">
-                                <p>{t('home.placeholderTitle')}</p>
+                                <p>{t(item.title)}</p>
                             </div>
                         </div>
                     ))}
@@ -74,9 +90,18 @@ export default function Home() {
 
                 {/* Card Testo Dettagli */}
                 <div className="home-details-card">
-                    {t('home.storyText').split('\n').map((line, i) => (
-                        <p key={i} className="home-details-text">{line}</p>
-                    ))}
+                    {t('home.storyText').split('\n').map((line, i) => {
+                        const formattedLine = line.split(/(\*\*.*?\*\*)/g).map((part, j) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={j}>{part.slice(2, -2)}</strong>;
+                            }
+                            return part;
+                        });
+
+                        return i === 1
+                            ? <h1 key={i} className="">{formattedLine}</h1>
+                            : <p key={i} className="home-details-text">{formattedLine}</p>;
+                    })}
                     <span className="emoji-inline emoji-details-br">💜</span>
                 </div>
             </div>
