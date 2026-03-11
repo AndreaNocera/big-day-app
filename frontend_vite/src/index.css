@@ -58,6 +58,12 @@ img {
   display: block;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-quote);
+}
+
 button {
   cursor: pointer;
   font-family: inherit;
@@ -333,7 +339,7 @@ textarea {
 
 /* Titles on inner pages — white for gradient background */
 .hero-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   font-size: clamp(36px, 9vw, 56px);
   font-weight: 600;
   color: white;
@@ -633,7 +639,7 @@ textarea {
 }
 
 .section-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   font-size: 22px;
   font-weight: 600;
   color: var(--color-text);
@@ -753,14 +759,14 @@ textarea {
   color: white;
   font-size: 28px;
   font-weight: 600;
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .profile-name {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   font-size: 24px;
   font-weight: 600;
   color: var(--color-text);
@@ -884,7 +890,7 @@ textarea {
 }
 
 .status-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   font-size: 26px;
   font-weight: 600;
   color: var(--color-text);
@@ -1028,7 +1034,7 @@ textarea {
 }
 
 .font-serif {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
 }
 
 .text-primary {
@@ -1379,7 +1385,7 @@ textarea {
 }
 
 .status-modal-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-quote);
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 8px;
