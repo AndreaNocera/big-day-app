@@ -11,9 +11,11 @@ export const fr = {
     },
     auth: {
         title: "Espace Invités",
-        subtitle: "Pour vous connecter, entrez votre numéro de téléphone et le code PIN reçu par SMS.",
-        phoneLabel: "Numéro de téléphone",
-        pinLabel: "Code PIN (4 chiffres)",
+        subtitle: "Pour vous connecter, entrez votre numéro de téléphone et le code PIN reçu par Whatsapp.",
+        phoneLabel: "Numéro de Téléphone",
+        phonePlaceholder: "Ex. 06 12 34 56 78",
+        pinLabel: "PIN (4 chiffres)",
+        pinPlaceholder: "Ex. 1234",
         loginBtn: "Se connecter",
         loading: "Connexion en cours...",
         success: "Authentification réussie !",
@@ -152,6 +154,6 @@ export const fr = {
         honeymoonTitle: "Voyage de noces",
         honeymoonButton: "Japon",
         honeymoonText: "Votre présence à notre mariage est, sans aucun doute, **le plus beau cadeau que nous puissions recevoir**.\n\nSi vous souhaitez contribuer à notre prochaine aventure, nous serons ravis de l'attribuer à **notre voyage au Japon**, qui sera notre première grande escapade en tant que jeunes mariés.\n\nPour ceux d'entre vous qui souhaitent également nous accompagner dans cette aventure, nous mettons à votre disposition nos coordonnées bancaires ci-dessous, vous pouvez utiliser le que vous trouvez le plus pratique.\n\nMerci de faire partie de ce voyage avec nous.\nNous porterons un toast à votre santé depuis l'autre bout du monde !",
-        giftData: "Détails de la contribution"
+        giftData: "IBAN"
     }
 };

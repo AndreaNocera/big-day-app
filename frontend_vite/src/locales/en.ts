@@ -11,9 +11,11 @@ export const en = {
     },
     auth: {
         title: "Guest Area",
-        subtitle: "To access, enter your phone number and the PIN you received via SMS.",
+        subtitle: "To access, enter your phone number and the PIN you received via Whatsapp.",
         phoneLabel: "Phone Number",
+        phonePlaceholder: "E.g. 07123 456789",
         pinLabel: "PIN (4 digits)",
+        pinPlaceholder: "E.g. 1234",
         loginBtn: "Login",
         loading: "Logging in...",
         success: "Authentication successful!",
@@ -152,6 +154,6 @@ export const en = {
         honeymoonTitle: "Honeymoon",
         honeymoonButton: "Japan",
         honeymoonText: "Your presence at our wedding is, without a doubt, **the greatest gift we could receive**.\n\nIf you wish to contribute to our next adventure, we would be delighted to put it towards **our trip to Japan**, which will be our first big getaway as newlyweds.\n\nFor those who want to join us on this adventure as well, we provide our bank details below, you can use the one that is more convenient for you.\n\nThank you for being part of this journey with us.\nWe will toast to you from the other side of the world!",
-        giftData: "Gift details"
+        giftData: "IBAN"
     }
 };

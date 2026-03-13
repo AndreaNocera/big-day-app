@@ -11,9 +11,11 @@ export const it = {
     },
     auth: {
         title: "Area Riservata Ospiti",
-        subtitle: "Per accedere, inserisci il tuo numero di telefono e il PIN che hai ricevuto via SMS.",
+        subtitle: "Per accedere, inserisci il tuo numero di telefono e il PIN che hai ricevuto via Whatsapp.",
         phoneLabel: "Numero di Telefono",
+        phonePlaceholder: "Es. 333 123 4567",
         pinLabel: "PIN (4 cifre)",
+        pinPlaceholder: "Es. 1234",
         loginBtn: "Accedi",
         loading: "Accesso in corso...",
         success: "Autenticazione riuscita!",
@@ -152,6 +154,6 @@ export const it = {
         honeymoonTitle: "Viaggio di nozze",
         honeymoonButton: "Giappone",
         honeymoonText: "La vostra presenza al nostro matrimonio è, senza dubbio, **il regalo più bello che potremmo ricevere**.\n\nSe desiderate contribuire alla nostra prossima avventura, saremo felici di destinarlo al **nostro viaggio in Giappone**, che sarà la nostra prima grande fuga come neo-sposi.\n\nPer chi volesse accompagnarci anche in questa avventura, mettiamo a vostra disposizione i nostri riferimenti bancari qui sotto, potete usare quello che vi viene più comodo.\n\nGrazie per far parte di questo viaggio con noi.\nBrinderemo alla vostra salute dall'altra parte del mondo!",
-        giftData: "Dati per il contributo"
+        giftData: "IBAN"
     }
 };
