@@ -46,3 +46,7 @@ data/
 
 # Personal photos
 frontend_vite/public/photos/
+
+#DB scripts
+scripts/guests.csv
+scripts/upload_guests_aws.py
