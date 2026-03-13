@@ -133,7 +133,8 @@ export const fr = {
         emailBtn: "Sauvegarder email",
         emailSaving: "Sauvegarde...",
         emailSuccess: "Email sauvegardé !",
-        logout: "Se déconnecter du compte"
+        logout: "Se déconnecter du compte",
+        myRsvp: "Ma réponse"
     },
     travel: {
         title: "Hébergement et Transport",

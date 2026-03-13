@@ -133,7 +133,8 @@ export const en = {
         emailBtn: "Save email",
         emailSaving: "Saving...",
         emailSuccess: "Email saved!",
-        logout: "Log out from account"
+        logout: "Log out from account",
+        myRsvp: "My RSVP"
     },
     travel: {
         title: "Accommodation & Transport",

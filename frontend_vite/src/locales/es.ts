@@ -132,7 +132,8 @@ export const es = {
         emailBtn: "Guarda el mail",
         emailSaving: "Guardando...",
         emailSuccess: "¡Email guardado!",
-        logout: "Cerrar sesión de la cuenta"
+        logout: "Cerrar sesión de la cuenta",
+        myRsvp: "Mi respuesta"
     },
     travel: {
         title: "Alojamiento y Transporte",
