@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User, ChevronDown, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore, LANGUAGES } from '@/store/i18nStore';
@@ -8,6 +8,7 @@ export function Header() {
     const { token, guestName, logout } = useAuthStore();
     const { language, setLanguage, t } = useI18nStore();
     const navigate = useNavigate();
+    const location = useLocation();
     const [langOpen, setLangOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [profileOpen, setProfileOpen] = useState(false);
@@ -104,7 +105,9 @@ export function Header() {
                                         className="profile-action-btn"
                                         onClick={() => {
                                             setProfileOpen(false);
-                                            navigate('/rsvp', { replace: true });
+                                            if (location.pathname !== '/rsvp') {
+                                                navigate('/rsvp');
+                                            }
                                         }}
                                     >
                                         <User size={16} aria-hidden="true" />
