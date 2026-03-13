@@ -128,8 +128,8 @@ export const es = {
     profile: {
         title: "Tu perfil",
         emailTitle: "Añadir email",
-        emailLabel: "Dirección de email",
-        emailBtn: "Si quieres, añade tu email para mantenerte informado de todas las novedades. Prometemos no molestarte con demasiadas notificaciones :)",
+        emailLabel: "Si quieres, añade tu email para mantenerte informado de todas las novedades. Prometemos no molestarte con demasiadas notificaciones :)",
+        emailBtn: "Guarda el mail",
         emailSaving: "Guardando...",
         emailSuccess: "¡Email guardado!",
         logout: "Cerrar sesión de la cuenta"

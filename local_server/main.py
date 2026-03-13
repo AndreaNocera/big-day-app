@@ -103,10 +103,10 @@ async def handle_lambda(request: Request, lambda_handler, body_data: Any = None)
         print(f"Errore handler FastAPI: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-@app.post("/invites/send", summary="Invia inviti (SMS)")
-async def send_invites_route(request: Request, body: InviteTrigger = None):
-    """Lancia l'invio massivo di SMS agli invitati che non hanno ancora usato il loro token."""
-    return await handle_lambda(request, send_invites_handler, body)
+# @app.post("/invites/send", summary="Invia inviti (SMS)")
+# async def send_invites_route(request: Request, body: InviteTrigger = None):
+#     """Lancia l'invio massivo di SMS agli invitati che non hanno ancora usato il loro token."""
+#     return await handle_lambda(request, send_invites_handler, body)
 
 @app.post("/auth/verify", summary="Verifica Magic Link")
 async def verify_magic_link_route(request: Request, body: AuthVerifyRequest):
@@ -123,10 +123,10 @@ async def rsvp_get_route(request: Request, auth: HTTPAuthorizationCredentials = 
     """Recupera la conferma di partecipazione esistente. Richiede header Authorization."""
     return await handle_lambda(request, rsvp_handler)
 
-@app.post("/survey", summary="Salva Sondaggio")
-async def survey_route(request: Request, body: SurveyRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Salva le risposte al sondaggio (musica, messaggi). Richiede header Authorization."""
-    return await handle_lambda(request, survey_handler, body)
+# @app.post("/survey", summary="Salva Sondaggio")
+# async def survey_route(request: Request, body: SurveyRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+#     """Salva le risposte al sondaggio (musica, messaggi). Richiede header Authorization."""
+#     return await handle_lambda(request, survey_handler, body)
 
 @app.post("/photos/upload", summary="Ottieni URL per Upload Foto")
 async def get_upload_url_route(request: Request, body: UploadUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
