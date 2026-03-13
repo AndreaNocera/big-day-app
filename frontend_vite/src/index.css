@@ -593,6 +593,12 @@ textarea {
   color: var(--color-text-muted);
 }
 
+#phone-number:focus::placeholder,
+#pin:focus::placeholder {
+  color: transparent;
+  transition: color 0.15s;
+}
+
 .form-input.pin {
   text-align: center;
   letter-spacing: 6px;

@@ -2,7 +2,7 @@ import { Bed, Car, Train, Bus, Info, ExternalLink } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 
 export default function Travel() {
-    const { t } = useI18nStore();
+    const { t, language } = useI18nStore();
 
     const formatText = (text: string) => {
         return text.split('\n').map((line, i) => {
@@ -45,25 +45,26 @@ export default function Travel() {
                     <h3 style={{ fontSize: '18px', fontWeight: 600 }}>{t('travel.salamancaTitle' as any)}</h3>
                 </div>
                 {formatText(t('travel.salamancaText' as any))}
-                
-                <a 
-                    href="https://www.alojamientoensalamanca.com/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn-primary"
-                    style={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        marginTop: '16px',
-                        fontSize: '14px',
-                        padding: '10px 16px',
-                        textDecoration: 'none'
-                    }}
-                >
-                    <ExternalLink size={18} />
-                    {t('travel.salamancaLink' as any)}
-                </a>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                    <a
+                        href="https://www.alojamientoensalamanca.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '14px',
+                            padding: '10px 24px',
+                            textDecoration: 'none',
+                            width: 'fit-content'
+                        }}
+                    >
+                        <ExternalLink size={18} />
+                        {t('travel.salamancaLink' as any)}
+                    </a>
+                </div>
             </section>
 
             {/* Trasporto */}
@@ -80,59 +81,63 @@ export default function Travel() {
 
                 <div style={{ marginTop: '24px', borderTop: '1px solid var(--color-border)', paddingTop: '20px' }}>
                     <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>{t('travel.howToReachSalamanca' as any)}</h4>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <Car size={18} style={{ flexShrink: 0, marginTop: 4 }} />
                             {formatText(t('travel.byCar' as any))}
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
                             <Train size={18} style={{ flexShrink: 0, marginTop: 4 }} />
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
                                 {formatText(t('travel.byTrain' as any))}
-                                <a 
-                                    href="https://www.renfe.com" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="btn-primary"
-                                    style={{ 
-                                        display: 'inline-flex', 
-                                        alignItems: 'center', 
-                                        gap: '8px', 
-                                        marginTop: '8px',
-                                        fontSize: '14px',
-                                        padding: '10px 16px',
-                                        textDecoration: 'none'
-                                    }}
-                                >
-                                    <ExternalLink size={18} />
-                                    Renfe
-                                </a>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <a
+                                href="https://www.renfe.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-primary"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '14px',
+                                    padding: '10px 24px',
+                                    textDecoration: 'none',
+                                    width: 'fit-content'
+                                }}
+                            >
+                                <ExternalLink size={18} />
+                                Renfe
+                            </a>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
                             <Bus size={18} style={{ flexShrink: 0, marginTop: 4 }} />
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
                                 {formatText(t('travel.byBus' as any))}
-                                <a 
-                                    href="https://www.monbus.es/es" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="btn-primary"
-                                    style={{ 
-                                        display: 'inline-flex', 
-                                        alignItems: 'center', 
-                                        gap: '8px', 
-                                        marginTop: '8px',
-                                        fontSize: '14px',
-                                        padding: '10px 16px',
-                                        textDecoration: 'none'
-                                    }}
-                                >
-                                    <ExternalLink size={18} />
-                                    Monbus
-                                </a>
                             </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <a
+                                href={language === 'es' ? "https://www.monbus.es/es" : "https://www.monbus.es/en"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-primary"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '14px',
+                                    padding: '10px 24px',
+                                    textDecoration: 'none',
+                                    width: 'fit-content'
+                                }}
+                            >
+                                <ExternalLink size={18} />
+                                Monbus
+                            </a>
                         </div>
                     </div>
                 </div>

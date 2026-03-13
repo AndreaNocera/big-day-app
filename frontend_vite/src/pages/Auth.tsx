@@ -109,7 +109,7 @@ export default function Auth() {
                             type="tel"
                             className="form-input"
                             required
-                            placeholder="333 123 4567"
+                            placeholder={t('auth.phonePlaceholder')}
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             autoComplete="tel-national"
@@ -126,7 +126,7 @@ export default function Auth() {
                         pattern="[0-9]*"
                         maxLength={4}
                         required
-                        placeholder="1234"
+                        placeholder={t('auth.pinPlaceholder')}
                         className="form-input pin"
                         value={accessCode}
                         onChange={(e) => setAccessCode(e.target.value.replace(/\D/g, ''))}
