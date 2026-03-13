@@ -1,13 +1,15 @@
 import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
+import ScrollToTop from '@/components/ScrollToTop';
 import BottomNav from '@/components/BottomNav';
 import Home from '@/pages/Home';
 import Auth from '@/pages/Auth';
 import Location from '@/pages/Location';
-import Programma from '@/pages/Programma';
 import Faq from '@/pages/Faq';
 import Rsvp from '@/pages/Rsvp';
 import Photos from '@/pages/Photos';
+import Travel from '@/pages/Travel';
+import Honeymoon from '@/pages/Honeymoon';
 import { useAuthStore } from '@/store/authStore';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -25,12 +27,14 @@ function SearchRedirect({ to }: { to: string }) {
 export default function App() {
     return (
         <div className="page-container">
+            <ScrollToTop />
             <Header />
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/accedi" element={<Auth />} />
                 <Route path="/location" element={<Location />} />
-                <Route path="/programma" element={<Programma />} />
+                <Route path="/viaggio" element={<Travel />} />
+                <Route path="/regalo" element={<Honeymoon />} />
                 <Route path="/faq" element={<Faq />} />
                 <Route
                     path="/rsvp"

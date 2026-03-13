@@ -2,7 +2,7 @@ export const fr = {
     nav: {
         home: "Accueil",
         location: "Lieu",
-        program: "Programme",
+        travel: "Hébergement",
         faq: "FAQ",
         reservedArea: "Espace Invités",
         logout: "Déconnexion",
@@ -43,42 +43,52 @@ export const fr = {
         textRow1: "Tout commence en 2016 dans le cadre magnifique de Bergen, où vous ne le croirez pas, mais nous avons souvent trouvé le soleil...",
         textRow2: "Depuis ce moment, nous ne sommes jamais restés immobiles, nous avons vécu des aventures incroyables",
         textRow3: "Et nous avons beaucoup voyagé, à la recherche des endroits les plus incroyables, jusqu'au bout du monde",
-        textRow4: "Mais toujours ensemble, main dans la main ! Avec un style incroyable :)",
+        textRow4: "Mais toujours ensemble, main dans la main ! With un style incroyable :)",
         textRow5: "Et nous voici donc, prêts à célébrer avec vous tous cette journée qui, nous l'espérons, sera inoubliable !"
     },
     location: {
-        title: "Lieu",
-        venueName: "Villa Medicea di Lilliano",
-        venueAddress: "Via di Lilliano, 8 - Florence",
-        venueDescription: "Une villa médicéenne historique au cœur des collines florentines, entourée de vignes et d'oliviers. L'endroit parfait pour célébrer ensemble.",
+        title: "Lieu et Programme",
+        venueName: "Castillo del buen amor",
+        venueAddress: "Finca Villanueva de Cañedo Ctra. N-630, Km.317,6, 37799 Topas, Salamanca",
+        venueDescription: "Un magnifique château immergé dans la campagne de Salamanque, érigé à l'origine comme forteresse militaire au XIe siècle puis transformé en palais romantique. Il conserve tout son charme historique sur un domaine entouré de bois.",
         howToArrive: "Comment Arriver",
-        byCarTitle: "En Voiture",
-        byCarText: "Accès par Via di Lilliano, 8. Parking gratuit disponible sur place.",
-        byTrainTitle: "En Train",
-        byTrainText: "Gare de Santa Maria Novella (Florence). De là, prenez un taxi ou louez une voiture.",
+        howToArriveIntro: "Le château est situé à environ 20 minutes en voiture au nord de Salamanque.",
+        howToArriveStep1: "Sortez de Salamanque par l'A-66 en direction de Zamora.",
+        howToArriveStep2: "Prenez la déviation vers la N-630 (Valdunciel).",
+        howToArriveStep3: "Suivez la N-630 jusqu'à trouver sur la droite le panneau du Castillo del Buen Amor, qui indique l'accès.",
+        howToArriveWarning: "Important : une fois sur la N-630, ne prenez à aucun moment la direction Topas.",
+        howToArriveGps: "Si vous utilisez un GPS, vous pouvez saisir directement « Castillo del Buen Amor » comme destination.",
         mapBtn: "Ouvrir dans Google Maps",
         parking: "Parking gratuit disponible"
     },
     program: {
         title: "Programme",
         intro: "Voici comment se déroulera notre journée spéciale !",
+        approxNotice: "* Les horaires sont approximatifs",
         events: [
-            { time: "15h00", label: "Cérémonie Civile", desc: "La cérémonie a lieu dans le jardin de la villa" },
-            { time: "16h30", label: "Apéritif de Bienvenue", desc: "Apéritif en terrasse avec vue panoramique" },
-            { time: "19h30", label: "Dîner & Réception", desc: "Dîner sous les étoiles avec musique live" },
-            { time: "23h00", label: "Découpe du Gâteau", desc: "Le moment le plus doux de la soirée" },
-            { time: "00h00", label: "Fête & Danse", desc: "Danser jusqu'au bout de la nuit !" }
+            { time: "17h00", label: "Cérémonie", desc: "La cérémonie aura lieu dans l'allée arborée devant le château" },
+            { time: "18h15", label: "Apéritif", desc: "Sur la terrasse du chemin de ronde, l'espace entre les murs à l'ombre du château" },
+            { time: "20h00", label: "Dîner", desc: "Nous nous installons sous le chapiteau où se tiendra le banquet" },
+            { time: "22h00", label: "Que la fête commence !", desc: "" }
         ]
     },
     faq: {
         title: "Questions Fréquentes",
         items: [
-            { q: "Puis-je amener un accompagnateur ?", a: "Oui, si votre invitation indique '+1'. En cas de doute, contactez-nous directement." },
-            { q: "Comment doit-on s'habiller ?", a: "Tenue élégante-formelle. La cérémonie étant en plein air, nous déconseillons les talons aiguilles." },
-            { q: "Y a-t-il un parking disponible ?", a: "Oui, le stationnement est gratuit dans les jardins de la villa." },
-            { q: "Comment rejoindre le lieu ?", a: "Rendez-vous à la section 'Lieu' pour des indications détaillées." },
-            { q: "Comment confirmer ma présence ?", a: "Cliquez sur 'Confirmer votre présence' sur la page d'accueil. Date limite : 31 mai 2026." },
-            { q: "Puis-je prendre des photos pendant la cérémonie ?", a: "Nous demandons d'éteindre les téléphones pendant la cérémonie. Les photos sont bienvenues à la réception !" }
+            { q: "Dress code", a: "Il n'y a pas de dress code spécifique. Venez comme vous vous sentez le plus à l'aise pour célébrer avec nous. La seule demande est d'éviter le blanc, réservé à la mariée :)" },
+            { q: "À quelle heure commence la cérémonie ?", a: "L'heure approximative de la cérémonie est 17h00 au Castillo del Buen Amor." },
+            { q: "À quelle heure devrions-nous arriver ?", a: "Nous vous recommandons d'arriver entre 16h30 et 16h45 pour être sereins avant le début de la cérémonie." },
+            { q: "Comment se rendre au Castillo del Buen Amor depuis Salamanque ?", a: "Le château est situé à environ 20 minutes en voiture au nord de Salamanque. Quittez Salamanque par l'A-66 en direction de Zamora. Prenez la déviation vers la N-630 (Valdunciel). Suivez la N-630 jusqu'à trouver sur la droite le panneau du Castillo del Buen Amor. (Important : une fois sur la N-630, ne prenez à aucun moment la direction de Topas.) Si vous utilisez un GPS, vous pouvez saisir directement « Castillo del Buen Amor » comme destination." },
+            { q: "Y aura-t-il des bus ?", a: "Nous envisageons d'organiser des bus entre Salamanque et le château pour faciliter les déplacements. Nous vous tiendrons informés sur ce site dès que nous aurons plus de détails." },
+            { q: "Où pouvons-nous loger ?", a: "Vous pouvez loger au château lui-même (places limitées) ou à Salamanque, qui se trouve à environ 20 minutes en voiture." },
+            { q: "Pouvons-nous dormir au château ?", a: "Le château dispose de 40 chambres pour les invités du mariage. Si vous souhaitez y séjourner, veuillez en informer directement les mariés le plus tôt possible, afin que nous puissions organiser la répartition des chambres. Le check-in des chambres est à 16h00. Vous pouvez nous écrire ou nous appeler au : +34 678158050 / +39 338 937 4650" },
+            { q: "Y a-t-il un parking au château ?", a: "Oui, le château dispose d'un parking pour les invités." },
+            { q: "Une partie de la célébration aura-t-elle lieu en extérieur ?", a: "Oui. Le mariage est célébré à la campagne et certaines parties, comme la cérémonie et le cocktail, auront lieu en extérieur. Bien que la fête se déroule sur un terrain plat, nous vous recommandons d'en tenir compte lors du choix de vos chaussures, car les talons aiguilles ne sont pas les plus adaptés pour la zone de la cérémonie et du cocktail." },
+            { q: "Peut-on prendre un taxi entre Salamanque et le château ?", a: "Oui, il y a des taxis qui font le trajet entre Salamanque et le Castillo del Buen Amor. Le trajet dure environ 20 minutes. Si vous préférez cette option, nous vous recommandons de réserver à l'avance." },
+            { q: "Quel temps fait-il généralement à Salamanque en septembre ?", a: "En septembre, le temps est généralement agréable pendant la journée, bien que la nuit il puisse se rafraîchir un peu, surtout à la campagne." },
+            { q: "Pouvons-nous indiquer des allergies ou des régimes spéciaux ?", a: "Oui. Vous pouvez l'indiquer lors de la confirmation de votre présence, afin que nous puissions en tenir compte lors de l'organisation du menu." },
+            { q: "Jusqu'à quand pouvons-nous confirmer notre présence ?", a: "Nous vous serions reconnaissants de confirmer votre présence avant le 30 avril, afin que nous puissions commencer à tout organiser plus en détail." },
+            { q: "Pouvons-nous modifier la confirmation si quelque chose change ?", a: "Bien sûr. Si un changement survient après la confirmation, prévenez-nous sans problème et nous essaierons de nous adapter. N'oubliez pas de re remplir le formulaire accessible en page d'accueil dans le bouton qui indique le statut de votre présence!" }
         ]
     },
     rsvp: {
@@ -113,5 +123,25 @@ export const fr = {
         emailSaving: "Sauvegarde...",
         emailSuccess: "Email sauvegardé !",
         logout: "Se déconnecter du compte"
+    },
+    travel: {
+        title: "Hébergement et Transport",
+        accommodationTitle: "Hébergement",
+        castleTitle: "Dormir au Castillo del Buen Amor",
+        castleText: "Le château dispose de **40 chambres doubles** pour les invités du mariage.\n\nLes prix indicatifs vont d'environ **100€ à 260€ par nuit** (+30€ pour un lit d'appoint), selon le type de chambre. Le **petit-déjeuner est inclus fino à 11h00** dans tutte le chambres.\n\nSi vous souhaitez séjourner au château, veuillez **nous le faire savoir dès que possible**, car le chambres seront attribuées par ordre de demande. Alors dépêchez-vous de réserver votre chambre si vous voulez vous réveiller dans le magnifique Castillo et prendre le petit-déjeuner avec les mariés !",
+        salamancaTitle: "Dormir à Salamanque",
+        salamancaText: "Une autre option très pratique est de séjourner à **Salamanque ville**, qui se trouve à environ **20 minutes en voiture** du château.\n\nÀ Salamanque, il existe une grande variété d'hôtels et d'hébergements.",
+        salamancaLink: "Sur ce site Web, vous pouvez trouver tous les types d'hébergement",
+        transportTitle: "Transport",
+        transportIntro: "Le Castillo del Buen Amor est situé à environ **20 minutes en voiture** de Salamanque.\n\nNous étudions la possibilité d'**organiser des bus** entre Salamanque et le château pour faciliter les déplacements. Nous vous tiendrons informés sur cette page dès que nous aurons plus de détails.",
+        howToReachSalamanca: "Comment se rendre à Salamanque",
+        byCar: "**En voiture** : Facilement accessible depuis différentes villes d'Espagne.",
+        byTrain: "**En train** : Des trains directs sont disponibles depuis Madrid (rapides et régionaux). Nous vous conseillons de vérifier les réductions à l'avance.",
+        byBus: "**En bus** : Vous pouvez consulter les horaires et acheter des billets sur Monbus.",
+        questionsTitle: "Des questions ?",
+        questionsText: "Si vous avez des questions sur l'hébergement, le transport ou votre voyage, **n'hésitez pas à nous écrire**.",
+        honeymoonTitle: "Cadeau",
+        honeymoonText: "Votre présence à notre mariage est, sans aucun doute, **le plus beau cadeau que nous puissions recevoir**.\n\nSi vous souhaitez contribuer à notre prochaine aventure, nous serons ravis de l'attribuer à **notre voyage au Japon**, qui sera notre première grande escapade en tant que jeunes mariés.\n\nPour ceux d'entre vous qui souhaitent également nous accompagner dans cette aventure, nous mettons à votre disposition nos coordonnées bancaires ci-dessous.\n\nMerci de faire partie de ce voyage avec nous.\nNous porterons un toast à votre santé depuis l'autre bout du monde !",
+        giftData: "Détails de la contribution"
     }
 };

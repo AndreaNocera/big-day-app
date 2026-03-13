@@ -10,6 +10,15 @@ export type Language = 'it' | 'en' | 'es' | 'fr';
 const dictionaries = { it, en, es, fr };
 export type Dictionary = typeof it;
 
+const getInitialLanguage = (): Language => {
+    if (typeof navigator === 'undefined') return 'it';
+    const browserLang = navigator.language.substring(0, 2).toLowerCase();
+    if (['it', 'en', 'es', 'fr'].includes(browserLang)) {
+        return browserLang as Language;
+    }
+    return 'es';
+};
+
 export const LANGUAGES = [
     { code: 'it' as Language, flag: '🇮🇹', label: 'Italiano' },
     { code: 'es' as Language, flag: '🇪🇸', label: 'Español' },
@@ -35,7 +44,7 @@ interface I18nState {
 export const useI18nStore = create<I18nState>()(
     persist(
         (set, get) => ({
-            language: 'it',
+            language: getInitialLanguage(),
             _hasHydrated: false,
             setLanguage: (lang) => set({ language: lang }),
             setHasHydrated: (state) => set({ _hasHydrated: state }),

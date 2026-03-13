@@ -11,7 +11,11 @@ services:
     environment:
       - ENV=local
       - VITE_API_URL=http://localhost:8000
-      - VITE_MAPBOX_TOKEN=${VITE_MAPBOX_TOKEN}
+      - VITE_ENABLE_PHOTOS=false
+      - VITE_HONEYMOON_NAME_1=${VITE_HONEYMOON_NAME_1:-Name 1}
+      - VITE_HONEYMOON_IBAN_1=${VITE_HONEYMOON_IBAN_1:-DUMMY_IBAN_1}
+      - VITE_HONEYMOON_NAME_2=${VITE_HONEYMOON_NAME_2:-Name 2}
+      - VITE_HONEYMOON_IBAN_2=${VITE_HONEYMOON_IBAN_2:-DUMMY_IBAN_2}
     depends_on:
       - local_server
 

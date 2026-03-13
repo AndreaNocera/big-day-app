@@ -2,7 +2,7 @@ export const it = {
     nav: {
         home: "Home",
         location: "Location",
-        program: "Programma",
+        travel: "Alloggio",
         faq: "FAQ",
         reservedArea: "Area Riservata",
         logout: "Esci",
@@ -47,38 +47,48 @@ export const it = {
         textRow5: "E quindi eccoci qui, pronti a festeggiare con tutti voi questa giornata che speriamo sarà indimenticabile!"
     },
     location: {
-        title: "Location",
-        venueName: "Villa Medicea di Lilliano",
-        venueAddress: "Via di Lilliano, 8 - Firenze",
-        venueDescription: "Una storica villa medicea nel cuore delle colline fiorentine, immersa in vigneti e ulivi. Il luogo perfetto per festeggiare insieme.",
-        howToArrive: "Come Arrivare",
-        byCarTitle: "In Auto",
-        byCarText: "Accesso da Via di Lilliano, 8. Parcheggio gratuito disponibile in loco.",
-        byTrainTitle: "In Treno",
-        byTrainText: "Stazione di Santa Maria Novella (Firenze). Da lì taxi o noleggio auto.",
+        title: "Location e Programma",
+        venueName: "Castello del buen amor",
+        venueAddress: "Finca Villanueva de Cañedo Ctra. N-630, Km.317,6, 37799 Topas, Salamanca",
+        venueDescription: "Un suggestivo castello immerso nella campagna di Salamanca, eretto originariamente come fortezza militare nell'XI secolo e poi trasformato in un romantico palazzo feudale. Conserva intatto il suo fascino storico in una tenuta circondata da boschi, offrendo un'atmosfera magica e senza tempo.",
+        howToArrive: "Come arrivare",
+        howToArriveIntro: "Il castello si trova a circa 20 minuti in auto a nord di Salamanca.",
+        howToArriveStep1: "Uscite da Salamanca per la A-66 in direzione Zamora.",
+        howToArriveStep2: "Prendete il bivio verso la N-630 (Valdunciel).",
+        howToArriveStep3: "Proseguite lungo la N-630 fino a trovare sulla destra il cartello del Castillo del Buen Amor, che indica l'accesso.",
+        howToArriveWarning: "Importante: una volta sulla N-630, non prendete in nessun momento la direzione Topas.",
+        howToArriveGps: "Se utilizzate il GPS, potete inserire direttamente “Castillo del Buen Amor” come destinazione.",
         mapBtn: "Apri su Google Maps",
         parking: "Parcheggio gratuito disponibile"
     },
     program: {
         title: "Programma",
         intro: "Ecco come si svolgerà la nostra giornata speciale!",
+        approxNotice: "* Gli orari sono approssimativi",
         events: [
-            { time: "15:00", label: "Cerimonia Civile", desc: "La cerimonia si svolge nel giardino della villa" },
-            { time: "16:30", label: "Aperitivo di Benvenuto", desc: "Aperitivo in terrazza con vista panoramica" },
-            { time: "19:30", label: "Cena e Ricevimento", desc: "Cena sotto le stelle con musica dal vivo" },
-            { time: "23:00", label: "Taglio della Torta", desc: "Il momento più dolce della serata" },
-            { time: "00:00", label: "Festa e Balli", desc: "Dancing fino a tarda notte!" }
+            { time: "17:00", label: "Cerimonia", desc: "La cerimonia si svolgerà nel viale alberato di fronte al castello" },
+            { time: "18:15", label: "Aperitivo", desc: "In terrazza nel cammino di ronda, lo spazio tra le mura all'ombra del castello" },
+            { time: "20:00", label: "Cena", desc: "Ci trasferiamo nella struttura tendata dove si terrà il banchetto" },
+            { time: "22:00", label: "Si aprano le danze!", desc: "" }
         ]
     },
     faq: {
         title: "Domande Frequenti",
         items: [
-            { q: "Posso portare un accompagnatore?", a: "Sì, se nel tuo invito è indicato '+1'. Se non sei sicuro, contattaci direttamente." },
-            { q: "Come ci si veste?", a: "Elegante-formale. Visto che la cerimonia è all'aperto, si consigliano tacchi non a spillo e colori pastello." },
-            { q: "C'è un parcheggio disponibile?", a: "Sì, il parcheggio è gratuito all'interno della villa." },
-            { q: "Come posso raggiungere la location?", a: "Vai nella sezione 'Location' per tutte le indicazioni dettagliate." },
-            { q: "Cosa devo fare per confermare la presenza?", a: "Clicca su 'Conferma Presenza' nella home e segui le istruzioni. Hai tempo fino al 31 Maggio 2026." },
-            { q: "Posso scattare foto durante la cerimonia?", a: "Chiediamo di spegnere i telefoni durante la cerimonia. È libera la foto al ricevimento!" }
+            { q: "Dress code", a: "Non c'è un dress code specifico. Venite come vi sentite meglio per festeggiare con noi. L'unica richiesta è di evitare il bianco, riservato alla sposa :)" },
+            { q: "A che ora inizia la cerimonia?", a: "L'orario approssimativo della cerimonia è alle 17:00 al Castillo del Buen Amor." },
+            { q: "A che ora dovremmo arrivare?", a: "Vi consigliamo di arrivare tra le 16:30 e le 16:45 per stare tranquilli prima dell'inizio della cerimonia." },
+            { q: "Come arrivare al Castillo del Buen Amor da Salamanca?", a: "Il castello si trova a circa 20 minuti in auto a nord di Salamanca. Uscite da Salamanca per la A-66 in direzione Zamora. Prendete il bivio verso la N-630 (Valdunciel). Proseguite lungo la N-630 fino a trovare sulla destra il cartello del Castillo del Buen Amor. (Importante: una volta sulla N-630, non prendete mai la direzione Topas). Se utilizzate il GPS, potete inserire direttamente “Castillo del Buen Amor” come destinazione." },
+            { q: "Ci saranno autobus?", a: "Stiamo valutando di organizzare degli autobus tra Salamanca e il castello per facilitare gli spostamenti. Vi terremo informati su questo sito non appena avremo maggiori dettagli." },
+            { q: "Dove possiamo alloggiare?", a: "Potete alloggiare nel castello stesso (posti limitati) o a Salamanca, che dista circa 20 minuti in auto." },
+            { q: "Possiamo dormire nel castello?", a: "Il castello dispone di 40 camere per gli ospiti del matrimonio. Se siete interessati a soggiornare lì, vi preghiamo di comunicarlo direttamente agli sposi il prima possibile, per poter organizzare l'assegnazione delle camere. Il check-in è alle ore 16:00. Potete scriverci o chiamarci al: +34 678158050 / +39 338 937 4650" },
+            { q: "C'è parcheggio al castello?", a: "Sì, il castello dispone di un'area parcheggio per gli ospiti." },
+            { q: "Parte della celebrazione sarà all'aperto?", a: "Sì. Il matrimonio si celebra in campagna e alcune parti, come la cerimonia e il cocktail, si svolgeranno all'aperto. Anche se la festa sarà su un terreno pianeggiante, consigliamo di tenerne conto nella scelta delle calzature, poiché i tacchi a spillo non sono i più adatti per la zona della cerimonia e del cocktail." },
+            { q: "Si può andare in taxi tra Salamanca e il castello?", a: "Sì, ci sono taxi che effettuano il tragitto tra Salamanca e il Castillo del Buen Amor. Il viaggio dura circa 20 minuti. Se scegliete questa opzione, vi consigliamo di prenotare in anticipo." },
+            { q: "Che tempo fa solitamente a Salamanca a settembre?", a: "A settembre il tempo è solitamente piacevole durante il giorno, anche se di notte può rinfrescare un po', specialmente in campagna." },
+            { q: "Possiamo indicare allergie o diete speciali?", a: "Sì. Potete indicarlo al momento della conferma della vostra partecipazione, in modo che possiamo tenerne conto nell'organizzazione del menù." },
+            { q: "Entro quando dobbiamo confermare la partecipazione?", a: "Vi saremmo grati se confermaste la vostra partecipazione entro il 30 aprile, per poter iniziare a organizzare tutto con più dettaglio." },
+            { q: "Possiamo modificare la conferma se cambia qualcosa?", a: "Certamente. Se dopo la conferma dovesse sorgere qualche cambiamento, avvisateci senza problemi e cercheremo di adattarci. Non dimenticatevi di ricompilare il formulario accessibile in home page nel tasto che indica lo stato della tua presenza!" }
         ]
     },
     rsvp: {
@@ -113,5 +123,25 @@ export const it = {
         emailSaving: "Salvataggio...",
         emailSuccess: "Email salvata!",
         logout: "Esci dall'account"
+    },
+    travel: {
+        title: "Alloggio e Trasporto",
+        accommodationTitle: "Alloggiamento",
+        castleTitle: "Dormire nel Castillo del Buen Amor",
+        castleText: "Il castello dispone di **40 camere doppie** per gli ospiti del matrimonio.\n\nI prezzi orientativi vanno da circa **100€ a 260€ a notte** (+30€ per il letto supplementare), a seconda della tipologia. In tutte le camere è inclusa la **colazione fino alle 11:00**.\n\nSe siete interessati a soggiornare al castello, per favore **comunicatecelo il prima possibile**, poiché le camere verranno assegnate in ordine di richiesta. Quindi correte a prenotare la vostra camera se volete svegliarvi nel meraviglioso Castillo e fare colazione con gli sposi!",
+        salamancaTitle: "Dormire a Salamanca",
+        salamancaText: "Un'altra opzione molto comoda è soggiornare a **Salamanca città**, che si trova a circa **20 minuti in auto** dal castello.\n\nA Salamanca c'è una grande varietà di hotel e alloggi.",
+        salamancaLink: "In questo sito web potete trovare tutte le tipologie",
+        transportTitle: "Trasporto",
+        transportIntro: "Il Castillo del Buen Amor dista circa **20 minuti in auto** da Salamanca.\n\nStiamo valutando la possibilità di **organizzare degli autobus** tra Salamanca e il castello per agevolare gli spostamenti. Vi terremo informati su questa pagina non appena avremo maggiori dettagli.",
+        howToReachSalamanca: "Come arrivare a Salamanca",
+        byCar: "**In auto**: È facilmente raggiungibile da diverse città della Spagna.",
+        byTrain: "**In treno**: Ci sono treni diretti da Madrid (sia veloci che regionali). Consigliamo di controllare eventuali sconti in anticipo.",
+        byBus: "**In autobus**: È possibile consultare gli orari e acquistare i biglietti su Monbus.",
+        questionsTitle: "Dubbi?",
+        questionsText: "Se avete domande su alloggio, trasporto o sul vostro viaggio, **non esitate a scriverci**.",
+        honeymoonTitle: "Regalo",
+        honeymoonText: "La vostra presenza al nostro matrimonio è, senza dubbio, **il regalo più bello che potremmo ricevere**.\n\nSe desiderate contribuire alla nostra prossima avventura, saremo felici di destinarlo al **nostro viaggio in Giappone**, che sarà la nostra prima grande fuga come neo-sposi.\n\nPer chi volesse accompagnarci anche in questa avventura, mettiamo a vostra disposizione i nostri riferimenti bancari qui sotto.\n\nGrazie per far parte di questo viaggio con noi.\nBrinderemo alla vostra salute dall'altra parte del mondo!",
+        giftData: "Dati per il contributo"
     }
 };

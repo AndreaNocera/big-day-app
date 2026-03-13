@@ -2,7 +2,7 @@ export const es = {
     nav: {
         home: "Inicio",
         location: "Lugar",
-        program: "Programa",
+        travel: "Alojamiento",
         faq: "FAQ",
         reservedArea: "Área de Invitados",
         logout: "Salir",
@@ -47,38 +47,48 @@ export const es = {
         textRow5: "¡Y aquí estamos, listos para celebrar con todos vosotros este día que esperamos sea inolvidable!"
     },
     location: {
-        title: "Lugar",
-        venueName: "Villa Medicea di Lilliano",
-        venueAddress: "Via di Lilliano, 8 - Florencia",
-        venueDescription: "Una histórica villa medicea en el corazón de las colinas florentinas, rodeada de viñedos y olivos. El lugar perfecto para celebrar juntos.",
+        title: "Lugar y Programa",
+        venueName: "Castillo del buen amor",
+        venueAddress: "Finca Villanueva de Cañedo Ctra. N-630, Km.317,6, 37799 Topas, Salamanca",
+        venueDescription: "Un magnífico castillo inmerso en la campiña de Salamanca, erigido originalmente como fortaleza militar en el siglo XI y luego transformado en un palacio romántico. Conserva todo su encanto histórico en una finca rodeada de bosques.",
         howToArrive: "Cómo Llegar",
-        byCarTitle: "En Coche",
-        byCarText: "Acceso por Via di Lilliano, 8. Aparcamiento gratuito disponible.",
-        byTrainTitle: "En Tren",
-        byTrainText: "Estación de Santa María Novella (Florencia). Desde allí taxi o alquiler de coche.",
+        howToArriveIntro: "El castillo se encuentra a unos 20 minutos en coche al norte de Salamanca.",
+        howToArriveStep1: "Salid de Salamanca por la A-66 en dirección Zamora.",
+        howToArriveStep2: "Tomad el desvío hacia la N-630 (Valdunciel).",
+        howToArriveStep3: "Seguid por la N-630 hasta encontrar a la derecha el cartel del Castillo del Buen Amor, que indica el acceso.",
+        howToArriveWarning: "Importante: una vez en la N-630, no toméis en ningún momento la dirección Topas.",
+        howToArriveGps: "Si utilizas GPS, podéis introducir directamente “Castillo del Buen Amor” como destino.",
         mapBtn: "Abrir en Google Maps",
         parking: "Estacionamiento gratuito disponible"
     },
     program: {
         title: "Programa",
         intro: "¡Así es como se desarrollará nuestro día especial!",
+        approxNotice: "* Los horarios son aproximados",
         events: [
-            { time: "15:00", label: "Ceremonia Civil", desc: "La ceremonia se celebra en el jardín de la villa" },
-            { time: "16:30", label: "Aperitivo de Bienvenida", desc: "Aperitivo en la terraza con vistas panorámicas" },
-            { time: "19:30", label: "Cena y Recepción", desc: "Cena bajo las estrellas con música en vivo" },
-            { time: "23:00", label: "Corte de la Tarta", desc: "El momento más dulce de la noche" },
-            { time: "00:00", label: "Fiesta y Baile", desc: "¡Bailando hasta bien entrada la noche!" }
+            { time: "17:00", label: "Ceremonia", desc: "La ceremonia tendrá lugar en la avenida arbolada frente al castillo" },
+            { time: "18:15", label: "Aperitivo", desc: "En la terraza del camino de ronda, el espacio entre las murallas a la sombra del castillo" },
+            { time: "20:00", label: "Cena", desc: "Nos trasladamos a la carpa donde se celebrará el banquete" },
+            { time: "22:00", label: "¡Que empiece el baile!", desc: "" }
         ]
     },
     faq: {
         title: "Preguntas Frecuentes",
         items: [
-            { q: "¿Puedo traer un acompañante?", a: "Sí, si tu invitación indica '+1'. Si no estás seguro, contáctanos directamente." },
-            { q: "¿Cómo hay que ir vestido?", a: "Elegante-formal. Como la ceremonia es al aire libre, se recomienda evitar tacones de aguja." },
-            { q: "¿Hay aparcamiento disponible?", a: "Sí, hay aparcamiento gratuito dentro de los jardines de la villa." },
-            { q: "¿Cómo llego al lugar?", a: "Ve a la sección 'Lugar' para obtener indicaciones detalladas." },
-            { q: "¿Cómo confirmo mi asistencia?", a: "Haz clic en 'Confirmar asistencia' en la página de inicio. Fecha límite: 31 de mayo de 2026." },
-            { q: "¿Puedo sacar fotos durante la ceremonia?", a: "Te pedimos que apagues el teléfono durante la ceremonia. ¡Las fotos son bienvenidas en la recepción!" }
+            { q: "Dress code", a: "No hay un dress code específico. Venid como os sintáis más cómodos para celebrar con nosotros. La única petición es evitar el blanco, reservado para la novia :)" },
+            { q: "¿A qué hora empieza la ceremonia?", a: "El horario aproximado de la ceremonia es a las 17:00 en el Castillo del Buen Amor." },
+            { q: "¿A qué hora deberíamos llegar?", a: "Os recomendamos llegar entre las 16:30 y las 16:45 para poder estar tranquilos antes de empezar la ceremonia." },
+            { q: "¿Cómo llegar al Castillo del Buen Amor desde Salamanca?", a: "El castillo se encuentra a unos 20 minutos en coche al norte de Salamanca. Salid de Salamanca por la A-66 en dirección Zamora. Tomad el desvío hacia la N-630 (Valdunciel). Seguid por la N-630 hasta encontrar a la derecha el cartel del Castillo del Buen Amor, que indica el acceso. (Importante: una vez en la N-630, no toméis en ningún momento la dirección Topas.) Si utilizas GPS, podéis introducir directamente “Castillo del Buen Amor” como destino." },
+            { q: "¿Habrá autobuses?", a: "Estamos valorando organizar autobuses entre Salamanca y el castillo para facilitar los desplazamientos. Os iremos informando en esta web cuando tengamos más detalles." },
+            { q: "¿Dónde podemos alojarnos?", a: "Podéis alojaros en el propio castillo (plazas limitadas) o en Salamanca, que está a unos 20 minutos en coche." },
+            { q: "¿Podemos dormir en el castillo?", a: "El castillo dispone de 40 habitaciones para los invitados de la boda. Si estáis interesados en alojaros allí, por favor comunicádnoslo directamente a los novios lo antes posible, para poder organizar la asignación de habitaciones. El check-in de las habitaciones es a las 16:00. Podéis escribirnos o llamarnos a: +34 678158050 / +39 338 937 4650" },
+            { q: "¿Hay aparcamiento en el castillo?", a: "Sí, el castillo dispone de zona de aparcamiento para los invitados." },
+            { q: "¿Habrá parte de la celebración en exterior?", a: "Sí. La boda se celebra en el campo y algunas partes, como la ceremonia y el cóctel, tendrán lugar en el exterior. Aunque la fiesta será en un terreno liso, recomendamos tenerlo en cuenta al elegir el calzado, ya que los tacones de aguja no son lo más indicado para la zona de la ceremonia y el cóctel." },
+            { q: "¿Se puede ir en taxi entre Salamanca y el castillo?", a: "Sí, hay taxis que hacen el trayecto entre Salamanca y el Castillo del Buen Amor. El trayecto dura aproximadamente 20 minutos. Si preferís esta opción, os recomendamos reservar con antelación." },
+            { q: "¿Qué tiempo suele hacer en Salamanca en septiembre?", a: "En septiembre el tiempo suele ser agradable durante el día, aunque por la noche puede refrescar un poco, especialmente en el campo." },
+            { q: "¿Podemos indicar alergias o dietas especiales?", a: "Sí. Podéis indicarlo al confirmar vuestra asistencia, para que podamos tenerlo en cuenta al organizar el menú." },
+            { q: "¿Hasta cuándo podemos confirmar asistencia?", a: "Os agradeceríamos que confirméis vuestra asistencia antes del 30 de abril, para poder empezar a organizar todo con más detalle." },
+            { q: "¿Podemos modificar la confirmación si cambia algo?", a: "Por supuesto. Si después de confirmar surge algún cambio, avisadnos sin problema e intentaremos adaptarlo. No olvidad rellenar el formulario accesible en la página de inicio en el botón que indica el estado de vuestra asistencia!" }
         ]
     },
     rsvp: {
@@ -113,5 +123,25 @@ export const es = {
         emailSaving: "Guardando...",
         emailSuccess: "¡Email guardado!",
         logout: "Cerrar sesión de la cuenta"
+    },
+    travel: {
+        title: "Alojamiento y Transporte",
+        accommodationTitle: "Alojamiento",
+        castleTitle: "Dormir en el mismo Castillo del Buen Amor",
+        castleText: "El castillo dispone de **40 habitaciones dobles** para los invitados de la boda.\n\nLos precios orientativos van aproximadamente desde **100€ hasta 260€ por noche** (+30€ cama supletoria), dependiendo del tipo de habitación. En todas le habitaciones se incluye el **desayuno hasta las 11:00**.\n\nSi estáis interesados en alojaros en el castillo, por favor **comunicádnoslo lo antes possibile**, ya que las habitaciones se asignarán por orden de solicitud. ¡Así que corred a reservar vuestra habitación si queréis despertaros en el maravilloso Castillo y desayunar con los novios!",
+        salamancaTitle: "Dormir en Salamanca",
+        salamancaText: "Otra opción muy cómoda es alojarse en **Salamanca ciudad**, que se encuentra a unos **20 minutos en coche** del castillo.\n\nEn Salamanca hay una gran variedad de hoteles y alojamientos.",
+        salamancaLink: "En esta página web podéis encontrar todas las tipologías",
+        transportTitle: "Transporte",
+        transportIntro: "El Castillo del Buen Amor está a unos **20 minutos en coche** de Salamanca.\n\nEstamos valorando la posibilidad de **organizar autobuses** entre Salamanca y el castillo para facilitar los desplazamientos. Os iremos informando en esta página cuando tengamos más detalles.",
+        howToReachSalamanca: "Cómo llegar a Salamanca",
+        byCar: "**En coche**: Se puede llegar fácilmente desde diferentes ciudades de España.",
+        byTrain: "**En tren**: Hay trenes directos desde Madrid (tanto rápidos como regionales). Recomendamos consultar descuentos con antelación.",
+        byBus: "**En autobús**: Podéis consultar horarios y comprar billetes en Monbus.",
+        questionsTitle: "¿Dudas?",
+        questionsText: "Si tenéis cualquier pregunta sobre alojamiento, transporte o vuestro viaje, **no dudéis en escribirnos**.",
+        honeymoonTitle: "Regalo",
+        honeymoonText: "Vuestra presencia en nuestra boda es, sin duda, **el mejor regalo que podríamos recibir**.\n\nSi queréis contribuir a nuestra próxima aventura, estaremos encantados de destinarlo a **nuestro viaje a Japón**, que será nuestra primera gran escapada como recién casados.\n\nPara quienes queráis acompañarnos también en esta aventura, dejamos a vuestra disposición nuestros datos bancarios a continuación.\n\nGracias por formar parte de este viaje con nosotros.\nBrindaremos por vosotros desde el otro lado del mundo.",
+        giftData: "Datos para vuestro regalo"
     }
 };

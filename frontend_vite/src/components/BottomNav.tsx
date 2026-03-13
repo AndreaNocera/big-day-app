@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, HelpCircle, Image, ArrowLeft } from 'lucide-react';
+import { MapPin, HelpCircle, Image, ArrowLeft, Car, Gift } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore } from '@/store/i18nStore';
 
@@ -18,15 +18,19 @@ export default function BottomNav() {
                 <div className="bottom-nav-content home-nav">
                     <Link to="/location" className="bottom-nav-item">
                         <MapPin size={24} />
-                        <span>{t('home.cardLocation')}</span>
+                        <span>{t('nav.location' as any)}</span>
                     </Link>
-                    <Link to="/programma" className="bottom-nav-item">
-                        <Calendar size={24} />
-                        <span>{t('home.cardProgram')}</span>
+                    <Link to="/viaggio" className="bottom-nav-item">
+                        <Car size={24} />
+                        <span>{t('travel.title' as any)}</span>
+                    </Link>
+                    <Link to="/regalo" className="bottom-nav-item">
+                        <Gift size={24} />
+                        <span>{t('travel.honeymoonTitle' as any)}</span>
                     </Link>
                     <Link to="/faq" className="bottom-nav-item">
                         <HelpCircle size={24} />
-                        <span>{t('home.cardFaq')}</span>
+                        <span>{t('nav.faq' as any)}</span>
                     </Link>
                     {token && photosEnabled && (
                         <Link to="/foto" className="bottom-nav-item">

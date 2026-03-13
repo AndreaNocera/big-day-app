@@ -2,7 +2,7 @@ export const en = {
     nav: {
         home: "Home",
         location: "Venue",
-        program: "Schedule",
+        travel: "Travel",
         faq: "FAQ",
         reservedArea: "Guest Area",
         logout: "Logout",
@@ -47,38 +47,48 @@ export const en = {
         textRow5: "And so here we are, ready to celebrate with all of you this day that we hope will be unforgettable!"
     },
     location: {
-        title: "Venue",
-        venueName: "Villa Medicea di Lilliano",
-        venueAddress: "Via di Lilliano, 8 - Florence",
-        venueDescription: "A historic Medici villa in the heart of the Florentine hills, surrounded by vineyards and olive trees. The perfect place to celebrate together.",
+        title: "Venue & Schedule",
+        venueName: "Castillo del buen amor",
+        venueAddress: "Finca Villanueva de Cañedo Ctra. N-630, Km.317,6, 37799 Topas, Salamanca",
+        venueDescription: "A magnificent castle immersed in the Salamanca countryside, originally erected as an 11th-century military fortress and later transformed into a romantic palace. It preserves its historical charm within an estate surrounded by woods.",
         howToArrive: "How to Arrive",
-        byCarTitle: "By Car",
-        byCarText: "Access via Via di Lilliano, 8. Free parking available on site.",
-        byTrainTitle: "By Train",
-        byTrainText: "Santa Maria Novella station (Florence). From there take a taxi or rent a car.",
+        howToArriveIntro: "The castle is located about 20 minutes by car north of Salamanca.",
+        howToArriveStep1: "Leave Salamanca on the A-66 towards Zamora.",
+        howToArriveStep2: "Take the exit towards the N-630 (Valdunciel).",
+        howToArriveStep3: "Follow the N-630 until you find the sign for Castillo del Buen Amor on the right, indicating the access.",
+        howToArriveWarning: "Important: once on the N-630, do not take the direction Topas at any time.",
+        howToArriveGps: "If you use GPS, you can directly enter “Castillo del Buen Amor” as your destination.",
         mapBtn: "Open in Google Maps",
         parking: "Free parking available"
     },
     program: {
         title: "Schedule",
         intro: "Here is how our special day will unfold!",
+        approxNotice: "* Times are approximate",
         events: [
-            { time: "3:00 PM", label: "Civil Ceremony", desc: "The ceremony takes place in the villa garden" },
-            { time: "4:30 PM", label: "Welcome Aperitif", desc: "Aperitif on the terrace with panoramic views" },
-            { time: "7:30 PM", label: "Dinner & Reception", desc: "Dinner under the stars with live music" },
-            { time: "11:00 PM", label: "Cake Cutting", desc: "The sweetest moment of the evening" },
-            { time: "12:00 AM", label: "Party & Dancing", desc: "Dancing until late at night!" }
+            { time: "5:00 PM", label: "Ceremony", desc: "The ceremony will take place in the tree-lined avenue in front of the castle" },
+            { time: "6:15 PM", label: "Appetizer", desc: "On the terrace in the 'camino de ronda', the space between the walls in the shade of the castle" },
+            { time: "8:00 PM", label: "Dinner", desc: "We move to the tented structure where the banquet will be held" },
+            { time: "10:00 PM", label: "Let the dancing begin!", desc: "" }
         ]
     },
     faq: {
         title: "Frequently Asked Questions",
         items: [
-            { q: "Can I bring a plus one?", a: "Yes, if your invitation says '+1'. If you're unsure, contact us directly." },
-            { q: "What should I wear?", a: "Smart formal attire. Since the ceremony is outdoors, we suggest avoiding stiletto heels and light pastel colors." },
-            { q: "Is parking available?", a: "Yes, free parking is available within the villa grounds." },
-            { q: "How do I get to the venue?", a: "Go to the 'Venue' section for detailed directions." },
-            { q: "How do I confirm my attendance?", a: "Click 'Confirm attendance' on the home page and follow the instructions. Deadline is May 31, 2026." },
-            { q: "Can I take photos during the ceremony?", a: "We ask that you turn off phones during the ceremony. Photos are welcome at the reception!" }
+            { q: "Dress code", a: "There is no specific dress code. Come as you feel most comfortable to celebrate with us. The only request is to avoid white, which is reserved for the bride :)" },
+            { q: "What time does the ceremony start?", a: "The approximate time of the ceremony is 5:00 PM at the Castillo del Buen Amor." },
+            { q: "What time should we arrive?", a: "We recommend arriving between 4:30 PM and 4:45 PM to be settled before the ceremony starts." },
+            { q: "How to get to the Castillo del Buen Amor from Salamanca?", a: "The castle is located about 20 minutes by car north of Salamanca. Leave Salamanca on the A-66 towards Zamora. Take the exit towards the N-630 (Valdunciel). Follow the N-630 until you find the sign for Castillo del Buen Amor on the right. (Important: once on the N-630, do not take the direction of Topas at any time.) If you use GPS, you can directly enter “Castillo del Buen Amor” as your destination." },
+            { q: "Will there be buses?", a: "We are considering organizing buses between Salamanca and the castle to facilitate travel. We will keep you informed on this website as soon as we have more details." },
+            { q: "Where can we stay?", a: "You can stay at the castle itself (limited spaces) or in Salamanca, which is about 20 minutes away by car." },
+            { q: "Can we sleep at the castle?", a: "The castle has 40 rooms for wedding guests. If you are interested in staying there, please let the bride and groom know directly as soon as possible, so we can organize the room assignments. Check-in for the rooms is at 4:00 PM. You can write or call us at: +34 678158050 / +39 338 937 4650" },
+            { q: "Is there parking at the castle?", a: "Yes, the castle has a parking area for guests." },
+            { q: "Will part of the celebration be outdoors?", a: "Yes. The wedding is celebrated in the countryside and some parts, such as the ceremony and the cocktail hour, will take place outdoors. Although the party will be on flat ground, we recommend keeping this in mind when choosing footwear, as stiletto heels are not the most suitable for the ceremony and cocktail area." },
+            { q: "Can we take a taxi between Salamanca and the castle?", a: "Yes, there are taxis that make the trip between Salamanca and the Castillo del Buen Amor. The trip takes approximately 20 minutes. If you prefer this option, we recommend booking in advance." },
+            { q: "What is the weather usually like in Salamanca in September?", a: "In September the weather is usually pleasant during the day, although at night it can cool down a bit, especially in the countryside." },
+            { q: "Can we indicate allergies or special diets?", a: "Yes. You can indicate it when confirming your attendance, so that we can take it into account when organizing the menu." },
+            { q: "Until when can we confirm attendance?", a: "We would appreciate it if you confirm your attendance before April 30, so we can start organizing everything in more detail." },
+            { q: "Can we modify the confirmation if something changes?", a: "Of course. If a change arises after confirming, let us know without any problem and we will try to adapt. Don't forget to re-fill the form accessible in home page in the button that indicates the status of your attendance!" }
         ]
     },
     rsvp: {
@@ -113,5 +123,25 @@ export const en = {
         emailSaving: "Saving...",
         emailSuccess: "Email saved!",
         logout: "Log out from account"
+    },
+    travel: {
+        title: "Accommodation & Transport",
+        accommodationTitle: "Accommodation",
+        castleTitle: "Stay at the Castillo del Buen Amor",
+        castleText: "The castle has **40 double rooms** for wedding guests.\n\nEstimated prices range from approximately **€100 to €260 per night** (+€30 for an extra bed), depending on the room type. **Breakfast is included until 11:00 AM** for all rooms.\n\nIf you are interested in staying at the castle, please **let us know as soon as possible**, as rooms will be assigned on a first-come, first-served basis. So hurry and book your room if you want to wake up in the wonderful Castillo and have breakfast with the newlyweds!",
+        salamancaTitle: "Stay in Salamanca",
+        salamancaText: "Another very convenient option is to stay in **Salamanca city**, located about **20 minutes by car** from the castle.\n\nSalamanca offers a wide variety of hotels and accommodations.",
+        salamancaLink: "On this website you can find all types of accommodation",
+        transportTitle: "Transport",
+        transportIntro: "The Castillo del Buen Amor is about **20 minutes by car** from Salamanca.\n\nWe are looking into **organizing buses** between Salamanca and the castle to facilitate travel for our guests. We will keep you updated on this page as more details become available.",
+        howToReachSalamanca: "How to reach Salamanca",
+        byCar: "**By car**: Easily accessible from various cities in Spain.",
+        byTrain: "**By train**: Direct trains are available from Madrid (both high-speed and regional). We recommend check for discounts in advance.",
+        byBus: "**By bus**: You can check schedules and buy tickets on Monbus.",
+        questionsTitle: "Questions?",
+        questionsText: "If you have any questions about accommodation, transport, or your trip, **don't hesitate to write to us**.",
+        honeymoonTitle: "Gift",
+        honeymoonText: "Your presence at our wedding is, without a doubt, **the greatest gift we could receive**.\n\nIf you wish to contribute to our next adventure, we would be delighted to put it towards **our trip to Japan**, which will be our first big getaway as newlyweds.\n\nFor those who want to join us on this adventure as well, we provide our bank details below.\n\nThank you for being part of this journey with us.\nWe will toast to you from the other side of the world!",
+        giftData: "Gift details"
     }
 };
