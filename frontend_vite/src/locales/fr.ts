@@ -6,7 +6,8 @@ export const fr = {
         faq: "FAQ",
         reservedArea: "Espace Invités",
         logout: "Déconnexion",
-        login: "Se connecter"
+        login: "Se connecter",
+        back: "Retour"
     },
     auth: {
         title: "Espace Invités",
@@ -94,19 +95,27 @@ export const fr = {
     rsvp: {
         title: "Confirmation de Présence",
         attending: "Je serai présent(e) 🎉",
-        notAttending: "Malheureusement je ne pourrai pas venir",
+        notAttending: "Malheureusement je ne pourrai pas venir 😢",
         plusOneLabel: "Si vous le souhaitez, ajoutez les personnes qui vous accompagneront per célébrer cette journée magnifique :)",
         addGuestBtn: "+ Ajouter une personne",
         guestNamePlaceholder: "Nom complet",
         isChild: "Enfant",
         isAdult: "Adulte",
-        dietLabel: "Allergies ou besoins alimentaires (optionnel)",
+        dietLabel: "Allergies ou besoins alimentaires, pour vous ou pour les personnes qui vous accompagneront (optionnel)",
         dietPlaceholder: "Ex. végétarien, sans gluten, allergie aux fruits à coque...",
         submit: "Confirmer ma réponse",
         submitting: "Envoi en cours...",
         successTitle: "Réponse envoyée !",
         successText: "Merci, nous avons reçu votre confirmation.",
-        errorText: "Quelque chose s'est mal passé. Veuillez réessayer."
+        errorText: "Quelque chose s'est mal passé. Veuillez réessayer.",
+        introText: "Cela nous aiderait beaucoup que vous confirmiez votre présence avant le 30 avril, afin de pouvoir commencer à tout organiser plus en détail. Dans le formulaire, vous pouvez également nous indiquer les personnes qui vous accompagneront et tout régime ou préférence de menu (végétarien, allergies, intolérances, etc.). Merci beaucoup de nous aider à organiser cette journée !",
+        attendingQuestion: "Assisterez-vous au mariage ?",
+        castleQuestion: "Voulez-vous dormir au château ?",
+        castleMessage: "Écrivez-nous sur WhatsApp dès que possible pour vérifier la disponibilité.",
+        busQuestion: "Êtes-vous intéressé par le bus de Salamanque au Château ?",
+        footerText: "Si vous avez besoin de modifier certaines réponses, vous pouvez le faire sans problème et confirmer à nouveau. Si un changement survient après le 30 avril, ne vous inquiétez pas : prévenez-nous dès que vous le savez et nous essaierons de nous adapter.",
+        yes: "Oui",
+        no: "Non"
     },
     gallery: {
         title: "Galerie Photos",
@@ -118,7 +127,7 @@ export const fr = {
     profile: {
         title: "Votre profil",
         emailTitle: "Ajouter votre email",
-        emailLabel: "Adresse email",
+        emailLabel: "Si vous le souhaitez, ajoutez votre adresse email pour rester informé de toutes les nouvelles. Promettons de ne pas vous envoyer trop de messages :)",
         emailBtn: "Sauvegarder email",
         emailSaving: "Sauvegarde...",
         emailSuccess: "Email sauvegardé !",
@@ -136,12 +145,13 @@ export const fr = {
         transportIntro: "Le Castillo del Buen Amor est situé à environ **20 minutes en voiture** de Salamanque.\n\nNous étudions la possibilité d'**organiser des bus** entre Salamanque et le château pour faciliter les déplacements. Nous vous tiendrons informés sur cette page dès que nous aurons plus de détails.",
         howToReachSalamanca: "Comment se rendre à Salamanque",
         byCar: "**En voiture** : Facilement accessible depuis différentes villes d'Espagne.",
-        byTrain: "**En train** : Des trains directs sont disponibles depuis Madrid (rapides et régionaux). Nous vous conseillons de vérifier les réductions à l'avance.",
+        byTrain: "**En train** : Des trains directs sont disponibles depuis Madrid (rapides et régionaux). Nous vous conseillons de vérifier les réductions à l'avance. Recherchez \"Trip Discounted Pass\" ou \"Abonnement\".",
         byBus: "**En bus** : Vous pouvez consulter les horaires et acheter des billets sur Monbus.",
         questionsTitle: "Des questions ?",
         questionsText: "Si vous avez des questions sur l'hébergement, le transport ou votre voyage, **n'hésitez pas à nous écrire**.",
-        honeymoonTitle: "Cadeau",
-        honeymoonText: "Votre présence à notre mariage est, sans aucun doute, **le plus beau cadeau que nous puissions recevoir**.\n\nSi vous souhaitez contribuer à notre prochaine aventure, nous serons ravis de l'attribuer à **notre voyage au Japon**, qui sera notre première grande escapade en tant que jeunes mariés.\n\nPour ceux d'entre vous qui souhaitent également nous accompagner dans cette aventure, nous mettons à votre disposition nos coordonnées bancaires ci-dessous.\n\nMerci de faire partie de ce voyage avec nous.\nNous porterons un toast à votre santé depuis l'autre bout du monde !",
+        honeymoonTitle: "Voyage de noces",
+        honeymoonButton: "Japon",
+        honeymoonText: "Votre présence à notre mariage est, sans aucun doute, **le plus beau cadeau que nous puissions recevoir**.\n\nSi vous souhaitez contribuer à notre prochaine aventure, nous serons ravis de l'attribuer à **notre voyage au Japon**, qui sera notre première grande escapade en tant que jeunes mariés.\n\nPour ceux d'entre vous qui souhaitent également nous accompagner dans cette aventure, nous mettons à votre disposition nos coordonnées bancaires ci-dessous, vous pouvez utiliser le que vous trouvez le plus pratique.\n\nMerci de faire partie de ce voyage avec nous.\nNous porterons un toast à votre santé depuis l'autre bout du monde !",
         giftData: "Détails de la contribution"
     }
 };

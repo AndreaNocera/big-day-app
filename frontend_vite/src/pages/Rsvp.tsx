@@ -19,6 +19,8 @@ export default function Rsvp() {
     const [attending, setAttending] = useState<boolean | null>(null);
     const [guests, setGuests] = useState<Guest[]>([]);
     const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+    const [sleepAtCastle, setSleepAtCastle] = useState<boolean | null>(null);
+    const [busInterested, setBusInterested] = useState<boolean | null>(null);
     const [status, setStatus] = useState<'idle' | 'loading' | 'submitting' | 'success' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -36,6 +38,8 @@ export default function Rsvp() {
                     setAttending(data.attending ?? null);
                     setGuests(data.guests ?? []);
                     setDietaryRestrictions(data.dietaryRestrictions ?? '');
+                    setSleepAtCastle(data.sleepAtCastle ?? null);
+                    setBusInterested(data.busInterested ?? null);
                     setRsvpCompleted(true);
                 }
                 setStatus('idle');
@@ -67,7 +71,7 @@ export default function Rsvp() {
         setStatus('submitting');
         setErrorMsg('');
         try {
-            await submitRsvp(attending, guests, dietaryRestrictions);
+            await submitRsvp(attending, guests, dietaryRestrictions, sleepAtCastle, busInterested);
             setRsvpCompleted(true);
             setStatus('success');
             setShowModal(true);
@@ -111,8 +115,19 @@ export default function Rsvp() {
                 />
             )}
 
+            {/* Intro text */}
+            <div className="form-card" style={{ marginBottom: 24, padding: '20px', borderLeft: '4px solid var(--color-primary)', background: 'rgba(255,255,255,0.8)' }}>
+                <p style={{ fontSize: 16, lineHeight: 1.6, margin: 0, color: 'var(--color-text-primary)' }}>
+                    {t('rsvp.introText')}
+                </p>
+            </div>
+
             {/* Attendance Step */}
             <form onSubmit={handleSubmit} noValidate>
+
+                <p style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 12 }}>
+                    {t('rsvp.attendingQuestion')}
+                </p>
 
                 {/* Attending options */}
                 <div style={{ marginBottom: 20 }}>
@@ -267,6 +282,73 @@ export default function Rsvp() {
                                 }}
                             />
                         </div>
+
+                        {/* Castle Question */}
+                        <div className="form-group" style={{ marginTop: 24 }}>
+                            <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>{t('rsvp.castleQuestion')}</p>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setSleepAtCastle(true)}
+                                    style={{
+                                        flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)',
+                                        border: `1.5px solid ${sleepAtCastle === true ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                                        background: sleepAtCastle === true ? 'rgba(124, 71, 232, 0.05)' : 'white',
+                                        color: sleepAtCastle === true ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+                                    }}
+                                >
+                                    {t('rsvp.yes')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSleepAtCastle(false)}
+                                    style={{
+                                        flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)',
+                                        border: `1.5px solid ${sleepAtCastle === false ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                                        background: sleepAtCastle === false ? 'rgba(124, 71, 232, 0.05)' : 'white',
+                                        color: sleepAtCastle === false ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+                                    }}
+                                >
+                                    {t('rsvp.no')}
+                                </button>
+                            </div>
+                            {sleepAtCastle === true && (
+                                <p style={{ marginTop: 12, fontSize: 14, color: '#ca8a04', fontWeight: 500, background: '#fef9c3', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid #fde047' }}>
+                                    {t('rsvp.castleMessage')}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Bus Question */}
+                        <div className="form-group" style={{ marginTop: 24 }}>
+                            <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>{t('rsvp.busQuestion')}</p>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setBusInterested(true)}
+                                    style={{
+                                        flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)',
+                                        border: `1.5px solid ${busInterested === true ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                                        background: busInterested === true ? 'rgba(124, 71, 232, 0.05)' : 'white',
+                                        color: busInterested === true ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+                                    }}
+                                >
+                                    {t('rsvp.yes')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setBusInterested(false)}
+                                    style={{
+                                        flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)',
+                                        border: `1.5px solid ${busInterested === false ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                                        background: busInterested === false ? 'rgba(124, 71, 232, 0.05)' : 'white',
+                                        color: busInterested === false ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+                                    }}
+                                >
+                                    {t('rsvp.no')}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -278,6 +360,12 @@ export default function Rsvp() {
                     {status === 'submitting' ? t('rsvp.submitting') : t('rsvp.submit')}
                 </button>
             </form>
+
+            <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.8)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', marginTop: '24px' }}>
+                <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, textAlign: 'center', color: 'var(--color-text-primary)' }}>
+                    {t('rsvp.footerText')}
+                </p>
+            </div>
 
             <div style={{ marginTop: '32px' }}>
                 <section className="form-card" aria-labelledby="email-section-title">

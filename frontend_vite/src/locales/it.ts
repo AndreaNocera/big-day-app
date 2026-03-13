@@ -6,7 +6,8 @@ export const it = {
         faq: "FAQ",
         reservedArea: "Area Riservata",
         logout: "Esci",
-        login: "Accedi"
+        login: "Accedi",
+        back: "Indietro"
     },
     auth: {
         title: "Area Riservata Ospiti",
@@ -94,19 +95,27 @@ export const it = {
     rsvp: {
         title: "Conferma Presenza",
         attending: "Sarò presente 🎉",
-        notAttending: "Purtroppo non potrò esserci",
+        notAttending: "Purtroppo non potrò esserci 😢",
         plusOneLabel: "Se vuoi, aggiungi le persone che ti accompagneranno a celebrare questa magnifica giornata :)",
         addGuestBtn: "+ Aggiungi persona",
         guestNamePlaceholder: "Nome completo",
         isChild: "Bambino/a",
         isAdult: "Adulto",
-        dietLabel: "Allergie o esigenze alimentari (opzionale)",
+        dietLabel: "Allergie o esigenze alimentari, tue o delle persone che ti accompagneranno (opzionale)",
         dietPlaceholder: "Es. vegetariano, senza glutine, allergia alla frutta secca...",
         submit: "Conferma la tua risposta",
         submitting: "Invio in corso...",
         successTitle: "Risposta inviata!",
         successText: "Grazie, abbiamo ricevuto la tua conferma.",
-        errorText: "Qualcosa è andato storto. Riprova."
+        errorText: "Qualcosa è andato storto. Riprova.",
+        introText: "Ci aiuterebbe molto se poteste confermare la vostra presenza entro il 30 aprile, per poter iniziare a organizzare tutto nel dettaglio. Nel modulo potete indicarci anche le persone che verranno con voi e qualsiasi dieta o preferenza di menù (vegetariano, allergie, intolleranze, ecc.). Grazie mille per aiutarci a organizzare questa giornata!",
+        attendingQuestion: "Parteciperai al matrimonio?",
+        castleQuestion: "Vuoi dormire al castello?",
+        castleMessage: "Scrivici su Whatsapp il prima possibile per verificare la disponibilità.",
+        busQuestion: "Sei interessato all'autobus da Salamanca al Castello?",
+        footerText: "Se avete bisogno di cambiare alcune risposte potete farlo senza problemi e confermare di nuovo. Se dovesse esserci qualsiasi cambiamento dopo il 30 aprile, non preoccupatevi: avvisateci non appena lo sapete e cercheremo di adattarci.",
+        yes: "Sì",
+        no: "No"
     },
     gallery: {
         title: "Galleria Foto",
@@ -118,7 +127,7 @@ export const it = {
     profile: {
         title: "Il tuo profilo",
         emailTitle: "Aggiungi la tua email",
-        emailLabel: "Indirizzo email",
+        emailLabel: "Se ti va, inserisci l'indirizzo email per rimanere aggiornato su tutte le novità. Promettiamo di non stressarvi con troppe comunicazioni :)",
         emailBtn: "Salva email",
         emailSaving: "Salvataggio...",
         emailSuccess: "Email salvata!",
@@ -136,12 +145,13 @@ export const it = {
         transportIntro: "Il Castillo del Buen Amor dista circa **20 minuti in auto** da Salamanca.\n\nStiamo valutando la possibilità di **organizzare degli autobus** tra Salamanca e il castello per agevolare gli spostamenti. Vi terremo informati su questa pagina non appena avremo maggiori dettagli.",
         howToReachSalamanca: "Come arrivare a Salamanca",
         byCar: "**In auto**: È facilmente raggiungibile da diverse città della Spagna.",
-        byTrain: "**In treno**: Ci sono treni diretti da Madrid (sia veloci che regionali). Consigliamo di controllare eventuali sconti in anticipo.",
+        byTrain: "**In treno**: Ci sono treni diretti da Madrid (sia veloci che regionali). Consigliamo di controllare i mini-abbonamenti per sconti. Cercate per \"Trip Discounted Pass\" o \"Abono\".",
         byBus: "**In autobus**: È possibile consultare gli orari e acquistare i biglietti su Monbus.",
         questionsTitle: "Dubbi?",
         questionsText: "Se avete domande su alloggio, trasporto o sul vostro viaggio, **non esitate a scriverci**.",
-        honeymoonTitle: "Regalo",
-        honeymoonText: "La vostra presenza al nostro matrimonio è, senza dubbio, **il regalo più bello che potremmo ricevere**.\n\nSe desiderate contribuire alla nostra prossima avventura, saremo felici di destinarlo al **nostro viaggio in Giappone**, che sarà la nostra prima grande fuga come neo-sposi.\n\nPer chi volesse accompagnarci anche in questa avventura, mettiamo a vostra disposizione i nostri riferimenti bancari qui sotto.\n\nGrazie per far parte di questo viaggio con noi.\nBrinderemo alla vostra salute dall'altra parte del mondo!",
+        honeymoonTitle: "Viaggio di nozze",
+        honeymoonButton: "Giappone",
+        honeymoonText: "La vostra presenza al nostro matrimonio è, senza dubbio, **il regalo più bello che potremmo ricevere**.\n\nSe desiderate contribuire alla nostra prossima avventura, saremo felici di destinarlo al **nostro viaggio in Giappone**, che sarà la nostra prima grande fuga come neo-sposi.\n\nPer chi volesse accompagnarci anche in questa avventura, mettiamo a vostra disposizione i nostri riferimenti bancari qui sotto, potete usare quello che vi viene più comodo.\n\nGrazie per far parte di questo viaggio con noi.\nBrinderemo alla vostra salute dall'altra parte del mondo!",
         giftData: "Dati per il contributo"
     }
 };

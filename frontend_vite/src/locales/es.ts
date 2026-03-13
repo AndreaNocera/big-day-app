@@ -6,7 +6,8 @@ export const es = {
         faq: "FAQ",
         reservedArea: "Área de Invitados",
         logout: "Salir",
-        login: "Entrar"
+        login: "Entrar",
+        back: "Atrás"
     },
     auth: {
         title: "Área de Invitados",
@@ -24,7 +25,6 @@ export const es = {
     },
     home: {
         date: "Sábado, 14 de Junio 2026",
-        location: "Florencia, Italia",
         heroTitle: "¡Nos Casamos! 🎉",
         subtitle: "Estamos encantados de invitarte a nuestra boda.",
         rsvpBtn: "Confirmar asistencia",
@@ -88,25 +88,33 @@ export const es = {
             { q: "¿Qué tiempo suele hacer en Salamanca en septiembre?", a: "En septiembre el tiempo suele ser agradable durante el día, aunque por la noche puede refrescar un poco, especialmente en el campo." },
             { q: "¿Podemos indicar alergias o dietas especiales?", a: "Sí. Podéis indicarlo al confirmar vuestra asistencia, para que podamos tenerlo en cuenta al organizar el menú." },
             { q: "¿Hasta cuándo podemos confirmar asistencia?", a: "Os agradeceríamos que confirméis vuestra asistencia antes del 30 de abril, para poder empezar a organizar todo con más detalle." },
-            { q: "¿Podemos modificar la confirmación si cambia algo?", a: "Por supuesto. Si después de confirmar surge algún cambio, avisadnos sin problema e intentaremos adaptarlo. No olvidad rellenar el formulario accesible en la página de inicio en el botón que indica el estado de vuestra asistencia!" }
+            { q: "¿Podemos modificar la confirmación si cambia algo?", a: "Por supuesto. Si después de confirmar surge algún cambio, avisadnos sin problema e intentaremos adaptarlo. No olvidéis rellenar el formulario accesible en la página de inicio en el botón que indica el estado de vuestra asistencia!" }
         ]
     },
     rsvp: {
         title: "Confirmación de Asistencia",
         attending: "Asistiré 🎉",
-        notAttending: "Desgraciadamente no podré asistir",
+        notAttending: "Desgraciadamente no podré asistir 😢",
         plusOneLabel: "Si quieres, añade a las personas que te acompañarán a celebrar este magnífico día :)",
         addGuestBtn: "+ Añadir persona",
         guestNamePlaceholder: "Nombre completo",
         isChild: "Niño/a",
         isAdult: "Adulto",
-        dietLabel: "Alergias o requisitos dietéticos (opcional)",
+        dietLabel: "Alergias o requisitos dietéticos, para ti o para las personas que acompañarás (opcional)",
         dietPlaceholder: "Ej. vegetariano, sin gluten, alergia a los frutos secos...",
         submit: "Confirmar respuesta",
         submitting: "Enviando...",
         successTitle: "¡Respuesta enviada!",
         successText: "Gracias, hemos recibido tu confirmación.",
-        errorText: "Algo salió mal. Por favor inténtalo de nuevo."
+        errorText: "Algo salió mal. Por favor inténtalo de nuevo.",
+        introText: "Nos ayudaría mucho que confirméis vuestra asistencia antes del 30 de abril, para poder empezar a organizar todo con más detalle. En el formulario podéis indicarnos también las personas que vendrán con vosotros y cualquier dieta o preferencia de menú (vegetariano, alergias, intolerancias, etc.). ¡Muchas gracias por ayudarnos a organizar este día!",
+        attendingQuestion: "¿Asistirás a la boda?",
+        castleQuestion: "¿Quieres dormir en el castillo?",
+        castleMessage: "Escríbenos por whatsapp lo antes posible para verificar disponibilidad",
+        busQuestion: "¿Estás interesado en el autobús de Salamanca al Castillo?",
+        footerText: "Si necesitáis cambiar algunas respuestas podéis hacerlo sin problema y confirmar otra vez. Si después del 30 de Abril surgiera cualquier cambio, no os preocupéis: avisadnos cuando lo sepáis e intentaremos adaptarlo.",
+        yes: "Sí",
+        no: "No"
     },
     gallery: {
         title: "Galería de Fotos",
@@ -119,7 +127,7 @@ export const es = {
         title: "Tu perfil",
         emailTitle: "Añadir email",
         emailLabel: "Dirección de email",
-        emailBtn: "Guardar email",
+        emailBtn: "Si quieres, añade tu email para mantenerte informado de todas las novedades. Prometemos no molestarte con demasiadas notificaciones :)",
         emailSaving: "Guardando...",
         emailSuccess: "¡Email guardado!",
         logout: "Cerrar sesión de la cuenta"
@@ -128,7 +136,7 @@ export const es = {
         title: "Alojamiento y Transporte",
         accommodationTitle: "Alojamiento",
         castleTitle: "Dormir en el mismo Castillo del Buen Amor",
-        castleText: "El castillo dispone de **40 habitaciones dobles** para los invitados de la boda.\n\nLos precios orientativos van aproximadamente desde **100€ hasta 260€ por noche** (+30€ cama supletoria), dependiendo del tipo de habitación. En todas le habitaciones se incluye el **desayuno hasta las 11:00**.\n\nSi estáis interesados en alojaros en el castillo, por favor **comunicádnoslo lo antes possibile**, ya que las habitaciones se asignarán por orden de solicitud. ¡Así que corred a reservar vuestra habitación si queréis despertaros en el maravilloso Castillo y desayunar con los novios!",
+        castleText: "El castillo dispone de **40 habitaciones dobles** para los invitados de la boda.\n\nLos precios orientativos van aproximadamente desde **100€ hasta 260€ por noche** (+30€ cama supletoria), dependiendo del tipo de habitación. En todas le habitaciones se incluye el **desayuno hasta las 11:00**.\n\nSi estáis interesados en alojaros en el castillo, por favor **comunicádnoslo lo antes posible**, ya que las habitaciones se asignarán por orden de solicitud. ¡Así que corred a reservar vuestra habitación si queréis despertaros en el maravilloso Castillo y desayunar con los novios!",
         salamancaTitle: "Dormir en Salamanca",
         salamancaText: "Otra opción muy cómoda es alojarse en **Salamanca ciudad**, que se encuentra a unos **20 minutos en coche** del castillo.\n\nEn Salamanca hay una gran variedad de hoteles y alojamientos.",
         salamancaLink: "En esta página web podéis encontrar todas las tipologías",
@@ -136,12 +144,13 @@ export const es = {
         transportIntro: "El Castillo del Buen Amor está a unos **20 minutos en coche** de Salamanca.\n\nEstamos valorando la posibilidad de **organizar autobuses** entre Salamanca y el castillo para facilitar los desplazamientos. Os iremos informando en esta página cuando tengamos más detalles.",
         howToReachSalamanca: "Cómo llegar a Salamanca",
         byCar: "**En coche**: Se puede llegar fácilmente desde diferentes ciudades de España.",
-        byTrain: "**En tren**: Hay trenes directos desde Madrid (tanto rápidos como regionales). Recomendamos consultar descuentos con antelación.",
+        byTrain: "**En tren**: Hay trenes directos desde Madrid (tanto rápidos como regionales). Recomendamos consultar los bonos con descuentos.",
         byBus: "**En autobús**: Podéis consultar horarios y comprar billetes en Monbus.",
         questionsTitle: "¿Dudas?",
         questionsText: "Si tenéis cualquier pregunta sobre alojamiento, transporte o vuestro viaje, **no dudéis en escribirnos**.",
-        honeymoonTitle: "Regalo",
-        honeymoonText: "Vuestra presencia en nuestra boda es, sin duda, **el mejor regalo que podríamos recibir**.\n\nSi queréis contribuir a nuestra próxima aventura, estaremos encantados de destinarlo a **nuestro viaje a Japón**, que será nuestra primera gran escapada como recién casados.\n\nPara quienes queráis acompañarnos también en esta aventura, dejamos a vuestra disposición nuestros datos bancarios a continuación.\n\nGracias por formar parte de este viaje con nosotros.\nBrindaremos por vosotros desde el otro lado del mundo.",
+        honeymoonTitle: "Viaje de novios",
+        honeymoonButton: "Japón",
+        honeymoonText: "Vuestra presencia en nuestra boda es, sin duda, **el mejor regalo que podríamos recibir**.\n\nSi queréis contribuir a nuestra próxima aventura, estaremos encantados de destinarlo a **nuestro viaje a Japón**, que será nuestra primera gran escapada como recién casados.\n\nPara quienes queráis acompañarnos también en esta aventura, dejamos a vuestra disposición nuestros datos bancarios a continuación, podéis usar el que os viene más cómodo.\n\nGracias por formar parte de este viaje con nosotros.\nBrindaremos por vosotros desde el otro lado del mundo.",
         giftData: "Datos para vuestro regalo"
     }
 };

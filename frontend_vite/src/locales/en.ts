@@ -6,7 +6,8 @@ export const en = {
         faq: "FAQ",
         reservedArea: "Guest Area",
         logout: "Logout",
-        login: "Login"
+        login: "Login",
+        back: "Back"
     },
     auth: {
         title: "Guest Area",
@@ -94,19 +95,27 @@ export const en = {
     rsvp: {
         title: "RSVP",
         attending: "I will attend 🎉",
-        notAttending: "Unfortunately I cannot attend",
+        notAttending: "Unfortunately I cannot attend 😢",
         plusOneLabel: "If you want, add the people who will accompany you to celebrate this magnificent day :)",
         addGuestBtn: "+ Add person",
         guestNamePlaceholder: "Full name",
         isChild: "Child",
         isAdult: "Adult",
-        dietLabel: "Allergies or dietary requirements (optional)",
+        dietLabel: "Allergies or dietary requirements, for you or the people who will accompany you (optional)",
         dietPlaceholder: "E.g. vegetarian, gluten-free, nut allergy...",
         submit: "Confirm your response",
         submitting: "Sending...",
         successTitle: "Response sent!",
         successText: "Thank you, we have received your confirmation.",
-        errorText: "Something went wrong. Please try again."
+        errorText: "Something went wrong. Please try again.",
+        introText: "It would help us a lot if you confirm your attendance before April 30th, so we can start organizing everything in more detail. In the form you can also indicate the people who will come with you and any diet or menu preference (vegetarian, allergies, intolerances, etc.). Thank you very much for helping us organize this day!",
+        attendingQuestion: "Will you attend the wedding?",
+        castleQuestion: "Do you want to sleep at the castle?",
+        castleMessage: "Write to us on WhatsApp as soon as possible to check availability.",
+        busQuestion: "Are you interested in the bus from Salamanca to the Castle?",
+        footerText: "If you need to change some answers you can do it without problem and confirm again. If any change arises after April 30th, don't worry: let us know when you know and we will try to adapt.",
+        yes: "Yes",
+        no: "No"
     },
     gallery: {
         title: "Photo Gallery",
@@ -118,7 +127,7 @@ export const en = {
     profile: {
         title: "Your profile",
         emailTitle: "Add your email",
-        emailLabel: "Email address",
+        emailLabel: "If you want, you can add your email address to stay updated on all the news. We promise not to stress you with too many messages :)",
         emailBtn: "Save email",
         emailSaving: "Saving...",
         emailSuccess: "Email saved!",
@@ -136,12 +145,13 @@ export const en = {
         transportIntro: "The Castillo del Buen Amor is about **20 minutes by car** from Salamanca.\n\nWe are looking into **organizing buses** between Salamanca and the castle to facilitate travel for our guests. We will keep you updated on this page as more details become available.",
         howToReachSalamanca: "How to reach Salamanca",
         byCar: "**By car**: Easily accessible from various cities in Spain.",
-        byTrain: "**By train**: Direct trains are available from Madrid (both high-speed and regional). We recommend check for discounts in advance.",
+        byTrain: "**By train**: Direct trains are available from Madrid (both high-speed and regional). We recommend check for discounts in advance. Search for \"Trip Discounted Pass\" or \"Abono\".",
         byBus: "**By bus**: You can check schedules and buy tickets on Monbus.",
         questionsTitle: "Questions?",
         questionsText: "If you have any questions about accommodation, transport, or your trip, **don't hesitate to write to us**.",
-        honeymoonTitle: "Gift",
-        honeymoonText: "Your presence at our wedding is, without a doubt, **the greatest gift we could receive**.\n\nIf you wish to contribute to our next adventure, we would be delighted to put it towards **our trip to Japan**, which will be our first big getaway as newlyweds.\n\nFor those who want to join us on this adventure as well, we provide our bank details below.\n\nThank you for being part of this journey with us.\nWe will toast to you from the other side of the world!",
+        honeymoonTitle: "Honeymoon",
+        honeymoonButton: "Japan",
+        honeymoonText: "Your presence at our wedding is, without a doubt, **the greatest gift we could receive**.\n\nIf you wish to contribute to our next adventure, we would be delighted to put it towards **our trip to Japan**, which will be our first big getaway as newlyweds.\n\nFor those who want to join us on this adventure as well, we provide our bank details below, you can use the one that is more convenient for you.\n\nThank you for being part of this journey with us.\nWe will toast to you from the other side of the world!",
         giftData: "Gift details"
     }
 };

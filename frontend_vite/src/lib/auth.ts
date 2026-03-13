@@ -26,11 +26,13 @@ export async function getRsvp() {
 export async function submitRsvp(
     attending: boolean,
     guests: Array<{ name: string; isChild: boolean }>,
-    dietaryRestrictions: string
+    dietaryRestrictions: string,
+    sleepAtCastle: boolean | null,
+    busInterested: boolean | null
 ) {
     return fetchWithAuth('/rsvp', {
         method: 'POST',
-        body: JSON.stringify({ attending, guests, dietaryRestrictions }),
+        body: JSON.stringify({ attending, guests, dietaryRestrictions, sleepAtCastle, busInterested }),
     });
 }
 
