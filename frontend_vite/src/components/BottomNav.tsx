@@ -41,7 +41,16 @@ export default function BottomNav() {
                 </div>
             ) : (
                 <div className="bottom-nav-content inner-nav">
-                    <button onClick={() => navigate(-1)} className="bottom-nav-back">
+                    <button 
+                        onClick={() => {
+                            if (window.history.state && window.history.state.idx > 0) {
+                                navigate(-1);
+                            } else {
+                                navigate('/');
+                            }
+                        }} 
+                        className="bottom-nav-back"
+                    >
                         <ArrowLeft size={24} />
                         <span>{t('nav.back' as any)}</span>
                     </button>
