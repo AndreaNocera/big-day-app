@@ -86,13 +86,53 @@ export default function Travel() {
                             <Car size={18} style={{ flexShrink: 0, marginTop: 4 }} />
                             {formatText(t('travel.byCar' as any))}
                         </div>
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                             <Train size={18} style={{ flexShrink: 0, marginTop: 4 }} />
-                            {formatText(t('travel.byTrain' as any))}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                {formatText(t('travel.byTrain' as any))}
+                                <a 
+                                    href="https://www.renfe.com" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="btn-primary"
+                                    style={{ 
+                                        display: 'inline-flex', 
+                                        alignItems: 'center', 
+                                        gap: '8px', 
+                                        marginTop: '8px',
+                                        fontSize: '14px',
+                                        padding: '10px 16px',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    <ExternalLink size={18} />
+                                    Renfe
+                                </a>
+                            </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                             <Bus size={18} style={{ flexShrink: 0, marginTop: 4 }} />
-                            {formatText(t('travel.byBus' as any))}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                {formatText(t('travel.byBus' as any))}
+                                <a 
+                                    href="https://www.monbus.es/es" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="btn-primary"
+                                    style={{ 
+                                        display: 'inline-flex', 
+                                        alignItems: 'center', 
+                                        gap: '8px', 
+                                        marginTop: '8px',
+                                        fontSize: '14px',
+                                        padding: '10px 16px',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    <ExternalLink size={18} />
+                                    Monbus
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -26,7 +26,7 @@ export default function BottomNav() {
                     </Link>
                     <Link to="/regalo" className="bottom-nav-item">
                         <Gift size={24} />
-                        <span>{t('travel.honeymoonTitle' as any)}</span>
+                        <span>{t('travel.honeymoonButton' as any)}</span>
                     </Link>
                     <Link to="/faq" className="bottom-nav-item">
                         <HelpCircle size={24} />
@@ -43,7 +43,7 @@ export default function BottomNav() {
                 <div className="bottom-nav-content inner-nav">
                     <button onClick={() => navigate(-1)} className="bottom-nav-back">
                         <ArrowLeft size={24} />
-                        <span>Indietro</span>
+                        <span>{t('nav.back' as any)}</span>
                     </button>
                 </div>
             )}

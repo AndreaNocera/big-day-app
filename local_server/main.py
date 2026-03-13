@@ -54,6 +54,8 @@ class RSVPRequest(BaseModel):
     attending: bool
     guests: Optional[list[Guest]] = []
     dietaryRestrictions: str = ""
+    sleepAtCastle: Optional[bool] = None
+    busInterested: Optional[bool] = None
 
 class SurveyRequest(BaseModel):
     surveyAnswers: Dict[str, Any]

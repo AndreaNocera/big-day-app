@@ -38,6 +38,8 @@ def handler(event, context):
         attending = body.get("attending", False)
         guests = body.get("guests", [])  # List of {name: str, isChild: bool}
         dietary_restrictions = body.get("dietaryRestrictions", "")
+        sleep_at_castle = body.get("sleepAtCastle")
+        bus_interested = body.get("busInterested")
         
         # Add types to guests
         processed_guests = []
@@ -49,12 +51,14 @@ def handler(event, context):
             
         table.update_item(
             Key={"PK": f"GUEST#{phone}"},
-            UpdateExpression="SET guestName = :n, attending = :a, guests = :g, dietaryRestrictions = :d, phoneNumber = :ph, submittedAt = :s, itemType = :t",
+            UpdateExpression="SET guestName = :n, attending = :a, guests = :g, dietaryRestrictions = :d, sleepAtCastle = :sac, busInterested = :bus, phoneNumber = :ph, submittedAt = :s, itemType = :t",
             ExpressionAttributeValues={
                 ":n": guest_name,
                 ":a": attending,
                 ":g": processed_guests,
                 ":d": dietary_restrictions,
+                ":sac": sleep_at_castle,
+                ":bus": bus_interested,
                 ":ph": phone,
                 ":s": datetime.utcnow().isoformat(),
                 ":t": "RSVP"
