@@ -10,6 +10,8 @@ export function Header() {
     const navigate = useNavigate();
     const [langOpen, setLangOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
 
     const currentLang = LANGUAGES.find((l) => l.code === language);
     const initials = guestName
@@ -21,11 +23,14 @@ export function Header() {
             .toUpperCase()
         : '';
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setLangOpen(false);
+            }
+            if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+                setProfileOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -78,20 +83,48 @@ export function Header() {
 
                 {/* Profile / Auth button */}
                 {token ? (
-                    <div className="profile-logout-container">
-                        <div className="profile-avatar" aria-hidden="true" onClick={() => navigate('/rsvp')}>
-                            {initials}
-                        </div>
+                    <div className="profile-dropdown-wrapper" ref={profileRef}>
                         <button
-                            className="logout-btn"
-                            onClick={() => {
-                                logout();
-                                navigate('/', { replace: true });
-                            }}
-                            aria-label={t('profile.logout')}
+                            className="profile-avatar"
+                            aria-haspopup="true"
+                            aria-expanded={profileOpen}
+                            onClick={() => setProfileOpen((o) => !o)}
+                            aria-label="Apri menu profilo"
                         >
-                            <LogOut size={16} />
+                            {initials}
                         </button>
+
+                        {profileOpen && (
+                            <div className="profile-dropdown">
+                                <div className="profile-dropdown-header">
+                                    <span className="profile-dropdown-name">{guestName}</span>
+                                </div>
+                                <div className="profile-dropdown-actions">
+                                    <button
+                                        className="profile-action-btn"
+                                        onClick={() => {
+                                            setProfileOpen(false);
+                                            navigate('/rsvp', { replace: true });
+                                        }}
+                                    >
+                                        <User size={16} aria-hidden="true" />
+                                        <span>{t('profile.myRsvp')}</span>
+                                    </button>
+                                    <button
+                                        className="profile-action-btn logout"
+                                        onClick={() => {
+                                            logout();
+                                            setProfileOpen(false);
+                                            navigate('/', { replace: true });
+                                        }}
+                                        aria-label={t('profile.logout')}
+                                    >
+                                        <LogOut size={16} aria-hidden="true" />
+                                        <span>{t('profile.logout') || 'Logout'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <button
