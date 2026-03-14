@@ -47,7 +47,7 @@ export default function Auth() {
             const formattedPhone = `${countryCode}${phoneNumber.replace(/\s+/g, '')}`;
             // We still use the library function, which we will update next to drop token
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
-            setAuth(data.jwt, data.guestName);
+            setAuth(data.jwt, data.guestName, data.isAdmin ?? false);
             setStatus('success');
             const redirectTo = searchParams.get('redirect') || '/rsvp';
             setTimeout(() => navigate(redirectTo, { replace: true }), 1500);

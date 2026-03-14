@@ -49,3 +49,7 @@ export async function submitEmail(email: string) {
         body: JSON.stringify({ email }),
     });
 }
+
+export async function getAllRsvps() {
+    return fetchWithAuth('/admin/rsvps');
+}

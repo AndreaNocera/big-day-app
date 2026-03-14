@@ -1,7 +1,6 @@
 import boto3
 import uuid
 import time
-import random
 import os
 from datetime import datetime
 
@@ -16,25 +15,31 @@ def seed_guests():
     
     table = dynamodb.Table("WeddingInvites")
     
+    # Set isAdmin=True to grant admin privileges to a guest
     guests = [
-        {"name": "Andrea Nocera", "phone": "+393389374650"},
-        # {"name": "Luigi Verdi", "phone": "+393339876543"}
+        {"name": "Andrea Nocera", "phone": "+393389374650", "isAdmin": True},
+        {"name": "Luigi Verdi", "phone": "+391", "isAdmin": False},
+        {"name": "Giorgio Bianchi", "phone": "+392", "isAdmin": False},
+        {"name": "Francesco Rossi", "phone": "+393", "isAdmin": False},
     ]
     
     for guest in guests:
         token = str(uuid.uuid4())
         access_code = "0000"
         expiry_days = int(os.getenv("TOKEN_EXPIRY_DAYS", "30"))
+        is_admin = guest.get("isAdmin", False)
         item = {
             "PK": f"TOKEN#{token}",
             "guestName": guest["name"],
             "phoneNumber": guest["phone"],
             "accessCode": access_code,
+            "isAdmin": is_admin,
             "expiresAt": int(time.time()) + (expiry_days * 86400),
             "createdAt": datetime.now().isoformat()
         }
         table.put_item(Item=item)
-        print(f"Invito generato per {guest['name']} - PIN: {access_code} - Telefono: {guest['phone']}")
+        admin_label = " [ADMIN]" if is_admin else ""
+        print(f"Invito generato per {guest['name']}{admin_label} - PIN: {access_code} - Telefono: {guest['phone']}")
 
 if __name__ == "__main__":
     seed_guests()

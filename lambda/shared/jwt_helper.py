@@ -2,13 +2,14 @@ import os
 import jwt
 from datetime import datetime, timedelta, timezone
 
-def generate_token(phone: str, name: str) -> str:
+def generate_token(phone: str, name: str, is_admin: bool = False) -> str:
     secret = os.getenv("JWT_SECRET", "local-dev-secret-change-in-prod")
     expiry_days = int(os.getenv("TOKEN_EXPIRY_DAYS", "30"))
     
     payload = {
         "phone": phone,
         "name": name,
+        "isAdmin": is_admin,
         "exp": datetime.now(timezone.utc) + timedelta(days=expiry_days),
         "iat": datetime.now(timezone.utc)
     }

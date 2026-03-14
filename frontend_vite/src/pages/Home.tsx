@@ -24,7 +24,7 @@ const rows: HomeRow[] = [
 
 export default function Home() {
     const { t } = useI18nStore();
-    const { token, rsvpCompleted } = useAuthStore();
+    const { token, rsvpCompleted, isAdmin } = useAuthStore();
     const photosEnabled = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -142,17 +142,63 @@ export default function Home() {
                         />
                     </>
                 ) : (
-                    <Link
-                        to={token ? '/rsvp' : '/accedi'}
-                        className={`btn-primary inverted ${token && rsvpCompleted ? 'success' : ''}`}
-                        aria-label="Conferma la tua presenza al matrimonio"
-                    >
-                        {token && rsvpCompleted ? (
-                            <><CheckCircle2 size={22} aria-hidden="true" /> {t('home.rsvpDone')}</>
-                        ) : (
-                            <><AlertCircle size={22} aria-hidden="true" /> {t('home.rsvpBtn')}</>
+                    /* When photos disabled: show RSVP button + optional admin photo button */
+                    <div style={{ display: 'flex', gap: 10, width: '100%', justifyContent: 'center' }}>
+                        <Link
+                            to={token ? '/rsvp' : '/accedi'}
+                            className={`btn-primary inverted ${token && rsvpCompleted ? 'success' : ''}`}
+                            aria-label="Conferma la tua presenza al matrimonio"
+                            style={isAdmin ? { flex: '0 0 75%' } : {}}
+                        >
+                            {token && rsvpCompleted ? (
+                                <><CheckCircle2 size={22} aria-hidden="true" /> {t('home.rsvpDone')}</>
+                            ) : (
+                                <><AlertCircle size={22} aria-hidden="true" /> {t('home.rsvpBtn')}</>
+                            )}
+                        </Link>
+                        {isAdmin && (
+                            <>
+                                {status === 'loading' && <Loader />}
+                                {status === 'success' && (
+                                    <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
+                                        <CheckCircle2 color="var(--color-success)" size={20} />
+                                        <span style={{ fontSize: '14px', fontWeight: 600 }}>Foto caricata!</span>
+                                    </div>
+                                )}
+                                {status === 'error' && (
+                                    <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
+                                        <AlertCircle color="var(--color-error)" size={20} />
+                                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{errorMsg}</span>
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={triggerFileInput}
+                                    className="btn-primary inverted"
+                                    aria-label="Carica una foto"
+                                    style={{
+                                        flex: '0 0 calc(25% - 10px)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 6,
+                                        fontSize: 14,
+                                        padding: '10px 8px',
+                                    }}
+                                >
+                                    <Camera size={18} aria-hidden="true" />
+                                    {t('admin.uploadPhotoBtn')}
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
+                            </>
                         )}
-                    </Link>
+                    </div>
                 )}
             </div>
         </main>

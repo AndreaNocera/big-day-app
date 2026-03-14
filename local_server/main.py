@@ -16,6 +16,8 @@ from get_upload_url.handler import handler as get_upload_url_handler
 from get_photos.handler import handler as get_photos_handler
 from update_profile.handler import handler as update_profile_handler
 from process_photo.handler import handler as process_photo_handler
+from admin_get_rsvps.handler import handler as admin_get_rsvps_handler
+from admin_get_photos.handler import handler as admin_get_photos_handler
 
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -142,6 +144,16 @@ async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials 
 async def update_profile_route(request: Request, body: ProfileRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Salva l'email opzionale nel profilo dell'utente."""
     return await handle_lambda(request, update_profile_handler, body)
+
+@app.get("/admin/rsvps", summary="[Admin] Tutti gli RSVP")
+async def admin_get_rsvps_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Restituisce tutti gli RSVP. Richiede token admin."""
+    return await handle_lambda(request, admin_get_rsvps_handler)
+
+@app.get("/admin/photos", summary="[Admin] Tutte le foto per ospite")
+async def admin_get_photos_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Restituisce tutte le foto raggruppate per ospite. Richiede token admin."""
+    return await handle_lambda(request, admin_get_photos_handler)
 
 @app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")
 async def debug_process_photo(request: Request, body: Dict[str, str], auth: HTTPAuthorizationCredentials = Depends(security)):
