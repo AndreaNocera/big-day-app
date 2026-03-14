@@ -1,3 +1,4 @@
-name,phone
-Grande Amico,+393389374650
-Grande Amica,+34600000000
+name,phone,isAdmin
+Grande Amico,+393389374650,false
+Grande Amica,+34600000000,false
+Admin Ospite,+393001234567,true

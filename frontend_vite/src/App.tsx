@@ -10,12 +10,21 @@ import Rsvp from '@/pages/Rsvp';
 import Photos from '@/pages/Photos';
 import Travel from '@/pages/Travel';
 import Honeymoon from '@/pages/Honeymoon';
+import AdminDashboard from '@/pages/AdminDashboard';
 import { useAuthStore } from '@/store/authStore';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { token, _hasHydrated } = useAuthStore();
-    if (!_hasHydrated) return null; // wait for hydration
+    if (!_hasHydrated) return null;
     if (!token) return <Navigate to="/accedi" replace />;
+    return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+    const { token, isAdmin, _hasHydrated } = useAuthStore();
+    if (!_hasHydrated) return null;
+    if (!token) return <Navigate to="/accedi" replace />;
+    if (!isAdmin) return <Navigate to="/" replace />;
     return <>{children}</>;
 }
 
@@ -50,6 +59,14 @@ export default function App() {
                         <ProtectedRoute>
                             <Photos />
                         </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin"
+                    element={
+                        <AdminRoute>
+                            <AdminDashboard />
+                        </AdminRoute>
                     }
                 />
                 {/* Legacy redirects from the old Next.js paths */}

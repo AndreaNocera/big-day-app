@@ -6,7 +6,7 @@ import { useI18nStore } from '@/store/i18nStore';
 export default function BottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { token } = useAuthStore();
+    const { token, isAdmin } = useAuthStore();
     const { t } = useI18nStore();
 
     const isHome = location.pathname === '/';
@@ -32,7 +32,7 @@ export default function BottomNav() {
                         <HelpCircle size={24} />
                         <span>{t('nav.faq' as any)}</span>
                     </Link>
-                    {token && photosEnabled && (
+                    {token && (photosEnabled || isAdmin) && (
                         <Link to="/foto" className="bottom-nav-item">
                             <Image size={24} />
                             <span>{t('home.cardGallery')}</span>

@@ -165,6 +165,18 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        admin_get_rsvps = _lambda.Function(self, "AdminGetRsvps",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/admin_get_rsvps"),
+            **lambda_kwargs
+        )
+
+        admin_get_photos = _lambda.Function(self, "AdminGetPhotos",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/admin_get_photos"),
+            **lambda_kwargs
+        )
+
         # Permissions
         invites_table.grant_read_write_data(send_invites)
         invites_table.grant_read_write_data(verify_magic_link)
@@ -174,10 +186,14 @@ class WeddingStack(Stack):
         photos_table.grant_read_write_data(get_upload_url)
         photos_table.grant_read_write_data(process_photo) # Need write for thumbKey
         photos_table.grant_read_data(get_photos)
+        photos_table.grant_read_data(admin_get_photos)
+        rsvp_table.grant_read_data(admin_get_rsvps)
+        invites_table.grant_read_data(admin_get_rsvps)
         
         photos_bucket.grant_put(get_upload_url)
         photos_bucket.grant_put_acl(get_upload_url)
         photos_bucket.grant_read(get_photos)
+        photos_bucket.grant_read(admin_get_photos)
         photos_bucket.grant_read_write(process_photo) # Read original, write thumb
 
         # S3 Trigger for process_photo
@@ -221,6 +237,10 @@ class WeddingStack(Stack):
         
         profile = api.root.add_resource("profile")
         profile.add_resource("email").add_method("POST", apigw.LambdaIntegration(update_profile))
+
+        admin = api.root.add_resource("admin")
+        admin.add_resource("rsvps").add_method("GET", apigw.LambdaIntegration(admin_get_rsvps))
+        admin.add_resource("photos").add_method("GET", apigw.LambdaIntegration(admin_get_photos))
         
         # Frontend Hosting
         frontend_bucket = s3.Bucket(self, "WeddingFrontendBucket",

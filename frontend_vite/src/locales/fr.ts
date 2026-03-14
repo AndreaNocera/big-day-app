@@ -38,7 +38,7 @@ export const fr = {
         cardProgramSub: "La journée heure par heure",
         cardFaq: "FAQ",
         cardFaqSub: "Questions fréquentes",
-        cardGallery: "Ma Galerie",
+        cardGallery: "Galerie",
         cardGallerySub: "Vos souvenirs de la journée",
         quote: "“La vie est une histoire qui mérite d'être partagée.”\n—Inconnu, mais certainement très intelligent",
         storyTitle: "Et c'est pourquoi nous voulons partager notre histoire avec vous \u2764",
@@ -156,5 +156,26 @@ export const fr = {
         honeymoonButton: "Japon",
         honeymoonText: "Votre présence à notre mariage est, sans aucun doute, **le plus beau cadeau que nous puissions recevoir**.\n\nSi vous souhaitez contribuer à notre prochaine aventure, nous serons ravis de l'attribuer à **notre voyage au Japon**, qui sera notre première grande escapade en tant que jeunes mariés.\n\nPour ceux d'entre vous qui souhaitent également nous accompagner dans cette aventure, nous mettons à votre disposition nos coordonnées bancaires ci-dessous, vous pouvez utiliser le que vous trouvez le plus pratique.\n\nMerci de faire partie de ce voyage avec nous.\nNous porterons un toast à votre santé depuis l'autre bout du monde !",
         giftData: "IBAN"
+    },
+    admin: {
+        monitoringBtn: "Suivi",
+        dashboard: "Tableau de Bord",
+        totalGuests: "Invitations totales",
+        attending: "Confirmés",
+        notAttending: "Absent(e)s",
+        noResponse: "Sans réponse",
+        adults: "Adultes",
+        children: "Enfants",
+        sleepAtCastle: "Dorment au château",
+        busInterest: "Intérêt pour le bus",
+        dietaryRestrictions: "Restrictions alimentaires",
+        emailsCollected: "Emails collectés",
+        noData: "Aucune donnée disponible",
+        photosByGuest: "Photos par invité",
+        noPhotos: "Aucune photo chargée",
+        downloadPhoto: "Télécharger la photo",
+        uploadPhotoBtn: "Photos",
+        expand: "Développer",
+        collapse: "Réduire"
     }
 };

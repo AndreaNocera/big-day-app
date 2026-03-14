@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { User, ChevronDown, LogOut } from 'lucide-react';
+import { User, ChevronDown, LogOut, BarChart2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useI18nStore, LANGUAGES } from '@/store/i18nStore';
 
 export function Header() {
-    const { token, guestName, logout } = useAuthStore();
+    const { token, guestName, isAdmin, logout } = useAuthStore();
     const { language, setLanguage, t } = useI18nStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -113,6 +113,18 @@ export function Header() {
                                         <User size={16} aria-hidden="true" />
                                         <span>{t('profile.myRsvp')}</span>
                                     </button>
+                                    {isAdmin && (
+                                        <button
+                                            className="profile-action-btn"
+                                            onClick={() => {
+                                                setProfileOpen(false);
+                                                navigate('/admin');
+                                            }}
+                                        >
+                                            <BarChart2 size={16} aria-hidden="true" />
+                                            <span>{t('admin.monitoringBtn')}</span>
+                                        </button>
+                                    )}
                                     <button
                                         className="profile-action-btn logout"
                                         onClick={() => {

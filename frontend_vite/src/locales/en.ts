@@ -38,7 +38,7 @@ export const en = {
         cardProgramSub: "The day hour by hour",
         cardFaq: "FAQ",
         cardFaqSub: "Frequently asked questions",
-        cardGallery: "My Gallery",
+        cardGallery: "Gallery",
         cardGallerySub: "Your memories of the day",
         quote: "“Life is a story that deserves to be shared.”\n—Unknown, but surely very intelligent",
         storyTitle: "And that's why we want to share our story with you \u2764",
@@ -156,5 +156,26 @@ export const en = {
         honeymoonButton: "Japan",
         honeymoonText: "Your presence at our wedding is, without a doubt, **the greatest gift we could receive**.\n\nIf you wish to contribute to our next adventure, we would be delighted to put it towards **our trip to Japan**, which will be our first big getaway as newlyweds.\n\nFor those who want to join us on this adventure as well, we provide our bank details below, you can use the one that is more convenient for you.\n\nThank you for being part of this journey with us.\nWe will toast to you from the other side of the world!",
         giftData: "IBAN"
+    },
+    admin: {
+        monitoringBtn: "Monitoring",
+        dashboard: "Monitoring Dashboard",
+        totalGuests: "Total invitations",
+        attending: "Confirmed",
+        notAttending: "Not attending",
+        noResponse: "No response",
+        adults: "Adults",
+        children: "Children",
+        sleepAtCastle: "Sleeping at castle",
+        busInterest: "Bus interest",
+        dietaryRestrictions: "Dietary restrictions",
+        emailsCollected: "Emails collected",
+        noData: "No data available",
+        photosByGuest: "Photos by guest",
+        noPhotos: "No photos uploaded",
+        downloadPhoto: "Download photo",
+        uploadPhotoBtn: "Photos",
+        expand: "Expand",
+        collapse: "Collapse"
     }
 };

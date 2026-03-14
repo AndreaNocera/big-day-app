@@ -352,6 +352,7 @@ export default function Rsvp() {
                     </div>
                 )}
 
+                {/* Submit */}
                 <button
                     type="submit"
                     className="btn-primary"

@@ -5,6 +5,11 @@ export async function getPhotos() {
     return data.photos || [];
 }
 
+export async function getAllPhotos() {
+    const data = await fetchWithAuth('/admin/photos');
+    return data.guests || [];
+}
+
 export async function getUploadUrl(filename: string, contentType: string) {
     return fetchWithAuth('/photos/upload', {
         method: 'POST',

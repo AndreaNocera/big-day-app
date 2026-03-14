@@ -41,12 +41,14 @@ def handler(event, context):
             return json_response(401, {"error": "Credenziali scadute"})
 
         # Generate token with phone instead of email
-        jwt_token = generate_token(item.get("phoneNumber", phone), item.get("guestName", ""))
+        is_admin = bool(item.get("isAdmin", False))
+        jwt_token = generate_token(item.get("phoneNumber", phone), item.get("guestName", ""), is_admin)
 
         return json_response(200, {
             "message": "Autenticazione riuscita",
             "jwt": jwt_token,
-            "guestName": item.get("guestName")
+            "guestName": item.get("guestName"),
+            "isAdmin": is_admin
         })
         
     except Exception as e:
