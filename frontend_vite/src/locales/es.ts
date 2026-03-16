@@ -77,7 +77,7 @@ export const es = {
     faq: {
         title: "Preguntas Frecuentes",
         items: [
-            { q: "Dress code", a: "No hay un dress code específico. Venid como os sintáis más cómodos para celebrar con nosotros. La única petición es evitar el blanco, reservado para la novia :)" },
+            { q: "Código de vestimenta", a: "No hay un código de vestimenta específico. Venid como os sintáis más cómodos para celebrar con nosotros. La única petición es evitar el blanco, reservado para la novia :)" },
             { q: "¿A qué hora empieza la ceremonia?", a: "El horario aproximado de la ceremonia es a las 17:00 en el Castillo del Buen Amor." },
             { q: "¿A qué hora deberíamos llegar?", a: "Os recomendamos llegar entre las 16:30 y las 16:45 para poder estar tranquilos antes de empezar la ceremonia." },
             { q: "¿Cómo llegar al Castillo del Buen Amor desde Salamanca?", a: "El castillo se encuentra a unos 20 minutos en coche al norte de Salamanca. Salid de Salamanca por la A-66 en dirección Zamora. Tomad el desvío hacia la N-630 (Valdunciel). Seguid por la N-630 hasta encontrar a la derecha el cartel del Castillo del Buen Amor, que indica el acceso. (Importante: una vez en la N-630, no toméis en ningún momento la dirección Topas.) Si utilizas GPS, podéis introducir directamente “Castillo del Buen Amor” como destino." },
