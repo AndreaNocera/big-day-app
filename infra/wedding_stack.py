@@ -254,11 +254,13 @@ class WeddingStack(Stack):
             removal_policy=RemovalPolicy.DESTROY, # RETAIN in prod if preferred
             auto_delete_objects=True
         )
-
-        s3_deploy.BucketDeployment(self, "DeployFrontend",
-            sources=[s3_deploy.Source.asset("../frontend_vite/dist")],
-            destination_bucket=frontend_bucket
-        )
+        # Deployment
+        skip_frontend = self.node.try_get_context("skip_frontend") == "true"
+        if not skip_frontend:
+            s3_deploy.BucketDeployment(self, "DeployFrontend",
+                sources=[s3_deploy.Source.asset("../frontend_vite/dist")],
+                destination_bucket=frontend_bucket
+            )
 
         CfnOutput(self, "ApiUrl", value=api.url)
         CfnOutput(self, "FrontendUrl", value=frontend_bucket.bucket_website_url)

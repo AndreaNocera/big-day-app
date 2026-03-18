@@ -12,11 +12,22 @@ else
 fi
 
 # 2. Build del frontend (Vite - usa le variabili prod)
-cd frontend_vite
-cp ../.env.production .env.production
-npm run build
-cd ..
+if [[ "$*" != *"--skip-frontend"* ]] && [[ "$*" != *"-sf"* ]]; then
+    echo "Building frontend..."
+    cd frontend_vite
+    cp ../.env.production .env.production
+    npm run build
+    cd ..
+else
+    echo "Skipping frontend build."
+fi
 
-# 2. Deploy con CDK
+# 3. Deploy con CDK
 cd infra
-npx cdk deploy --profile big-day-app
+CDK_ARGS=()
+if [[ "$*" == *"--skip-frontend"* ]] || [[ "$*" == *"-sf"* ]]; then
+    CDK_ARGS+=("-c" "skip_frontend=true")
+fi
+
+npx cdk deploy --profile big-day-app "${CDK_ARGS[@]}"
+cd ..

@@ -52,21 +52,21 @@ def handler(event, context):
             <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
                 <div style="margin-bottom: 25px;">
                     <p>Ciao {guest_name}!</p>
-                    <p>La tua mail è stata aggiunta.<br>
+                    <p>La tua mail è stata aggiunta con successo.<br>
                     Se dovesse servire, ti invieremo a questo indirizzo tutti gli aggiornamenti.</p>
                     <p>Grazie,<br>Elisa ed Andrea</p>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                 <div style="margin-bottom: 25px;">
                     <p>¡Hola {guest_name}!</p>
-                    <p>Tu correo ha sido añadido.<br>
+                    <p>Tu correo ha sido añadido con éxito.<br>
                     Si fuera necesario, te enviaremos todas las actualizaciones a esta dirección.</p>
                     <p>Gracias,<br>Elisa y Andrea</p>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                 <div>
                     <p>Hi {guest_name}!</p>
-                    <p>Your email has been added.<br>
+                    <p>Your email has been added with success.<br>
                     If needed, we will send all updates to this address.</p>
                     <p>Thanks,<br>Elisa and Andrea</p>
                 </div>
