@@ -2,7 +2,7 @@ import { Bed, Car, Train, Bus, Info, ExternalLink } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 
 export default function Travel() {
-    const { t, language } = useI18nStore();
+    const { t } = useI18nStore();
 
     const formatText = (text: string) => {
         return text.split('\n').map((line, i) => {
@@ -42,12 +42,12 @@ export default function Travel() {
             <section className="section-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                     <Bed size={24} color="var(--color-primary)" />
-                    <h3 style={{ fontSize: '18px', fontWeight: 600 }}>{t('travel.salamancaTitle' as any)}</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: 600 }}>{t('travel.cityAccommodationTitle' as any)}</h3>
                 </div>
-                {formatText(t('travel.salamancaText' as any))}
+                {formatText(t('travel.cityAccommodationText' as any))}
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
                     <a
-                        href="https://www.alojamientoensalamanca.com/"
+                        href={t('travel.cityAccommodationUrl' as any)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary"
@@ -62,7 +62,7 @@ export default function Travel() {
                         }}
                     >
                         <ExternalLink size={18} />
-                        {t('travel.salamancaLink' as any)}
+                        {t('travel.cityAccommodationLink' as any)}
                     </a>
                 </div>
             </section>
@@ -80,7 +80,7 @@ export default function Travel() {
                 {formatText(t('travel.transportIntro' as any))}
 
                 <div style={{ marginTop: '24px', borderTop: '1px solid var(--color-border)', paddingTop: '20px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>{t('travel.howToReachSalamanca' as any)}</h4>
+                    <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>{t('travel.howToReachCity' as any)}</h4>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', gap: '12px' }}>
@@ -95,7 +95,7 @@ export default function Travel() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <a
-                                href="https://www.renfe.com"
+                                href={t('travel.renfeUrl' as any)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn-primary"
@@ -121,7 +121,7 @@ export default function Travel() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <a
-                                href={language === 'es' ? "https://www.monbus.es/es" : "https://www.monbus.es/en"}
+                                href={t('travel.monbusUrl' as any)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn-primary"
