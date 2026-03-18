@@ -93,7 +93,8 @@ class WeddingStack(Stack):
             "ENV": "production",
             "JWT_SECRET": os.getenv("JWT_SECRET", "change-me-in-prod"),
             "S3_BUCKET": photos_bucket.bucket_name,
-            "SES_FROM_EMAIL": os.getenv("SES_FROM_EMAIL", "noreply@yourdomain.com"),
+            "MAILERSEND_API_KEY": os.getenv("MAILERSEND_API_KEY", ""),
+            "MAILERSEND_FROM_EMAIL": os.getenv("MAILERSEND_FROM_EMAIL", "noreply@yourdomain.com"),
             "SNS_SENDER_ID": os.getenv("SNS_SENDER_ID", "Matrimonio"),
             "TOKEN_EXPIRY_DAYS": os.getenv("TOKEN_EXPIRY_DAYS", "30")
         }
@@ -210,11 +211,7 @@ class WeddingStack(Stack):
             resources=["*"]
         ))
 
-        # Add SES permissions to update_profile
-        update_profile.add_to_role_policy(iam.PolicyStatement(
-            actions=["ses:SendEmail", "ses:SendRawEmail"],
-            resources=["*"]
-        ))
+        # Removed SES permissions for update_profile since we are using MailerSend HTTP API
 
         # API Gateway
         api = apigw.RestApi(self, "WeddingApi",
