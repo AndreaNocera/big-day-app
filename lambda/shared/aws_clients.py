@@ -46,7 +46,7 @@ def send_email(to: str, subject: str, body_html: str):
         try:
             msg = MIMEText(body_html, "html")
             msg["Subject"] = subject
-            msg["From"] = os.getenv("SES_FROM_EMAIL", "noreply@local.domain")
+            msg["From"] = os.getenv("MAILERSEND_FROM_EMAIL", "noreply@local.domain")
             msg["To"] = to
             
             # Nota: 'mailhog' è l'hostname nel network docker
@@ -57,10 +57,50 @@ def send_email(to: str, subject: str, body_html: str):
             print(f"[EMAIL MOCK] Errore critico invio SMTP: {e}")
             raise e
     else:
-        ses = boto3.client("ses", region_name=os.getenv("AWS_REGION", "eu-west-1"))
-        ses.send_email(
-            Source=os.getenv("SES_FROM_EMAIL"),
-            Destination={"ToAddresses": [to]},
-            Message={"Subject": {"Data": subject},
-                     "Body": {"Html": {"Data": body_html}}}
-        )
+        import urllib.request
+        import urllib.error
+        import json
+        
+        api_key = os.getenv("MAILERSEND_API_KEY")
+        from_email = os.getenv("MAILERSEND_FROM_EMAIL")
+        
+        if not api_key or not from_email:
+            print("ERROR: MAILERSEND_API_KEY or MAILERSEND_FROM_EMAIL non configurati.")
+            return
+
+        url = "https://api.mailersend.com/v1/email"
+        
+        payload = {
+            "from": {
+                "email": from_email,
+                "name": "Matrimonio"
+            },
+            "to": [
+                {
+                    "email": to
+                }
+            ],
+            "subject": subject,
+            "html": body_html
+        }
+        
+        data = json.dumps(payload).encode("utf-8")
+        
+        req = urllib.request.Request(url, data=data)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+        req.add_header("Authorization", f"Bearer {api_key}")
+        # Use a more realistic browser-like User-Agent to avoid Cloudflare 1010 block
+        req.add_header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+        
+        try:
+            response = urllib.request.urlopen(req)
+            print(f"Mailersend response status: {response.getcode()}")
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8")
+            print(f"Errore HTTP Mailersend ({e.code}): {error_body}")
+            raise e
+        except Exception as e:
+            print(f"Errore generico invio email con Mailersend: {e}")
+            raise e
+
