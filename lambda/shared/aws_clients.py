@@ -73,7 +73,7 @@ def send_email(to: str, subject: str, body_html: str):
         payload = {
             "from": {
                 "email": from_email,
-                "name": "Matrimonio"
+                "name": "A&E Matrimonio"
             },
             "to": [
                 {
