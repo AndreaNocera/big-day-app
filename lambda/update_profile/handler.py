@@ -45,14 +45,31 @@ def handler(event, context):
             }
         )
 
-        # Invia email di conferma
-        subject = "Conferma Email - Il Nostro Matrimonio"
+        # Invia email di conferma multilingua
+        subject = "Conferma Email / Email Confirmation / Confirmación de correo"
         body_html = f"""
         <html>
-            <body>
-                <h1>Ciao {guest_name}!</h1>
-                <p>Grazie per aver aggiunto la tua email per ricevere aggiornamenti e foto del matrimonio.</p>
-                <p>Ci vediamo presto!</p>
+            <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
+                <div style="margin-bottom: 25px;">
+                    <p>Ciao {guest_name}!</p>
+                    <p>La tua mail è stata aggiunta.<br>
+                    Se dovesse servire, ti invieremo a questo indirizzo tutti gli aggiornamenti.</p>
+                    <p>Grazie,<br>Elisa ed Andrea</p>
+                </div>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <div style="margin-bottom: 25px;">
+                    <p>¡Hola {guest_name}!</p>
+                    <p>Tu correo ha sido añadido.<br>
+                    Si fuera necesario, te enviaremos todas las actualizaciones a esta dirección.</p>
+                    <p>Gracias,<br>Elisa y Andrea</p>
+                </div>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <div>
+                    <p>Hi {guest_name}!</p>
+                    <p>Your email has been added.<br>
+                    If needed, we will send all updates to this address.</p>
+                    <p>Thanks,<br>Elisa and Andrea</p>
+                </div>
             </body>
         </html>
         """
