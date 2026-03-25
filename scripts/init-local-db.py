@@ -32,8 +32,18 @@ def init_db():
         {
             "TableName": "WeddingPhotos",
             "KeySchema": [{"AttributeName": "PK", "KeyType": "HASH"}],
-            "AttributeDefinitions": [{"AttributeName": "PK", "AttributeType": "S"}],
-            "BillingMode": "PAY_PER_REQUEST"
+            "AttributeDefinitions": [
+                {"AttributeName": "PK", "AttributeType": "S"},
+                {"AttributeName": "s3Key", "AttributeType": "S"}
+            ],
+            "BillingMode": "PAY_PER_REQUEST",
+            "GlobalSecondaryIndexes": [
+                {
+                    "IndexName": "S3KeyIndex",
+                    "KeySchema": [{"AttributeName": "s3Key", "KeyType": "HASH"}],
+                    "Projection": {"ProjectionType": "ALL"}
+                }
+            ]
         }
     ]
     

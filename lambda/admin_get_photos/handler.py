@@ -43,7 +43,7 @@ def handler(event, context):
         photos_by_guest: dict = {}
         for item in items:
             uploaded_by = item.get("uploadedBy", "Sconosciuto")
-            guest_name = item.get("guestName", uploaded_by)
+            guest_name = item.get("uploaderName", "Ospite Sconosciuto")
 
             # Thumbnail URL for gallery display
             thumb_key = item.get("thumbKey") or item.get("s3Key")
