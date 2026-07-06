@@ -178,6 +178,18 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        verify_photo_access = _lambda.Function(self, "VerifyPhotoAccess",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/verify_photo_access"),
+            **lambda_kwargs
+        )
+
+        guest_register = _lambda.Function(self, "GuestRegister",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/guest_register"),
+            **lambda_kwargs
+        )
+
         # Permissions
         invites_table.grant_read_write_data(send_invites)
         invites_table.grant_read_write_data(verify_magic_link)
@@ -185,6 +197,11 @@ class WeddingStack(Stack):
         rsvp_table.grant_read_write_data(survey_handler)
         rsvp_table.grant_read_write_data(update_profile)
         photos_table.grant_read_write_data(get_upload_url)
+        # get_upload_url valida il codice foto (item PHOTOACCESS# in WeddingInvites)
+        invites_table.grant_read_data(get_upload_url)
+        # verify_photo_access legge solo; guest_register valida il codice e crea il profilo PHOTOGUEST#
+        invites_table.grant_read_data(verify_photo_access)
+        invites_table.grant_read_write_data(guest_register)
         photos_table.grant_read_write_data(process_photo) # Need write for thumbKey
         photos_table.grant_read_data(get_photos)
         photos_table.grant_read_data(admin_get_photos)
@@ -223,7 +240,9 @@ class WeddingStack(Stack):
         )
 
         # api.root.add_resource("invites").add_resource("send").add_method("POST", apigw.LambdaIntegration(send_invites))
-        api.root.add_resource("auth").add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_magic_link))
+        auth = api.root.add_resource("auth")
+        auth.add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_magic_link))
+        auth.add_resource("guest").add_method("POST", apigw.LambdaIntegration(guest_register))
         rsvp = api.root.add_resource("rsvp")
         rsvp.add_method("POST", apigw.LambdaIntegration(rsvp_handler))
         rsvp.add_method("GET", apigw.LambdaIntegration(rsvp_handler))
@@ -231,6 +250,7 @@ class WeddingStack(Stack):
         photos = api.root.add_resource("photos")
         photos.add_method("GET", apigw.LambdaIntegration(get_photos))
         photos.add_resource("upload").add_method("POST", apigw.LambdaIntegration(get_upload_url))
+        photos.add_resource("access").add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_photo_access))
         
         profile = api.root.add_resource("profile")
         profile.add_resource("email").add_method("POST", apigw.LambdaIntegration(update_profile))
@@ -243,7 +263,8 @@ class WeddingStack(Stack):
         frontend_bucket = s3.Bucket(self, "WeddingFrontendBucket",
             bucket_name="wedding-frontend-prod-nocera", # Explicit unique name
             website_index_document="index.html",
-            website_error_document="404.html",
+            # SPA: i deep-link (es. /photos-on?c=...) devono servire l'app React
+            website_error_document="index.html",
             public_read_access=True,
             block_public_access=s3.BlockPublicAccess(
                 block_public_acls=False,
