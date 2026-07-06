@@ -23,7 +23,21 @@ export const example = {
         errorTitle: "[Cannot verify]",
         errorCheck: "[Please check you opened the correct l...]",
         errorTryManual: "[Try with Phone and PIN]",
-        errorInvalid: "[Invalid phone number or PIN]"
+        errorInvalid: "[Invalid phone number or PIN]",
+        guestModeLink: "[Don't remember your login details? You can sign up again with your name and surname, click here!]",
+        guestSubtitle: "[Sign up with your first and last name to start uploading your photos.]",
+        firstNameLabel: "[First name]",
+        firstNamePlaceholder: "[E.g. John]",
+        lastNameLabel: "[Last name]",
+        lastNamePlaceholder: "[E.g. Smith]",
+        guestRegisterBtn: "[Start uploading photos]",
+        guestBackToLogin: "[Have you already logged in to confirm your attendance? If you want, you can log in with your phone number and the code shared via WhatsApp. Click here]"
+    },
+    photosOn: {
+        validating: "[Verifying the link...]",
+        invalidTitle: "[Invalid link]",
+        invalidText: "[This link is invalid or has been deactivated. Contact the couple to receive a new one.]",
+        backHome: "[Back to Home]"
     },
     home: {
         date: "[Saturday, June 14 2026]",
@@ -117,11 +131,15 @@ export const example = {
         busQuestion: "[Are you interested in the bus from Su...]",
         footerText: "[If you need to change some answers yo...]",
         yes: "[Yes]",
-        no: "[No]"
+        no: "[No]",
+        readOnlyNotice: "[RSVPs are now closed. Below you can find a summary of the answers you sent us.]",
+        noRsvpFound: "[No RSVP was found for this profile.]"
     },
     gallery: {
         title: "[Photo Gallery]",
         uploadBtn: "[Upload Photo]",
+        uploadSuccess: "[Photo uploaded!]",
+        loginToUpload: "[Log in to upload photos]",
         uploading: "[Uploading...]",
         empty: "[You haven't uploaded any photos yet.]",
         myPhotos: "[My photos]"

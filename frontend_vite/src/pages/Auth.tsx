@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore } from '@/store/i18nStore';
-import { verifyMagicLink } from '@/lib/auth';
+import { verifyMagicLink, registerPhotoGuest } from '@/lib/auth';
 import { Loader } from '@/components/Loader';
 
 export default function Auth() {
@@ -11,12 +12,23 @@ export default function Auth() {
     const { setAuth, token, _hasHydrated } = useAuthStore();
     const { t } = useI18nStore();
 
+    const { photoCode } = usePhotoAccessStore();
+
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [countryCode, setCountryCode] = useState('+39');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [accessCode, setAccessCode] = useState('');
+
+    // Modalita' "photo guest": registrazione con nome e cognome,
+    // disponibile solo per chi e' arrivato tramite il link speciale foto.
+    // Se c'e' un codice foto, e' la modalita' proposta per prima;
+    // il login con telefono + PIN resta raggiungibile dal link in basso.
+    const [guestMode, setGuestMode] = useState<boolean | null>(null);
+    const isGuestMode = (guestMode ?? true) && !!photoCode;
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
 
     const rawPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
     const urlPhone = rawPhone ? rawPhone.replace(/\s+/g, '+') : null;
@@ -25,7 +37,7 @@ export default function Auth() {
     useEffect(() => {
         if (!_hasHydrated) return;
         if (token) {
-            const redirectTo = searchParams.get('redirect') || '/rsvp';
+            const redirectTo = searchParams.get('redirect') || '/';
             navigate(redirectTo, { replace: true });
         }
     }, [token, _hasHydrated, navigate, searchParams]);
@@ -47,10 +59,29 @@ export default function Auth() {
             const formattedPhone = `${countryCode}${phoneNumber.replace(/\s+/g, '')}`;
             // We still use the library function, which we will update next to drop token
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
-            setAuth(data.jwt, data.guestName, data.isAdmin ?? false);
+            setAuth(data.jwt, data.guestName, data.isAdmin ?? false, data.isPhotoGuest ?? false);
             setStatus('success');
-            const redirectTo = searchParams.get('redirect') || '/rsvp';
+            const redirectTo = searchParams.get('redirect') || '/';
             setTimeout(() => navigate(redirectTo, { replace: true }), 1500);
+        } catch (err: unknown) {
+            setStatus('error');
+            setErrorMsg(err instanceof Error ? err.message : t('auth.errorInvalid'));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGuestRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!photoCode) return;
+        setIsLoading(true);
+        setStatus('loading');
+        setErrorMsg('');
+        try {
+            const data = await registerPhotoGuest(photoCode, firstName.trim(), lastName.trim());
+            setAuth(data.jwt, data.guestName, false, true);
+            setStatus('success');
+            setTimeout(() => navigate('/', { replace: true }), 1500);
         } catch (err: unknown) {
             setStatus('error');
             setErrorMsg(err instanceof Error ? err.message : t('auth.errorInvalid'));
@@ -80,9 +111,61 @@ export default function Auth() {
                 {t('auth.title')}
             </h1>
             <p className="text-muted mb-4" style={{ fontSize: '16px', lineHeight: '1.6' }}>
-                {t('auth.subtitle')}
+                {isGuestMode ? t('auth.guestSubtitle') : t('auth.subtitle')}
             </p>
 
+            {isGuestMode ? (
+                <form onSubmit={handleGuestRegister} className="form-card" noValidate>
+                    {status === 'error' && (
+                        <div className="form-error" role="alert">{errorMsg}</div>
+                    )}
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="first-name">{t('auth.firstNameLabel')}</label>
+                        <input
+                            id="first-name"
+                            type="text"
+                            className="form-input"
+                            required
+                            placeholder={t('auth.firstNamePlaceholder')}
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            autoComplete="given-name"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="last-name">{t('auth.lastNameLabel')}</label>
+                        <input
+                            id="last-name"
+                            type="text"
+                            className="form-input"
+                            required
+                            placeholder={t('auth.lastNamePlaceholder')}
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            autoComplete="family-name"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn-primary mt-6"
+                        disabled={isLoading || !firstName.trim() || !lastName.trim()}
+                    >
+                        {isLoading ? t('auth.loading') : t('auth.guestRegisterBtn')}
+                    </button>
+
+                    <button
+                        type="button"
+                        className="text-muted"
+                        style={{ background: 'none', border: 'none', marginTop: 16, textDecoration: 'underline', cursor: 'pointer', width: '100%' }}
+                        onClick={() => { setGuestMode(false); setStatus('idle'); setErrorMsg(''); }}
+                    >
+                        {t('auth.guestBackToLogin')}
+                    </button>
+                </form>
+            ) : (
             <form onSubmit={handleManualLogin} className="form-card" noValidate>
                 {status === 'error' && (
                     <div className="form-error" role="alert">{errorMsg}</div>
@@ -141,7 +224,19 @@ export default function Auth() {
                 >
                     {isLoading ? t('auth.loading') : t('auth.loginBtn')}
                 </button>
+
+                {photoCode && (
+                    <button
+                        type="button"
+                        className="text-muted"
+                        style={{ background: 'none', border: 'none', marginTop: 16, textDecoration: 'underline', cursor: 'pointer', width: '100%' }}
+                        onClick={() => { setGuestMode(true); setStatus('idle'); setErrorMsg(''); }}
+                    >
+                        {t('auth.guestModeLink')}
+                    </button>
+                )}
             </form>
+            )}
         </div>
     );
 }

@@ -7,6 +7,7 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import s3, dynamodb
 from shared.jwt_helper import verify_token
+from shared.photo_access import validate_photo_code
 from shared.api_utils import json_response
 
 def handler(event, context):
@@ -22,8 +23,14 @@ def handler(event, context):
         
         if not payload:
             return json_response(401, {"error": "Token invalido o scaduto"})
-            
-        email = payload.get("email")
+
+        # Autorizzazione upload: admin sempre, altrimenti serve un codice
+        # di accesso foto valido (header X-Photo-Code, dal link speciale).
+        is_admin = bool(payload.get("isAdmin", False))
+        photo_code = headers.get("x-photo-code", headers.get("X-Photo-Code", ""))
+        if not is_admin and not validate_photo_code(photo_code):
+            return json_response(403, {"error": "Caricamento foto non abilitato"})
+
         user_name = payload.get("name", "Ospite").replace(" ", "")
         
         body = json.loads(event.get("body", "{}"))

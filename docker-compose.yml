@@ -11,7 +11,7 @@ services:
     environment:
       - ENV=local
       - VITE_API_URL=http://localhost:8000
-      - VITE_ENABLE_PHOTOS=false
+      - VITE_ENABLE_PHOTOS=${VITE_ENABLE_PHOTOS:-false}
       - VITE_HONEYMOON_NAME_1=${VITE_HONEYMOON_NAME_1:-Name 1}
       - VITE_HONEYMOON_IBAN_1=${VITE_HONEYMOON_IBAN_1:-DUMMY_IBAN_1}
       - VITE_HONEYMOON_NAME_2=${VITE_HONEYMOON_NAME_2:-Name 2}

@@ -8,6 +8,7 @@ import Location from '@/pages/Location';
 import Faq from '@/pages/Faq';
 import Rsvp from '@/pages/Rsvp';
 import Photos from '@/pages/Photos';
+import PhotosOn from '@/pages/PhotosOn';
 import Travel from '@/pages/Travel';
 import Honeymoon from '@/pages/Honeymoon';
 import AdminDashboard from '@/pages/AdminDashboard';
@@ -17,6 +18,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { token, _hasHydrated } = useAuthStore();
     if (!_hasHydrated) return null;
     if (!token) return <Navigate to="/accedi" replace />;
+    return <>{children}</>;
+}
+
+/* Come ProtectedRoute, ma esclude i "photo guest" (registrati via link foto):
+   non hanno un invito, quindi niente RSVP. */
+function InvitedRoute({ children }: { children: React.ReactNode }) {
+    const { token, isPhotoGuest, _hasHydrated } = useAuthStore();
+    if (!_hasHydrated) return null;
+    if (!token) return <Navigate to="/accedi" replace />;
+    if (isPhotoGuest) return <Navigate to="/" replace />;
     return <>{children}</>;
 }
 
@@ -45,12 +56,13 @@ export default function App() {
                 <Route path="/viaggio" element={<Travel />} />
                 <Route path="/regalo" element={<Honeymoon />} />
                 <Route path="/faq" element={<Faq />} />
+                <Route path="/photos-on" element={<PhotosOn />} />
                 <Route
                     path="/rsvp"
                     element={
-                        <ProtectedRoute>
+                        <InvitedRoute>
                             <Rsvp />
-                        </ProtectedRoute>
+                        </InvitedRoute>
                     }
                 />
                 <Route

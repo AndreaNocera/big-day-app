@@ -17,6 +17,30 @@ export async function verifyMagicLink(args: VerifyAuthArgs) {
     return data;
 }
 
+export async function verifyPhotoAccess(code: string) {
+    const response = await fetch(`${getApiUrl()}/photos/access/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Codice non valido');
+    return data;
+}
+
+export async function registerPhotoGuest(code: string, firstName: string, lastName: string) {
+    const response = await fetch(`${getApiUrl()}/auth/guest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, firstName, lastName }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Errore di registrazione');
+    return data;
+}
+
 export async function getRsvp() {
     return fetchWithAuth('/rsvp', {
         method: 'GET',

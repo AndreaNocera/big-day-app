@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useI18nStore, LANGUAGES } from '@/store/i18nStore';
 
 export function Header() {
-    const { token, guestName, isAdmin, logout } = useAuthStore();
+    const { token, guestName, isAdmin, isPhotoGuest, logout } = useAuthStore();
     const { language, setLanguage, t } = useI18nStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -101,18 +101,21 @@ export function Header() {
                                     <span className="profile-dropdown-name">{guestName}</span>
                                 </div>
                                 <div className="profile-dropdown-actions">
-                                    <button
-                                        className="profile-action-btn"
-                                        onClick={() => {
-                                            setProfileOpen(false);
-                                            if (location.pathname !== '/rsvp') {
-                                                navigate('/rsvp');
-                                            }
-                                        }}
-                                    >
-                                        <User size={16} aria-hidden="true" />
-                                        <span>{t('profile.myRsvp')}</span>
-                                    </button>
+                                    {/* I photo guest non hanno un invito: niente voce RSVP */}
+                                    {!isPhotoGuest && (
+                                        <button
+                                            className="profile-action-btn"
+                                            onClick={() => {
+                                                setProfileOpen(false);
+                                                if (location.pathname !== '/rsvp') {
+                                                    navigate('/rsvp');
+                                                }
+                                            }}
+                                        >
+                                            <User size={16} aria-hidden="true" />
+                                            <span>{t('profile.myRsvp')}</span>
+                                        </button>
+                                    )}
                                     {isAdmin && (
                                         <button
                                             className="profile-action-btn"

@@ -21,7 +21,12 @@ def handler(event, context):
         
         if not payload:
             return json_response(401, {"error": "Token invalido o scaduto"})
-            
+
+        # I "photo guest" (registrati via link foto) non hanno un invito:
+        # nessun accesso all'RSVP.
+        if payload.get("isPhotoGuest", False):
+            return json_response(403, {"error": "RSVP non disponibile per questo profilo"})
+
         phone = payload.get("phone")
         guest_name = payload.get("name")
         

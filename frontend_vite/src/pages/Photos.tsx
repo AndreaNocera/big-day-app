@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { AlertCircle, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
+import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { getPhotos, getAllPhotos, getUploadUrl, uploadToS3 } from '@/lib/photos';
 import { Loader } from '@/components/Loader';
 
@@ -124,13 +125,14 @@ function AdminAccordion({ group }: { group: GuestGroup }) {
 export default function Photos() {
     const { t } = useI18nStore();
     const { isAdmin } = useAuthStore();
+    const { photoCode } = usePhotoAccessStore();
     const [photos, setPhotos] = useState<Photo[]>([]);
     const [guestGroups, setGuestGroups] = useState<GuestGroup[]>([]);
     const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
 
-    // Upload state (admin always, others only if VITE_ENABLE_PHOTOS=true)
-    const canUpload = isAdmin || enablePhotos;
+    // Upload: admin sempre; gli altri con kill-switch attivo + codice foto valido
+    const canUpload = isAdmin || (enablePhotos && !!photoCode);
     const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
     const [uploadError, setUploadError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);

@@ -1,4 +1,5 @@
 import { fetchWithAuth } from './api';
+import { usePhotoAccessStore } from '@/store/photoAccessStore';
 
 export async function getPhotos() {
     const data = await fetchWithAuth('/photos');
@@ -11,8 +12,11 @@ export async function getAllPhotos() {
 }
 
 export async function getUploadUrl(filename: string, contentType: string) {
+    // Il backend autorizza l'upload solo per admin o con codice foto valido
+    const photoCode = usePhotoAccessStore.getState().photoCode;
     return fetchWithAuth('/photos/upload', {
         method: 'POST',
+        headers: photoCode ? { 'X-Photo-Code': photoCode } : undefined,
         body: JSON.stringify({ filename, contentType }),
     });
 }

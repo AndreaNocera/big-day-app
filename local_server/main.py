@@ -18,6 +18,8 @@ from update_profile.handler import handler as update_profile_handler
 from process_photo.handler import handler as process_photo_handler
 from admin_get_rsvps.handler import handler as admin_get_rsvps_handler
 from admin_get_photos.handler import handler as admin_get_photos_handler
+from verify_photo_access.handler import handler as verify_photo_access_handler
+from guest_register.handler import handler as guest_register_handler
 
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -69,6 +71,14 @@ class UploadUrlRequest(BaseModel):
 class InviteTrigger(BaseModel):
     pass
 
+class PhotoAccessRequest(BaseModel):
+    code: str
+
+class GuestRegisterRequest(BaseModel):
+    code: str
+    firstName: str
+    lastName: str
+
 class ProfileRequest(BaseModel):
     email: str
 
@@ -114,6 +124,16 @@ async def handle_lambda(request: Request, lambda_handler, body_data: Any = None)
 async def verify_magic_link_route(request: Request, body: AuthVerifyRequest):
     """Valida il token inviato via SMS e restituisce un JWT."""
     return await handle_lambda(request, verify_magic_link_handler, body)
+
+@app.post("/photos/access/verify", summary="Verifica Codice Accesso Foto")
+async def verify_photo_access_route(request: Request, body: PhotoAccessRequest):
+    """Valida il codice del link speciale foto. Endpoint pubblico."""
+    return await handle_lambda(request, verify_photo_access_handler, body)
+
+@app.post("/auth/guest", summary="Registrazione Photo Guest")
+async def guest_register_route(request: Request, body: GuestRegisterRequest):
+    """Registra un ospite senza invito (nome + cognome + codice foto) e restituisce un JWT."""
+    return await handle_lambda(request, guest_register_handler, body)
 
 @app.post("/rsvp", summary="Salva RSVP")
 async def rsvp_post_route(request: Request, body: RSVPRequest, auth: HTTPAuthorizationCredentials = Depends(security)):

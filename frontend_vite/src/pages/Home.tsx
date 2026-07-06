@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Camera, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { Loader } from '@/components/Loader';
@@ -24,8 +25,11 @@ const rows: HomeRow[] = [
 
 export default function Home() {
     const { t } = useI18nStore();
-    const { token, rsvpCompleted, isAdmin } = useAuthStore();
+    const { token, isAdmin } = useAuthStore();
+    const { photoCode } = usePhotoAccessStore();
+    // VITE_ENABLE_PHOTOS e' il kill-switch globale; il gate reale e' admin o codice foto
     const photosEnabled = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
+    const canUsePhotos = isAdmin || (photosEnabled && !!photoCode);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { uploadPhoto, status, errorMsg } = usePhotoUpload();
@@ -106,101 +110,41 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Area Pulsanti (Upload / RSVP) */}
-            <div className="rsvp-section home-actions">
-                {photosEnabled ? (
-                    <>
-                        {status === 'loading' && <Loader />}
-                        {status === 'success' && (
-                            <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
-                                <CheckCircle2 color="var(--color-success)" size={20} />
-                                <span style={{ fontSize: '14px', fontWeight: 600 }}>Foto caricata!</span>
-                            </div>
-                        )}
-                        {status === 'error' && (
-                            <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
-                                <AlertCircle color="var(--color-error)" size={20} />
-                                <span style={{ fontSize: '14px', fontWeight: 600 }}>{errorMsg}</span>
-                            </div>
-                        )}
+            {/* Area Pulsanti: solo Carica Foto, visibile ad admin o a chi ha il link speciale */}
+            {canUsePhotos && (
+                <div className="rsvp-section home-actions">
+                    {status === 'loading' && <Loader />}
+                    {status === 'success' && (
+                        <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
+                            <CheckCircle2 color="var(--color-success)" size={20} />
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{t('gallery.uploadSuccess')}</span>
+                        </div>
+                    )}
+                    {status === 'error' && (
+                        <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
+                            <AlertCircle color="var(--color-error)" size={20} />
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{errorMsg}</span>
+                        </div>
+                    )}
 
-                        <Link
-                            to={token ? "#" : "/accedi?redirect=/"}
-                            onClick={token ? (e) => { e.preventDefault(); triggerFileInput(); } : undefined}
-                            className="btn-primary inverted"
-                            aria-label="Carica una foto del matrimonio"
-                        >
-                            <Camera size={22} aria-hidden="true" style={{ marginRight: '8px' }} />
-                            {token ? t('gallery.uploadBtn') : "Accedi per caricare foto"}
-                        </Link>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
-                    </>
-                ) : (
-                    /* When photos disabled: show RSVP button + optional admin photo button */
-                    <div style={{ display: 'flex', gap: 10, width: '100%', justifyContent: 'center' }}>
-                        <Link
-                            to={token ? '/rsvp' : '/accedi'}
-                            className={`btn-primary inverted ${token && rsvpCompleted ? 'success' : ''}`}
-                            aria-label="Conferma la tua presenza al matrimonio"
-                            style={isAdmin ? { flex: '0 0 75%' } : {}}
-                        >
-                            {token && rsvpCompleted ? (
-                                <><CheckCircle2 size={22} aria-hidden="true" /> {t('home.rsvpDone')}</>
-                            ) : (
-                                <><AlertCircle size={22} aria-hidden="true" /> {t('home.rsvpBtn')}</>
-                            )}
-                        </Link>
-                        {isAdmin && (
-                            <>
-                                {status === 'loading' && <Loader />}
-                                {status === 'success' && (
-                                    <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
-                                        <CheckCircle2 color="var(--color-success)" size={20} />
-                                        <span style={{ fontSize: '14px', fontWeight: 600 }}>Foto caricata!</span>
-                                    </div>
-                                )}
-                                {status === 'error' && (
-                                    <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
-                                        <AlertCircle color="var(--color-error)" size={20} />
-                                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{errorMsg}</span>
-                                    </div>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={triggerFileInput}
-                                    className="btn-primary inverted"
-                                    aria-label="Carica una foto"
-                                    style={{
-                                        flex: '0 0 calc(25% - 10px)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 6,
-                                        fontSize: 14,
-                                        padding: '10px 8px',
-                                    }}
-                                >
-                                    <Camera size={18} aria-hidden="true" />
-                                    {t('admin.uploadPhotoBtn')}
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileChange}
-                                    accept="image/*"
-                                    style={{ display: 'none' }}
-                                />
-                            </>
-                        )}
-                    </div>
-                )}
-            </div>
+                    <Link
+                        to={token ? "#" : "/accedi?redirect=/"}
+                        onClick={token ? (e) => { e.preventDefault(); triggerFileInput(); } : undefined}
+                        className="btn-primary photo"
+                        aria-label="Carica una foto del matrimonio"
+                    >
+                        <Camera size={22} aria-hidden="true" style={{ marginRight: '8px' }} />
+                        {token ? t('gallery.uploadBtn') : t('gallery.loginToUpload')}
+                    </Link>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                    />
+                </div>
+            )}
         </main>
     );
 }
