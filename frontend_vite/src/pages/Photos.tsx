@@ -174,7 +174,9 @@ export default function Photos() {
             }, 1500);
         } catch (err) {
             setUploadStatus('error');
-            setUploadError(err instanceof Error ? err.message : t('rsvp.errorText'));
+            // 403 = codice foto revocato/non autorizzato: messaggio dedicato
+            const status = (err as { status?: number })?.status;
+            setUploadError(status === 403 ? t('gallery.uploadRevoked') : t('rsvp.errorText'));
         }
         // Reset input
         if (fileInputRef.current) fileInputRef.current.value = '';

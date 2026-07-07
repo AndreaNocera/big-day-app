@@ -140,6 +140,7 @@ export const example = {
         uploadBtn: "[Upload Photo]",
         uploadSuccess: "[Photo uploaded!]",
         loginToUpload: "[Log in to upload photos]",
+        uploadRevoked: "[Your photo access has been revoked. Contact the couple to get a new one!]",
         uploading: "[Uploading...]",
         empty: "[You haven't uploaded any photos yet.]",
         myPhotos: "[My photos]"

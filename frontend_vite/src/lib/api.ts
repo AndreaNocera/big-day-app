@@ -21,7 +21,9 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.error || 'Errore API');
+        const error = new Error(data.error || 'Errore API') as Error & { status?: number };
+        error.status = response.status;
+        throw error;
     }
 
     return data;

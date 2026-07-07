@@ -30,4 +30,21 @@ if [[ "$*" == *"--skip-frontend"* ]] || [[ "$*" == *"-sf"* ]]; then
 fi
 
 npx cdk deploy --profile big-day-app "${CDK_ARGS[@]}"
+CDK_EXIT=$?
 cd ..
+
+# 4. Invalidazione CloudFront (solo se il frontend e' stato deployato con successo)
+if [[ $CDK_EXIT -eq 0 ]] && [[ "$*" != *"--skip-frontend"* ]] && [[ "$*" != *"-sf"* ]]; then
+    echo "Invalidating CloudFront cache..."
+    DIST_ID=$(aws cloudfront list-distributions --profile big-day-app \
+        --query "DistributionList.Items[?Origins.Items[0].DomainName=='wedding-frontend-prod-nocera.s3-website-eu-west-1.amazonaws.com'].Id | [0]" \
+        --output text)
+    if [[ -n "$DIST_ID" && "$DIST_ID" != "None" ]]; then
+        aws cloudfront create-invalidation --profile big-day-app \
+            --distribution-id "$DIST_ID" --paths "/*" \
+            --query "Invalidation.{Id:Id,Status:Status}" --output table
+        echo "Invalidazione creata sulla distribuzione $DIST_ID (completamento in ~1-3 min)."
+    else
+        echo "ATTENZIONE: distribuzione CloudFront non trovata, invalidazione saltata."
+    fi
+fi

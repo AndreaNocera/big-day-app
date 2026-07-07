@@ -36,7 +36,9 @@ export function usePhotoUpload(onSuccess?: () => void) {
         } catch (err) {
             console.error("Upload error:", err);
             setStatus('error');
-            setErrorMsg(t('rsvp.errorText'));
+            // 403 = codice foto revocato/non autorizzato: messaggio dedicato
+            const status = (err as { status?: number })?.status;
+            setErrorMsg(status === 403 ? t('gallery.uploadRevoked') : t('rsvp.errorText'));
         }
     };
 
