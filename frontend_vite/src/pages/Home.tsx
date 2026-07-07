@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
+import { ACCEPT_ATTR, MAX_FILES_PER_BATCH, MAX_FILE_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
 
 const HERO_IMAGE = "/photos/PXL_20250331_120242708.webp";
@@ -32,13 +33,15 @@ export default function Home() {
     const canUsePhotos = isAdmin || (photosEnabled && !!photoCode);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { uploadPhoto, status, errorMsg } = usePhotoUpload();
+    const { uploadPhotos, status, progress, message } = usePhotoUpload();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            await uploadPhoto(file);
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            await uploadPhotos(files);
         }
+        // Reset per poter riselezionare gli stessi file
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const triggerFileInput = () => {
@@ -113,20 +116,36 @@ export default function Home() {
             {/* Area Pulsanti: solo Carica Foto, visibile ad admin o a chi ha il link speciale */}
             {canUsePhotos && (
                 <div className="rsvp-section home-actions">
-                    {status === 'loading' && <Loader />}
+                    {status === 'loading' && <Loader message={`${t('gallery.uploading')} ${progress.done}/${progress.total}`} />}
                     {status === 'success' && (
                         <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
                             <CheckCircle2 color="var(--color-success)" size={20} />
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{t('gallery.uploadSuccess')}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{message}</span>
                         </div>
                     )}
                     {status === 'error' && (
                         <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
                             <AlertCircle color="var(--color-error)" size={20} />
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{errorMsg}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{message}</span>
                         </div>
                     )}
 
+                    {token && (
+                        <p style={{
+                            textAlign: 'center',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: 'white',
+                            background: 'rgba(25, 5, 60, 0.92)',
+                            border: '1px solid rgba(255, 255, 255, 0.35)',
+                            borderRadius: 12,
+                            padding: '5px 14px',
+                            width: 'fit-content',
+                            margin: '0 auto 8px',
+                        }}>
+                            {fmt(t('gallery.uploadHint'), { max: MAX_FILES_PER_BATCH, mb: MAX_FILE_SIZE_MB })}
+                        </p>
+                    )}
                     <Link
                         to={token ? "#" : "/accedi?redirect=/"}
                         onClick={token ? (e) => { e.preventDefault(); triggerFileInput(); } : undefined}
@@ -140,7 +159,8 @@ export default function Home() {
                         type="file"
                         ref={fileInputRef}
                         onChange={handleFileChange}
-                        accept="image/*"
+                        accept={ACCEPT_ATTR}
+                        multiple
                         style={{ display: 'none' }}
                     />
                 </div>

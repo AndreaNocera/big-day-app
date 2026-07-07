@@ -141,6 +141,13 @@ export const example = {
         uploadSuccess: "[Photo uploaded!]",
         loginToUpload: "[Log in to upload photos]",
         uploadRevoked: "[Your photo access has been revoked. Contact the couple to get a new one!]",
+        uploadDoneMulti: "[Upload complete: {n} photos!]",
+        uploadPartial: "[Uploaded: {ok} · Failed: {ko}]",
+        uploadSkippedFormat: "[{n} skipped: unsupported format (JPEG, PNG, WebP only)]",
+        uploadSkippedSize: "[{n} skipped: over {mb} MB]",
+        uploadTooMany: "[Max {max} photos at a time: only the first {max} were uploaded]",
+        uploadNoneValid: "[No valid files: JPEG, PNG or WebP up to {mb} MB are allowed]",
+        uploadHint: "[Up to {max} photos at a time, max {mb} MB each]",
         uploading: "[Uploading...]",
         empty: "[You haven't uploaded any photos yet.]",
         myPhotos: "[My photos]"

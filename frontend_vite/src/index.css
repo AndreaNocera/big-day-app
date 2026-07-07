@@ -1502,3 +1502,30 @@ textarea {
 .text-error {
   color: var(--color-error);
 }
+
+/* ===== FALLBACK FIREFOX =====
+   Su Firefox (soprattutto Android) gli elementi position:fixed con
+   backdrop-filter vengono gestiti male dallo scrolling asincrono:
+   header, barra di navigazione e bottoni "scorrono" con la pagina
+   invece di restare fissi. Solo per Firefox togliamo il backdrop-filter
+   e compensiamo con sfondi piu' opachi. Chrome/Safari non sono toccati. */
+@supports (-moz-appearance: none) {
+  .header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .bottom-nav-bar,
+  .bottom-nav-bar:has(.inner-nav) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(90, 40, 160, 0.94);
+  }
+
+  .btn-primary.inverted {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(80, 30, 160, 0.9);
+  }
+}

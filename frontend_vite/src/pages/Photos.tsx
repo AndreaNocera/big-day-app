@@ -3,7 +3,9 @@ import { AlertCircle, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
-import { getPhotos, getAllPhotos, getUploadUrl, uploadToS3 } from '@/lib/photos';
+import { getPhotos, getAllPhotos } from '@/lib/photos';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
+import { ACCEPT_ATTR, MAX_FILES_PER_BATCH, MAX_FILE_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
 
 interface Photo {
@@ -133,8 +135,6 @@ export default function Photos() {
 
     // Upload: admin sempre; gli altri con kill-switch attivo + codice foto valido
     const canUpload = isAdmin || (enablePhotos && !!photoCode);
-    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-    const [uploadError, setUploadError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadPhotos = async () => {
@@ -155,30 +155,19 @@ export default function Photos() {
         }
     };
 
+    // Stesso hook di upload usato in Home: multi-file, validazione, progresso
+    const { uploadPhotos, status: uploadStatus, progress, message: uploadMessage } = usePhotoUpload(loadPhotos);
+
     useEffect(() => {
         loadPhotos();
     }, [isAdmin]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setUploadStatus('uploading');
-        setUploadError('');
-        try {
-            const { uploadUrl } = await getUploadUrl(file.name, file.type);
-            await uploadToS3(uploadUrl, file);
-            setUploadStatus('success');
-            setTimeout(() => {
-                setUploadStatus('idle');
-                loadPhotos();
-            }, 1500);
-        } catch (err) {
-            setUploadStatus('error');
-            // 403 = codice foto revocato/non autorizzato: messaggio dedicato
-            const status = (err as { status?: number })?.status;
-            setUploadError(status === 403 ? t('gallery.uploadRevoked') : t('rsvp.errorText'));
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            await uploadPhotos(files);
         }
-        // Reset input
+        // Reset per poter riselezionare gli stessi file
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -197,7 +186,8 @@ export default function Photos() {
                         <div>
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept={ACCEPT_ATTR}
+                                multiple
                                 ref={fileInputRef}
                                 style={{ display: 'none' }}
                                 onChange={handleFileChange}
@@ -205,24 +195,29 @@ export default function Photos() {
                             />
                             <button
                                 className="btn-primary"
-                                disabled={uploadStatus === 'uploading'}
+                                disabled={uploadStatus === 'loading'}
                                 onClick={() => fileInputRef.current?.click()}
                                 style={{ padding: '10px 16px', fontSize: 14 }}
                             >
-                                {uploadStatus === 'uploading' ? t('gallery.uploading') : t('gallery.uploadBtn')}
+                                {uploadStatus === 'loading'
+                                    ? `${t('gallery.uploading')} ${progress.done}/${progress.total}`
+                                    : t('gallery.uploadBtn')}
                             </button>
+                            <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '6px 0 0', textAlign: 'right', maxWidth: 160 }}>
+                                {fmt(t('gallery.uploadHint'), { max: MAX_FILES_PER_BATCH, mb: MAX_FILE_SIZE_MB })}
+                            </p>
                         </div>
                     )}
                 </div>
 
                 {uploadStatus === 'error' && (
                     <div className="form-error" style={{ marginBottom: 16 }}>
-                        <AlertCircle size={16} /> {uploadError}
+                        <AlertCircle size={16} /> {uploadMessage}
                     </div>
                 )}
                 {uploadStatus === 'success' && (
                     <div style={{ marginBottom: 16, color: 'var(--color-success)', fontWeight: 500 }}>
-                        ✓ Foto caricata con successo!
+                        ✓ {uploadMessage}
                     </div>
                 )}
 

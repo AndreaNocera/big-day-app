@@ -10,6 +10,14 @@ from shared.jwt_helper import verify_token
 from shared.photo_access import validate_photo_code
 from shared.api_utils import json_response
 
+# Formati immagine ammessi (i piu' comuni da telefono).
+# L'estensione della chiave S3 deriva dal contentType validato, non dal filename utente.
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+}
+
 def handler(event, context):
     try:
         headers = event.get("headers", {})
@@ -35,15 +43,18 @@ def handler(event, context):
         
         body = json.loads(event.get("body", "{}"))
         filename = body.get("filename", "")
-        content_type = body.get("contentType", "image/jpeg")
-        
+        content_type = (body.get("contentType") or "").lower()
+
         if not filename:
             return json_response(400, {"error": "Filename mancante"})
-        
+
+        ext = ALLOWED_IMAGE_TYPES.get(content_type)
+        if not ext:
+            return json_response(400, {"error": "Formato non supportato: sono ammessi JPEG, PNG e WebP"})
+
         # Generate identifier and unique key
         photo_id = str(uuid.uuid4())
         short_id = photo_id[:8]
-        ext = filename.split(".")[-1] if "." in filename else "jpg"
         s3_key = f"uploads/{user_name}-{short_id}.{ext}"
         
         bucket_name = "wedding-photos-local" if os.getenv("ENV", "local") == "local" else os.getenv("S3_BUCKET", "wedding-photos-prod")
