@@ -235,7 +235,9 @@ class WeddingStack(Stack):
             rest_api_name="Wedding Service",
             default_cors_preflight_options=apigw.CorsOptions(
                 allow_origins=apigw.Cors.ALL_ORIGINS,
-                allow_methods=apigw.Cors.ALL_METHODS
+                allow_methods=apigw.Cors.ALL_METHODS,
+                # X-Photo-Code e' l'header custom usato per autorizzare l'upload foto
+                allow_headers=[*apigw.Cors.DEFAULT_HEADERS, "X-Photo-Code"]
             )
         )
 
