@@ -2,14 +2,11 @@ import json
 import pytest
 import boto3
 import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 os.environ["ENV"] = "test"
-os.environ["JWT_SECRET"] = "test-secret"
+os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
 
 from moto import mock_aws
-from handler import handler
+from rsvp_handler import handler as handler_module
 import shared.jwt_helper as jwt_helper
 
 @pytest.fixture
@@ -24,31 +21,50 @@ def aws_mock():
         )
         yield dynamodb
 
-def test_rsvp_success(aws_mock, monkeypatch):
-    import handler as h
-    monkeypatch.setattr(h, "dynamodb", aws_mock)
-    
-    token = jwt_helper.generate_token("mario@test.com", "Mario Rossi")
-    event = {
-        "headers": {"Authorization": f"Bearer {token}"},
-        "body": json.dumps({
-            "attending": True,
-            "plusOne": False,
-            "dietaryRestrictions": "Nessuna"
-        })
-    }
-    
-    response = handler(event, {})
-    assert response["statusCode"] == 200
-    
+def test_rsvp_get_restituisce_la_risposta(aws_mock, monkeypatch):
+    monkeypatch.setattr(handler_module, "dynamodb", aws_mock)
+
     table = aws_mock.Table("WeddingRSVP")
-    item = table.get_item(Key={"PK": "GUEST#mario@test.com"})["Item"]
-    assert item["attending"] == True
+    table.put_item(Item={
+        "PK": "GUEST#+390000000001",
+        "guestName": "Test Guest",
+        "attending": True,
+        "itemType": "RSVP",
+    })
+
+    token = jwt_helper.generate_token("+390000000001", "Test Guest")
+    event = {
+        "httpMethod": "GET",
+        "headers": {"Authorization": f"Bearer {token}"},
+    }
+
+    response = handler_module.handler(event, {})
+    assert response["statusCode"] == 200
+    body = json.loads(response["body"])
+    assert body["guestName"] == "Test Guest"
+    assert body["attending"] is True
+
+
+def test_rsvp_post_rifiutato_perche_chiuso(aws_mock, monkeypatch):
+    monkeypatch.setattr(handler_module, "dynamodb", aws_mock)
+
+    token = jwt_helper.generate_token("+390000000001", "Test Guest")
+    event = {
+        "httpMethod": "POST",
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({"attending": True}),
+    }
+
+    response = handler_module.handler(event, {})
+
+    assert response["statusCode"] == 403
+    assert aws_mock.Table("WeddingRSVP").scan()["Items"] == []
 
 def test_rsvp_invalid_token():
     event = {
+        "httpMethod": "GET",
         "headers": {"Authorization": "Bearer fake_token"},
         "body": "{}"
     }
-    response = handler(event, {})
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 401

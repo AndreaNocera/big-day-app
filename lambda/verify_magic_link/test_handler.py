@@ -3,13 +3,11 @@ import time
 import pytest
 import boto3
 import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 os.environ["ENV"] = "test"
+os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
 
 from moto import mock_aws
-from handler import handler
+from verify_magic_link import handler as handler_module
 
 @pytest.fixture
 def aws_mock():
@@ -23,53 +21,52 @@ def aws_mock():
         )
         yield dynamodb
 
-def test_token_valido(aws_mock, monkeypatch):
-    # Dobbiamo overridare il db resource nell'handler col mock
-    import handler as h
-    monkeypatch.setattr(h, "dynamodb", aws_mock)
+def test_phone_and_pin_validi(aws_mock, monkeypatch):
+    monkeypatch.setattr(handler_module, "dynamodb", aws_mock)
     
     table = aws_mock.Table("WeddingInvites")
     table.put_item(Item={
-        "PK": "TOKEN#abc123",
-        "email": "mario@test.com",
-        "guestName": "Mario Rossi",
-        "tokenUsed": False,
+        "PK": "TOKEN#test-user",
+        "phoneNumber": "+390000000001",
+        "accessCode": "1234",
+        "guestName": "Test Guest",
+        "isAdmin": False,
         "expiresAt": int(time.time()) + 86400
     })
-    event = {"body": json.dumps({"token": "abc123", "email": "mario@test.com"})}
-    response = handler(event, {})
+    event = {"body": json.dumps({"phoneNumber": "+390000000001", "accessCode": "1234"})}
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
     assert "jwt" in body
+    assert body["guestName"] == "Test Guest"
+    assert body["isAdmin"] is False
 
-def test_token_gia_usato(aws_mock, monkeypatch):
-    import handler as h
-    monkeypatch.setattr(h, "dynamodb", aws_mock)
+def test_pin_errato(aws_mock, monkeypatch):
+    monkeypatch.setattr(handler_module, "dynamodb", aws_mock)
     
     table = aws_mock.Table("WeddingInvites")
     table.put_item(Item={
-        "PK": "TOKEN#used123",
-        "email": "mario@test.com",
-        "guestName": "Mario Rossi",
-        "tokenUsed": True,
+        "PK": "TOKEN#test-user",
+        "phoneNumber": "+390000000001",
+        "accessCode": "1234",
+        "guestName": "Test Guest",
         "expiresAt": int(time.time()) + 86400
     })
-    event = {"body": json.dumps({"token": "used123", "email": "mario@test.com"})}
-    response = handler(event, {})
+    event = {"body": json.dumps({"phoneNumber": "+390000000001", "accessCode": "9999"})}
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 401
 
-def test_token_scaduto(aws_mock, monkeypatch):
-    import handler as h
-    monkeypatch.setattr(h, "dynamodb", aws_mock)
+def test_credenziali_scadute(aws_mock, monkeypatch):
+    monkeypatch.setattr(handler_module, "dynamodb", aws_mock)
     
     table = aws_mock.Table("WeddingInvites")
     table.put_item(Item={
-        "PK": "TOKEN#old123",
-        "email": "mario@test.com",
-        "guestName": "Mario Rossi",
-        "tokenUsed": False,
+        "PK": "TOKEN#expired-user",
+        "phoneNumber": "+390000000001",
+        "accessCode": "1234",
+        "guestName": "Test Guest",
         "expiresAt": int(time.time()) - 100  # scaduto
     })
-    event = {"body": json.dumps({"token": "old123", "email": "mario@test.com"})}
-    response = handler(event, {})
+    event = {"body": json.dumps({"phoneNumber": "+390000000001", "accessCode": "1234"})}
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 401

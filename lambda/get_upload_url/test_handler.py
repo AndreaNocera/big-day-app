@@ -2,14 +2,11 @@ import json
 import pytest
 import boto3
 import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 os.environ["ENV"] = "test"
-os.environ["JWT_SECRET"] = "test-secret"
+os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
 
 from moto import mock_aws
-from handler import handler
+from get_upload_url import handler as handler_module
 import shared.jwt_helper as jwt_helper
 
 @pytest.fixture
@@ -33,11 +30,10 @@ def aws_mock():
 
 def test_get_upload_url_success(aws_mock, monkeypatch):
     dynamodb_mock, s3_mock = aws_mock
-    import handler as h
-    monkeypatch.setattr(h, "dynamodb", dynamodb_mock)
-    monkeypatch.setattr(h, "s3", s3_mock)
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
     
-    token = jwt_helper.generate_token("mario@test.com", "Mario Rossi")
+    token = jwt_helper.generate_token("+390000000001", "Test Admin", is_admin=True)
     event = {
         "headers": {"Authorization": f"Bearer {token}"},
         "body": json.dumps({
@@ -46,7 +42,7 @@ def test_get_upload_url_success(aws_mock, monkeypatch):
         })
     }
     
-    response = handler(event, {})
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 200
     
     body = json.loads(response["body"])
@@ -58,7 +54,7 @@ def test_get_upload_url_success(aws_mock, monkeypatch):
     # we need to get items since we don't know the uuid
     items = table.scan()["Items"]
     assert len(items) == 1
-    assert items[0]["uploadedBy"] == "mario@test.com"
+    assert items[0]["uploadedBy"] == "+390000000001"
     assert items[0]["s3Key"] == body["key"]
 
 def test_get_upload_url_invalid_token():
@@ -66,5 +62,5 @@ def test_get_upload_url_invalid_token():
         "headers": {"Authorization": "Bearer fake"},
         "body": "{}"
     }
-    response = handler(event, {})
+    response = handler_module.handler(event, {})
     assert response["statusCode"] == 401

@@ -135,9 +135,9 @@ async def guest_register_route(request: Request, body: GuestRegisterRequest):
     """Registra un ospite senza invito (nome + cognome + codice foto) e restituisce un JWT."""
     return await handle_lambda(request, guest_register_handler, body)
 
-@app.post("/rsvp", summary="Salva RSVP")
+@app.post("/rsvp", summary="RSVP chiuso (compatibilita')")
 async def rsvp_post_route(request: Request, body: RSVPRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Salva la conferma di partecipazione. Richiede header Authorization."""
+    """Route mantenuta per compatibilita': il backend rifiuta nuove modifiche."""
     return await handle_lambda(request, rsvp_handler, body)
 
 @app.get("/rsvp", summary="Carica RSVP")

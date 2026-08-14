@@ -17,10 +17,10 @@ def seed_guests():
     
     # Set isAdmin=True to grant admin privileges to a guest
     guests = [
-        {"name": "Andrea Nocera", "phone": "+393389374650", "isAdmin": True},
-        {"name": "Luigi Verdi", "phone": "+391", "isAdmin": False},
-        {"name": "Giorgio Bianchi", "phone": "+392", "isAdmin": False},
-        {"name": "Francesco Rossi", "phone": "+393", "isAdmin": False},
+        {"name": "Admin Locale", "phone": "+391", "isAdmin": True},
+        {"name": "Ospite Locale Uno", "phone": "+392", "isAdmin": False},
+        {"name": "Ospite Locale Due", "phone": "+341", "isAdmin": False},
+        {"name": "Ospite Locale Tre", "phone": "+331", "isAdmin": False},
     ]
     
     for guest in guests:

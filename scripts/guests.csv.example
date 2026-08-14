@@ -1,4 +1,4 @@
 name,phone,isAdmin
-Grande Amico,+393389374650,false
-Grande Amica,+34600000000,false
-Admin Ospite,+393001234567,true
+Ospite Esempio Uno,+390000000001,false
+Ospite Esempio Due,+340000000001,false
+Admin Esempio,+330000000001,true

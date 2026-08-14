@@ -1,5 +1,9 @@
 # Big Day App - Gemini Development Guide
 
+> [!WARNING]
+> Documento storico e non piu' aggiornato. Per lo stato corrente, il setup locale
+> e le istruzioni destinate agli agenti IA usare `README.md` e `AGENTS.md`.
+
 This document provides a comprehensive overview of the "Big Day App" for developers, focusing on its architecture, features, and development practices.
 
 > [!IMPORTANT]

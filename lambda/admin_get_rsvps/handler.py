@@ -5,7 +5,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import dynamodb
 from shared.jwt_helper import verify_token
-from shared.api_utils import json_response
 
 def handler(event, context):
     cors_headers = {
@@ -29,24 +28,37 @@ def handler(event, context):
         if not payload.get("isAdmin", False):
             return {"statusCode": 403, "headers": cors_headers, "body": json.dumps({"error": "Accesso non autorizzato"})}
 
+        # Consideriamo risposte soltanto i record che contengono effettivamente
+        # il campo attending. In questo modo escludiamo record creati dal solo
+        # salvataggio email ed eventuali record legacy di tipo survey.
         table = dynamodb.Table("WeddingRSVP")
-        response = table.scan()
+        response = table.scan(FilterExpression="attribute_exists(attending)")
         items = response.get("Items", [])
 
         while "LastEvaluatedKey" in response:
-            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            response = table.scan(
+                FilterExpression="attribute_exists(attending)",
+                ExclusiveStartKey=response["LastEvaluatedKey"],
+            )
             items.extend(response.get("Items", []))
 
-        # Get total invitations from WeddingInvites table
+        # La tabella WeddingInvites contiene anche codici foto e photo guest.
+        # Gli inviti reali sono identificati dal prefisso TOKEN#.
         invites_table = dynamodb.Table("WeddingInvites")
-        # We only need the count. Items in WeddingInvites are individual invitations.
-        # A full scan is needed if we want an accurate current count without a separate counter.
-        invites_response = invites_table.scan(Select='COUNT')
-        total_invites = invites_response.get('Count', 0)
-        
+        invite_scan_args = {
+            "Select": "COUNT",
+            "FilterExpression": "begins_with(PK, :prefix)",
+            "ExpressionAttributeValues": {":prefix": "TOKEN#"},
+        }
+        invites_response = invites_table.scan(**invite_scan_args)
+        total_invites = invites_response.get("Count", 0)
+
         while "LastEvaluatedKey" in invites_response:
-            invites_response = invites_table.scan(Select='COUNT', ExclusiveStartKey=invites_response["LastEvaluatedKey"])
-            total_invites += invites_response.get('Count', 0)
+            invites_response = invites_table.scan(
+                **invite_scan_args,
+                ExclusiveStartKey=invites_response["LastEvaluatedKey"],
+            )
+            total_invites += invites_response.get("Count", 0)
 
         # Sort by submittedAt descending
         items.sort(key=lambda x: x.get("submittedAt", ""), reverse=True)
