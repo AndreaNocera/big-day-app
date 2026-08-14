@@ -13,6 +13,7 @@ export default function Auth() {
     const { t } = useI18nStore();
 
     const { photoCode } = usePhotoAccessStore();
+    const sessionExpired = searchParams.get('reason') === 'session-expired';
 
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function Auth() {
     // disponibile solo per chi e' arrivato tramite il link speciale foto.
     // Se c'e' un codice foto, e' la modalita' proposta per prima;
     // il login con telefono + PIN resta raggiungibile dal link in basso.
-    const [guestMode, setGuestMode] = useState<boolean | null>(null);
+    const [guestMode, setGuestMode] = useState<boolean | null>(sessionExpired ? false : null);
     const isGuestMode = (guestMode ?? true) && !!photoCode;
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -57,7 +58,6 @@ export default function Auth() {
         setErrorMsg('');
         try {
             const formattedPhone = `${countryCode}${phoneNumber.replace(/\s+/g, '')}`;
-            // We still use the library function, which we will update next to drop token
             const data = await verifyMagicLink({ phoneNumber: formattedPhone, accessCode });
             setAuth(data.jwt, data.guestName, data.isAdmin ?? false, data.isPhotoGuest ?? false);
             setStatus('success');
@@ -113,6 +113,12 @@ export default function Auth() {
             <p className="text-muted mb-4" style={{ fontSize: '16px', lineHeight: '1.6' }}>
                 {isGuestMode ? t('auth.guestSubtitle') : t('auth.subtitle')}
             </p>
+
+            {sessionExpired && (
+                <div className="auth-session-expired" role="status">
+                    {t('auth.sessionExpired')}
+                </div>
+            )}
 
             {isGuestMode ? (
                 <form onSubmit={handleGuestRegister} className="form-card" noValidate>

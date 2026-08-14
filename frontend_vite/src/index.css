@@ -674,6 +674,18 @@ textarea {
   border: 1px solid #FECACA;
 }
 
+.auth-session-expired {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(217, 164, 65, 0.45);
+  border-radius: 14px;
+  background: rgba(255, 248, 224, 0.92);
+  color: #6b4f16;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 /* ===== CONTENT SECTIONS ===== */
 .section-card {
   background: rgba(255, 255, 255, 0.9);

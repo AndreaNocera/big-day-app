@@ -84,6 +84,12 @@ Ambiente locale
    video, ma non accedere all'RSVP. La proprieta' e' verificata usando
    l'identificativo sintetico nel JWT e nel campo `uploadedBy`.
 
+Le chiamate autenticate passano dal client API condiviso. Se upload, galleria,
+RSVP, profilo o area admin ricevono `401`, il frontend elimina automaticamente
+il JWT non piu' valido e apre `/accedi` conservando sia il percorso di ritorno
+sia l'eventuale codice foto gia' validato dal QR. In questo recupero viene
+mostrato per primo il login telefono+PIN, con un avviso di sessione scaduta.
+
 Il codice foto in chiaro non viene salvato nel database: viene memorizzato solo
 il suo hash SHA-256. La revoca viene controllata nuovamente dal backend prima di
 ogni richiesta di upload.

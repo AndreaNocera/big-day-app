@@ -24,6 +24,7 @@ export const example = {
         errorCheck: "[Please check you opened the correct l...]",
         errorTryManual: "[Try with Phone and PIN]",
         errorInvalid: "[Invalid phone number or PIN]",
+        sessionExpired: "[Your session has expired. Log in again to continue; the photo access from the QR code is still active.]",
         guestModeLink: "[Don't remember your login details? You can sign up again with your name and surname, click here!]",
         guestSubtitle: "[Sign up with your first and last name to start uploading your photos.]",
         firstNameLabel: "[First name]",
