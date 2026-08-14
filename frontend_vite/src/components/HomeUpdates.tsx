@@ -190,10 +190,9 @@ export function HomeUpdates() {
                         <ChevronDown size={15} className="home-calendar-chevron" aria-hidden="true" />
                     </summary>
                     <div className="home-calendar-options">
-                        <span>{t('home.updatesCalendarTime')}</span>
                         <a href={googleCalendarUrl} target="_blank" rel="noopener noreferrer">
                             {t('home.updatesGoogleCalendar')}
-                            <ExternalLink size={14} aria-hidden="true" />
+                            <CalendarPlus size={14} aria-hidden="true" />
                         </a>
                         <button type="button" onClick={downloadCalendarEvent}>
                             {t('home.updatesDeviceCalendar')}
@@ -204,46 +203,64 @@ export function HomeUpdates() {
             </div>
 
             <article className="home-update-card castle">
-                <header className="home-update-card-heading">
-                    <span aria-hidden="true"><BedDouble size={25} /></span>
-                    <h3>{t('home.updatesCastleTitle')}</h3>
-                </header>
+                <details className="home-update-accordion">
+                    <summary className="home-update-card-heading">
+                        <span className="home-update-card-icon" aria-hidden="true"><BedDouble size={25} /></span>
+                        <h3>{t('home.updatesCastleTitle')}</h3>
+                        <span className="home-update-card-toggle">
+                            <span className="home-update-card-toggle-closed">{t('home.updatesShowDetails')}</span>
+                            <span className="home-update-card-toggle-open">{t('home.updatesHideDetails')}</span>
+                            <ChevronDown size={18} aria-hidden="true" />
+                        </span>
+                    </summary>
 
-                <dl className="home-update-details">
-                    <DetailRow icon={<LogIn size={18} />} label={t('home.updatesCheckIn')} value={t('home.updatesCheckInValue')} />
-                    <DetailRow icon={<Coffee size={18} />} label={t('home.updatesBreakfast')} value={t('home.updatesBreakfastValue')} />
-                    <DetailRow icon={<LogOut size={18} />} label={t('home.updatesCheckOut')} value={t('home.updatesCheckOutValue')} />
-                </dl>
+                    <div className="home-update-card-body">
+                        <dl className="home-update-details">
+                            <DetailRow icon={<LogIn size={18} />} label={t('home.updatesCheckIn')} value={t('home.updatesCheckInValue')} />
+                            <DetailRow icon={<Coffee size={18} />} label={t('home.updatesBreakfast')} value={t('home.updatesBreakfastValue')} />
+                            <DetailRow icon={<LogOut size={18} />} label={t('home.updatesCheckOut')} value={t('home.updatesCheckOutValue')} />
+                        </dl>
 
-                <div className="home-update-bus-section">
-                    <h4><Bus size={19} aria-hidden="true" /> {t('home.updatesBuses')}</h4>
-                    <dl className="home-update-details compact">
-                        <DetailRow icon={<LogIn size={17} />} label={t('home.updatesOutbound')} value={t('home.updatesCastleOutbound')} />
-                    </dl>
-                    <BusStopLink />
-                    <dl className="home-update-details compact">
-                        <DetailRow icon={<LogOut size={17} />} label={t('home.updatesReturn')} value={t('home.updatesCastleReturn')} />
-                    </dl>
-                </div>
+                        <div className="home-update-bus-section">
+                            <h4><Bus size={19} aria-hidden="true" /> {t('home.updatesBuses')}</h4>
+                            <dl className="home-update-details compact">
+                                <DetailRow icon={<LogIn size={17} />} label={t('home.updatesOutbound')} value={t('home.updatesCastleOutbound')} />
+                            </dl>
+                            <BusStopLink />
+                            <dl className="home-update-details compact">
+                                <DetailRow icon={<LogOut size={17} />} label={t('home.updatesReturn')} value={t('home.updatesCastleReturn')} />
+                            </dl>
+                        </div>
+                    </div>
+                </details>
             </article>
 
             <article className="home-update-card city">
-                <header className="home-update-card-heading">
-                    <span aria-hidden="true"><Building2 size={24} /></span>
-                    <h3>{t('home.updatesCityTitle')}</h3>
-                </header>
+                <details className="home-update-accordion">
+                    <summary className="home-update-card-heading">
+                        <span className="home-update-card-icon" aria-hidden="true"><Building2 size={24} /></span>
+                        <h3>{t('home.updatesCityTitle')}</h3>
+                        <span className="home-update-card-toggle">
+                            <span className="home-update-card-toggle-closed">{t('home.updatesShowDetails')}</span>
+                            <span className="home-update-card-toggle-open">{t('home.updatesHideDetails')}</span>
+                            <ChevronDown size={18} aria-hidden="true" />
+                        </span>
+                    </summary>
 
-                <div className="home-update-bus-section city-bus">
-                    <h4><Bus size={19} aria-hidden="true" /> {t('home.updatesBuses')}</h4>
-                    <dl className="home-update-details compact">
-                        <DetailRow icon={<LogIn size={17} />} label={t('home.updatesOutbound')} value={t('home.updatesCityOutbound')} />
-                    </dl>
-                    <BusStopLink />
-                    <dl className="home-update-details compact">
-                        <DetailRow icon={<LogOut size={17} />} label={t('home.updatesReturn')} value={t('home.updatesCityReturn')} />
-                        <DetailRow icon={<MapPin size={17} />} label={t('home.updatesReturnPoint')} value={t('home.updatesCastleParking')} />
-                    </dl>
-                </div>
+                    <div className="home-update-card-body">
+                        <div className="home-update-bus-section city-bus">
+                            <h4><Bus size={19} aria-hidden="true" /> {t('home.updatesBuses')}</h4>
+                            <dl className="home-update-details compact">
+                                <DetailRow icon={<LogIn size={17} />} label={t('home.updatesOutbound')} value={t('home.updatesCityOutbound')} />
+                            </dl>
+                            <BusStopLink />
+                            <dl className="home-update-details compact">
+                                <DetailRow icon={<LogOut size={17} />} label={t('home.updatesReturn')} value={t('home.updatesCityReturn')} />
+                                <DetailRow icon={<MapPin size={17} />} label={t('home.updatesReturnPoint')} value={t('home.updatesCastleParking')} />
+                            </dl>
+                        </div>
+                    </div>
+                </details>
             </article>
         </section>
     );

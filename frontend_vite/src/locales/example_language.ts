@@ -41,6 +41,8 @@ export const example = {
         backHome: "[Back to Home]"
     },
     home: {
+        updatesShowDetails: "[Show details]",
+        updatesHideDetails: "[Hide details]",
         date: "[Saturday, June 14 2026]",
         location: "[Beautiful Town, Country]",
         heroTitle: "[We're Getting Married! 🎉]",
