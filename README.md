@@ -13,6 +13,10 @@ come riferimento storico.
 Il progetto e' in una fase operativa avanzata:
 
 - il frontend compila per la produzione;
+- la homepage apre con un blocco multilingua in evidenza dedicato agli ultimi
+  orari di cerimonia, soggiorno e autobus, seguito dal contenuto storico; dalla
+  card della cerimonia l'evento puo' essere aggiunto a Google Calendar oppure
+  scaricato in formato iCalendar compatibile con iOS e altri calendari;
 - autenticazione, pagine informative e dashboard amministrativa sono presenti;
 - le conferme RSVP sono chiuse sia nell'interfaccia sia nel backend e mostrate
   in sola lettura;
@@ -196,7 +200,9 @@ Non inserire mai nel codice o nella documentazione valori reali di:
 - URL privati dell'ambiente di produzione.
 
 I file `.env`, `.env.local`, `.env.production`, `scripts/guests.csv`, le foto
-personali e i contenuti personalizzati possono contenere dati privati. Non
+personali e i locale personalizzati (`frontend_vite/src/locales/{it,en,es,fr}.ts`)
+possono contenere dati privati. Sono tutti ignorati da Git; il file tracciato
+`frontend_vite/src/locales/example_language.ts` deve contenere soltanto segnaposto. Non
 mostrarne il contenuto nei log e non copiarlo in issue, documenti o risposte di
 un agente IA. Per documentare la configurazione usare solo i nomi presenti in
 `.env.example` e `frontend_vite/.env.example`.
@@ -204,13 +210,17 @@ un agente IA. Per documentare la configurazione usare solo i nomi presenti in
 Variabili principali:
 
 - backend: `ENV`, `AWS_REGION`, `JWT_SECRET`, `TOKEN_EXPIRY_DAYS`,
-  `MAILERSEND_API_KEY`, `MAILERSEND_FROM_EMAIL`, `S3_BUCKET`;
+  `MAILERSEND_API_KEY`, `MAILERSEND_FROM_EMAIL`, `S3_BUCKET`,
+  `COUPLE_NAMES_IT`, `COUPLE_NAMES_ES`, `COUPLE_NAMES_EN`;
 - frontend: `VITE_API_URL`, `VITE_ENABLE_PHOTOS`,
+  `VITE_APP_TITLE`, `VITE_APP_META_DESCRIPTION`,
   `VITE_HONEYMOON_NAME_1`, `VITE_HONEYMOON_IBAN_1`,
   `VITE_HONEYMOON_NAME_2`, `VITE_HONEYMOON_IBAN_2`.
 
 Le variabili `VITE_*` vengono incorporate nel bundle durante la build: non devono
 contenere segreti, anche quando provengono da un file ignorato da Git.
+Lo stesso vale per date, luoghi e link presenti nei locale: non vengono
+versionati, ma diventano leggibili da chiunque riceva il frontend compilato.
 
 ## Avvio locale
 

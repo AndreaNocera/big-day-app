@@ -40,7 +40,7 @@ export default function Location() {
                 <div style={{ borderTop: '1px solid var(--color-border)', backgroundColor: '#f9f9f9', padding: '8px' }}>
                     <img
                         src="/photos/castillo.webp"
-                        alt="Castillo del Buen Amor"
+                        alt={t('location.venueName')}
                         style={{ width: '100%', display: 'block', objectFit: 'cover', height: 'auto', borderRadius: 4 }}
                     />
                 </div>

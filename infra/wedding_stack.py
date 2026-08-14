@@ -95,6 +95,9 @@ class WeddingStack(Stack):
             "S3_BUCKET": photos_bucket.bucket_name,
             "MAILERSEND_API_KEY": os.getenv("MAILERSEND_API_KEY", ""),
             "MAILERSEND_FROM_EMAIL": os.getenv("MAILERSEND_FROM_EMAIL", "noreply@yourdomain.com"),
+            "COUPLE_NAMES_IT": os.getenv("COUPLE_NAMES_IT", "gli sposi"),
+            "COUPLE_NAMES_ES": os.getenv("COUPLE_NAMES_ES", "los novios"),
+            "COUPLE_NAMES_EN": os.getenv("COUPLE_NAMES_EN", "the couple"),
             "SNS_SENDER_ID": os.getenv("SNS_SENDER_ID", "Matrimonio"),
             "TOKEN_EXPIRY_DAYS": os.getenv("TOKEN_EXPIRY_DAYS", "30")
         }

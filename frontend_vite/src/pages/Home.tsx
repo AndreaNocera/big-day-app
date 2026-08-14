@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Camera, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Camera, AlertCircle, Heart } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
@@ -8,6 +8,7 @@ import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
 import { UploadConfirmModal } from '@/components/UploadConfirmModal';
+import { HomeUpdates } from '@/components/HomeUpdates';
 
 const HERO_IMAGE = "/photos/PXL_20250331_120242708.webp";
 
@@ -61,6 +62,17 @@ export default function Home() {
         <main className="home-page-container">
             {/* Contenuto Principale */}
             <div className="home-content-wrapper">
+                <HomeUpdates />
+
+                <div className="home-content-divider" role="separator" aria-label={t('home.storySectionLabel')}>
+                    <span aria-hidden="true" />
+                    <div>
+                        <Heart size={15} fill="currentColor" aria-hidden="true" />
+                        <strong>{t('home.storySectionLabel')}</strong>
+                    </div>
+                    <span aria-hidden="true" />
+                </div>
+
                 {/* Frase / Citazione */}
                 <div className="home-quote">
                     {t('home.quote').split('\n').map((line, i) => (

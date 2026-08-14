@@ -26,6 +26,9 @@ def handler(event, context):
             
         phone = payload.get("phone")
         guest_name = payload.get("name", "Ospite")
+        couple_names_it = os.getenv("COUPLE_NAMES_IT", "gli sposi")
+        couple_names_es = os.getenv("COUPLE_NAMES_ES", "los novios")
+        couple_names_en = os.getenv("COUPLE_NAMES_EN", "the couple")
         
         body = json.loads(event.get("body", "{}"))
         email = body.get("email", "").strip()
@@ -54,21 +57,21 @@ def handler(event, context):
                     <p>Ciao {guest_name}!</p>
                     <p>La tua mail è stata aggiunta con successo.<br>
                     Se dovesse servire, ti invieremo a questo indirizzo tutti gli aggiornamenti.</p>
-                    <p>Grazie,<br>Elisa ed Andrea</p>
+                    <p>Grazie,<br>{couple_names_it}</p>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                 <div style="margin-bottom: 25px;">
                     <p>¡Hola {guest_name}!</p>
                     <p>Tu correo ha sido añadido con éxito.<br>
                     Si fuera necesario, te enviaremos todas las actualizaciones a esta dirección.</p>
-                    <p>Gracias,<br>Elisa y Andrea</p>
+                    <p>Gracias,<br>{couple_names_es}</p>
                 </div>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                 <div>
                     <p>Hi {guest_name}!</p>
                     <p>Your email has been added with success.<br>
                     If needed, we will send all updates to this address.</p>
-                    <p>Thanks,<br>Elisa and Andrea</p>
+                    <p>Thanks,<br>{couple_names_en}</p>
                 </div>
             </body>
         </html>
