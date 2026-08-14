@@ -13,7 +13,7 @@ URL_EXPIRY_SECONDS = 600
 
 
 def handler(event, context):
-    """Genera un URL GET temporaneo solo quando un admin apre o scarica un video."""
+    """Genera un URL GET temporaneo quando un admin apre o scarica un originale."""
     try:
         headers = event.get("headers", {})
         auth_header = headers.get("authorization", headers.get("Authorization", ""))
@@ -39,17 +39,17 @@ def handler(event, context):
         item = dynamodb.Table("WeddingPhotos").get_item(Key={"PK": photo_id}).get("Item")
         if not item:
             return json_response(404, {"error": "Media non trovato"})
-        if infer_media_type(item) != "video":
-            return json_response(400, {"error": "Il media richiesto non e' un video"})
+
+        media_type = infer_media_type(item)
 
         s3_key = item.get("s3Key")
         if not s3_key:
-            return json_response(404, {"error": "File video non trovato"})
+            return json_response(404, {"error": "File originale non trovato"})
 
         extension = s3_key.rsplit(".", 1)[-1].lower()
         content_disposition = "inline"
         if disposition == "attachment":
-            content_disposition = f'attachment; filename="video.{extension}"'
+            content_disposition = f'attachment; filename="{media_type}.{extension}"'
 
         bucket_name = (
             "wedding-photos-local"

@@ -154,6 +154,8 @@ export const example = {
         playVideo: "[Play]",
         preparingVideo: "[Loading...]",
         videoLoadError: "[Video unavailable. Try again.]",
+        thumbnailProcessing: "[Preparing preview...]",
+        thumbnailWarning: "[Your images were uploaded successfully and will be available shortly. Please return to the gallery in a few minutes.]",
         empty: "[You haven't uploaded any photos or videos yet.]",
         myPhotos: "[My photos and videos]"
     },

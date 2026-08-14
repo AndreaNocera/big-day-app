@@ -26,13 +26,28 @@ def aws_mock():
         yield dynamodb, s3
 
 
-def test_admin_generates_video_url_only_on_request(aws_mock, monkeypatch):
+@pytest.mark.parametrize(
+    ("photo_id", "s3_key", "media_type", "content_type", "disposition"),
+    [
+        ("PHOTO#video-test", "uploads/video-test.mp4", "video", "video/mp4", "inline"),
+        ("PHOTO#image-test", "uploads/image-test.heic", "image", "image/heic", "attachment"),
+    ],
+)
+def test_admin_generates_original_url_only_on_request(
+    aws_mock,
+    monkeypatch,
+    photo_id,
+    s3_key,
+    media_type,
+    content_type,
+    disposition,
+):
     dynamodb, s3 = aws_mock
     dynamodb.Table("WeddingPhotos").put_item(Item={
-        "PK": "PHOTO#video-test",
-        "s3Key": "uploads/video-test.mp4",
-        "mediaType": "video",
-        "contentType": "video/mp4",
+        "PK": photo_id,
+        "s3Key": s3_key,
+        "mediaType": media_type,
+        "contentType": content_type,
     })
     monkeypatch.setattr(handler_module, "dynamodb", dynamodb)
     monkeypatch.setattr(handler_module, "s3", s3)
@@ -41,18 +56,18 @@ def test_admin_generates_video_url_only_on_request(aws_mock, monkeypatch):
     response = handler_module.handler({
         "headers": {"Authorization": f"Bearer {token}"},
         "body": json.dumps({
-            "photoId": "PHOTO#video-test",
-            "disposition": "inline",
+            "photoId": photo_id,
+            "disposition": disposition,
         }),
     }, {})
 
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
     assert body["expiresIn"] == 600
-    assert "uploads/video-test.mp4" in body["url"]
+    assert s3_key in body["url"]
 
 
-def test_non_admin_cannot_generate_video_url():
+def test_non_admin_cannot_generate_media_url():
     token = jwt_helper.generate_token("guest-test", "Test Guest", is_admin=False)
     response = handler_module.handler({
         "headers": {"Authorization": f"Bearer {token}"},

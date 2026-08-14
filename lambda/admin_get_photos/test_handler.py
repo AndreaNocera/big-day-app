@@ -37,13 +37,23 @@ class RecordingS3:
 def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
     items = [
         {
-            "PK": "PHOTO#image",
+            "PK": "PHOTO#heic-ready",
             "uploadedBy": "guest-1",
             "uploaderName": "Test Guest",
             "uploadedAt": "2026-08-14T12:00:00+00:00",
-            "s3Key": "uploads/photo.jpg",
+            "s3Key": "uploads/photo.heic",
             "thumbKey": "thumbnails/photo.jpg",
             "mediaType": "image",
+            "contentType": "image/heic",
+        },
+        {
+            "PK": "PHOTO#heic-pending",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T11:30:00+00:00",
+            "s3Key": "uploads/pending.heic",
+            "mediaType": "image",
+            "contentType": "image/heic",
         },
         {
             "PK": "PHOTO#video",
@@ -66,10 +76,12 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
 
     assert response["statusCode"] == 200
     photos = json.loads(response["body"])["guests"][0]["photos"]
-    image, video = photos
+    ready_image, pending_image, video = photos
 
-    assert image["thumbUrl"].endswith("thumbnails/photo.jpg")
-    assert image["originalUrl"].endswith("uploads/photo.jpg")
+    assert ready_image["thumbUrl"].endswith("thumbnails/photo.jpg")
+    assert "originalUrl" not in ready_image
+    assert "thumbUrl" not in pending_image
+    assert "originalUrl" not in pending_image
     assert "thumbUrl" not in video
     assert "originalUrl" not in video
-    assert fake_s3.requested_keys == ["thumbnails/photo.jpg", "uploads/photo.jpg"]
+    assert fake_s3.requested_keys == ["thumbnails/photo.jpg"]

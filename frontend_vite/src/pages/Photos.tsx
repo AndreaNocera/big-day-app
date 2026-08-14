@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Download, Film, Play } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Play } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
-import { getPhotos, getAllPhotos, getAdminVideoUrl } from '@/lib/photos';
+import { getPhotos, getAllPhotos, getAdminMediaUrl } from '@/lib/photos';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
@@ -11,7 +11,6 @@ import { Loader } from '@/components/Loader';
 interface Photo {
     PK: string;
     url?: string;
-    originalUrl?: string;
     thumbUrl?: string;
     uploadedBy: string;
     uploadedAt: string;
@@ -27,21 +26,22 @@ interface GuestGroup {
 }
 
 const enablePhotos = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
+const THUMBNAIL_POLL_INTERVAL_MS = 5000;
+const MAX_THUMBNAIL_POLL_ATTEMPTS = 5;
 
 function AdminMediaTile({ photo }: { photo: Photo }) {
     const { t } = useI18nStore();
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [loadingAction, setLoadingAction] = useState<'play' | 'download' | null>(null);
-    const [videoError, setVideoError] = useState(false);
+    const [mediaError, setMediaError] = useState(false);
     const isVideo = photo.mediaType === 'video';
     const thumbSrc = photo.thumbUrl || photo.url;
-    const downloadSrc = photo.originalUrl || photo.url;
 
-    const requestVideo = async (disposition: 'inline' | 'attachment') => {
+    const requestOriginal = async (disposition: 'inline' | 'attachment') => {
         try {
-            setVideoError(false);
+            setMediaError(false);
             setLoadingAction(disposition === 'inline' ? 'play' : 'download');
-            const { url } = await getAdminVideoUrl(photo.PK, disposition);
+            const { url } = await getAdminMediaUrl(photo.PK, disposition);
 
             if (disposition === 'inline') {
                 setVideoUrl(url);
@@ -51,8 +51,8 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                 link.click();
             }
         } catch (error) {
-            console.error('Admin video URL error:', error);
-            setVideoError(true);
+            console.error('Admin media URL error:', error);
+            setMediaError(true);
         } finally {
             setLoadingAction(null);
         }
@@ -90,7 +90,7 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                         <span style={{ fontSize: 11, fontWeight: 600 }}>{t('gallery.videoPlaceholder')}</span>
                         <button
                             type="button"
-                            onClick={() => requestVideo('inline')}
+                            onClick={() => requestOriginal('inline')}
                             disabled={loadingAction !== null}
                             style={{
                                 display: 'flex', alignItems: 'center', gap: 5,
@@ -102,7 +102,7 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                             <Play size={13} fill="currentColor" aria-hidden="true" />
                             {loadingAction === 'play' ? t('gallery.preparingVideo') : t('gallery.playVideo')}
                         </button>
-                        {videoError && (
+                        {mediaError && (
                             <span style={{ color: 'var(--color-error)', fontSize: 9, textAlign: 'center', padding: '0 6px' }}>
                                 {t('gallery.videoLoadError')}
                             </span>
@@ -116,7 +116,20 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
                     loading="lazy"
                 />
-            ) : null}
+            ) : (
+                <div style={{
+                    width: '100%', height: '100%',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 8,
+                    color: 'var(--color-text-secondary)',
+                    background: 'linear-gradient(145deg, #f8f8f8, #eeeeee)',
+                }}>
+                    <ImageIcon size={30} aria-hidden="true" />
+                    <span style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', padding: '0 8px' }}>
+                        {t('gallery.thumbnailProcessing')}
+                    </span>
+                </div>
+            )}
 
             <div style={{
                 position: 'absolute',
@@ -128,30 +141,16 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                 alignItems: 'center'
             }}>
                 <span style={{ color: 'white', fontSize: 9 }}>{new Date(photo.uploadedAt).toLocaleDateString('it-IT')}</span>
-                {isVideo ? (
-                    <button
-                        type="button"
-                        onClick={() => requestVideo('attachment')}
-                        disabled={loadingAction !== null}
-                        title={t('admin.downloadPhoto')}
-                        aria-label={t('admin.downloadPhoto')}
-                        style={{ display: 'flex', color: 'white', border: 0, padding: 0, background: 'none', cursor: loadingAction ? 'wait' : 'pointer' }}
-                    >
-                        <Download size={14} />
-                    </button>
-                ) : downloadSrc ? (
-                    <a
-                        href={downloadSrc}
-                        download
-                        title={t('admin.downloadPhoto')}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={t('admin.downloadPhoto')}
-                        style={{ display: 'flex', color: 'white' }}
-                    >
-                        <Download size={14} />
-                    </a>
-                ) : null}
+                <button
+                    type="button"
+                    onClick={() => requestOriginal('attachment')}
+                    disabled={loadingAction !== null}
+                    title={t('admin.downloadPhoto')}
+                    aria-label={t('admin.downloadPhoto')}
+                    style={{ display: 'flex', color: 'white', border: 0, padding: 0, background: 'none', cursor: loadingAction ? 'wait' : 'pointer' }}
+                >
+                    <Download size={14} />
+                </button>
             </div>
         </div>
     );
@@ -223,14 +222,16 @@ export default function Photos() {
     const [guestGroups, setGuestGroups] = useState<GuestGroup[]>([]);
     const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
+    const [thumbnailPollAttempts, setThumbnailPollAttempts] = useState(0);
+    const [thumbnailWarning, setThumbnailWarning] = useState(false);
 
     // Upload: admin sempre; gli altri con kill-switch attivo + codice foto valido
     const canUpload = isAdmin || (enablePhotos && !!photoCode);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const loadPhotos = async () => {
+    const loadPhotos = useCallback(async (background = false) => {
         try {
-            setStatus('loading');
+            if (!background) setStatus('loading');
             if (isAdmin) {
                 const groups = await getAllPhotos();
                 setGuestGroups(groups);
@@ -244,14 +245,51 @@ export default function Photos() {
             setStatus('error');
             setErrorMsg(t('rsvp.errorText'));
         }
-    };
+    }, [isAdmin, t]);
+
+    const refreshAfterUpload = useCallback(() => {
+        setThumbnailPollAttempts(0);
+        setThumbnailWarning(false);
+        void loadPhotos(true);
+    }, [loadPhotos]);
 
     // Stesso hook di upload usato in Home: multi-file, validazione, progresso
-    const { uploadPhotos, status: uploadStatus, progress, message: uploadMessage } = usePhotoUpload(loadPhotos);
+    const { uploadPhotos, status: uploadStatus, progress, message: uploadMessage } = usePhotoUpload(refreshAfterUpload);
 
     useEffect(() => {
-        loadPhotos();
-    }, [isAdmin]);
+        setThumbnailPollAttempts(0);
+        setThumbnailWarning(false);
+        void loadPhotos();
+    }, [loadPhotos]);
+
+    const pendingThumbnailCount = isAdmin
+        ? guestGroups.reduce(
+            (count, group) => count + group.photos.filter(
+                photo => photo.mediaType !== 'video' && !photo.thumbUrl && !photo.url
+            ).length,
+            0
+        )
+        : photos.filter(photo => photo.mediaType !== 'video' && !photo.url).length;
+
+    useEffect(() => {
+        if (pendingThumbnailCount === 0) {
+            setThumbnailWarning(false);
+            return;
+        }
+
+        if (thumbnailPollAttempts >= MAX_THUMBNAIL_POLL_ATTEMPTS) {
+            setThumbnailWarning(true);
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            void loadPhotos(true).finally(() => {
+                setThumbnailPollAttempts(attempts => attempts + 1);
+            });
+        }, THUMBNAIL_POLL_INTERVAL_MS);
+
+        return () => window.clearTimeout(timer);
+    }, [loadPhotos, pendingThumbnailCount, thumbnailPollAttempts]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -318,6 +356,20 @@ export default function Photos() {
                 {status === 'error' && (
                     <div className="form-error" style={{ marginBottom: 20 }}>
                         <AlertCircle size={18} /> {errorMsg}
+                    </div>
+                )}
+
+                {thumbnailWarning && (
+                    <div style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 8,
+                        marginBottom: 20, padding: '12px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid #f0b44d',
+                        background: '#fff8e8', color: '#7a4b00',
+                        fontSize: 14,
+                    }}>
+                        <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span>{t('gallery.thumbnailWarning')}</span>
                     </div>
                 )}
 
@@ -388,7 +440,20 @@ export default function Photos() {
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
                                                     loading="lazy"
                                                 />
-                                            ) : null}
+                                            ) : (
+                                                <div style={{
+                                                    width: '100%', height: '100%',
+                                                    display: 'flex', flexDirection: 'column',
+                                                    alignItems: 'center', justifyContent: 'center', gap: 8,
+                                                    color: 'var(--color-text-secondary)',
+                                                    background: 'linear-gradient(145deg, #f8f8f8, #eeeeee)',
+                                                }}>
+                                                    <ImageIcon size={34} aria-hidden="true" />
+                                                    <span style={{ fontSize: 11, fontWeight: 600, textAlign: 'center', padding: '0 10px' }}>
+                                                        {t('gallery.thumbnailProcessing')}
+                                                    </span>
+                                                </div>
+                                            )}
                                             <div style={{
                                                 position: 'absolute', top: 0, left: 0, right: 0,
                                                 padding: '4px 8px', background: 'rgba(0,0,0,0.5)',

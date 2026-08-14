@@ -11,7 +11,7 @@ export async function getAllPhotos() {
     return data.guests || [];
 }
 
-export async function getAdminVideoUrl(photoId: string, disposition: 'inline' | 'attachment' = 'inline') {
+export async function getAdminMediaUrl(photoId: string, disposition: 'inline' | 'attachment' = 'inline') {
     return fetchWithAuth('/admin/photos/media-url', {
         method: 'POST',
         body: JSON.stringify({ photoId, disposition }),

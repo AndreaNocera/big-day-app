@@ -180,9 +180,9 @@ async def admin_get_photos_route(request: Request, auth: HTTPAuthorizationCreden
     """Restituisce foto e video raggruppati per ospite. Richiede token admin."""
     return await handle_lambda(request, admin_get_photos_handler)
 
-@app.post("/admin/photos/media-url", summary="[Admin] URL temporaneo per un video")
+@app.post("/admin/photos/media-url", summary="[Admin] URL temporaneo per un originale")
 async def admin_get_media_url_route(request: Request, body: AdminMediaUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Genera l'URL firmato di un singolo video solo dopo un'azione esplicita dell'admin."""
+    """Genera l'URL firmato di un originale solo dopo un'azione esplicita dell'admin."""
     return await handle_lambda(request, admin_get_media_url_handler, body)
 
 @app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")

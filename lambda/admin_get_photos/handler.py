@@ -60,32 +60,24 @@ def handler(event, context):
             # I video non ricevono URL durante il caricamento della galleria:
             # l'admin lo richiede on demand quando preme play o download.
             if media_type == "image":
-                thumb_key = item.get("thumbKey") or item.get("s3Key")
-                original_key = item.get("s3Key")
-                if not thumb_key:
-                    continue
+                # La lista espone solo la thumbnail. L'originale viene firmato
+                # on demand dall'endpoint admin quando si preme download.
+                thumb_key = item.get("thumbKey")
+                if thumb_key:
+                    try:
+                        thumb_url = s3.generate_presigned_url(
+                            'get_object',
+                            Params={'Bucket': bucket_name, 'Key': thumb_key},
+                            ExpiresIn=3600
+                        )
 
-                try:
-                    thumb_url = s3.generate_presigned_url(
-                        'get_object',
-                        Params={'Bucket': bucket_name, 'Key': thumb_key},
-                        ExpiresIn=3600
-                    )
-                    original_url = s3.generate_presigned_url(
-                        'get_object',
-                        Params={'Bucket': bucket_name, 'Key': original_key},
-                        ExpiresIn=3600
-                    ) if original_key else thumb_url
+                        if os.getenv("ENV", "local") == "local":
+                            thumb_url = thumb_url.replace("http://minio:9000", "http://localhost:9000")
 
-                    if os.getenv("ENV", "local") == "local":
-                        thumb_url = thumb_url.replace("http://minio:9000", "http://localhost:9000")
-                        original_url = original_url.replace("http://minio:9000", "http://localhost:9000")
-
-                    photo_entry["thumbUrl"] = thumb_url
-                    photo_entry["originalUrl"] = original_url
-                except Exception as e:
-                    print(f"Errore generazione URL per {thumb_key}: {e}")
-                    continue
+                        photo_entry["thumbUrl"] = thumb_url
+                    except Exception as e:
+                        print(f"Errore generazione URL thumbnail: {e}")
+                        continue
 
             if uploaded_by not in photos_by_guest:
                 photos_by_guest[uploaded_by] = {

@@ -23,7 +23,7 @@ Il progetto e' in una fase operativa avanzata:
 L'ultima area sviluppata e' il flusso media: accesso tramite link speciale,
 registrazione semplificata dei photo guest, upload multiplo senza limite numerico,
 conferma preventiva con conteggio di foto e video, thumbnail delle immagini e
-download amministrativo. Sono accettate immagini JPEG, PNG, WebP, HEIC e HEIF fino a 20 MB
+download amministrativo on demand. Sono accettate immagini JPEG, PNG, WebP, HEIC e HEIF fino a 20 MB
 e video MP4, MOV e WebM fino a 500 MB per file; gli upload diretti verso S3/MinIO
 restano limitati a tre operazioni contemporanee.
 
@@ -81,6 +81,11 @@ Ambiente locale
 Il codice foto in chiaro non viene salvato nel database: viene memorizzato solo
 il suo hash SHA-256. La revoca viene controllata nuovamente dal backend prima di
 ogni richiesta di upload.
+
+Le immagini in attesa della thumbnail appaiono con un placeholder. La galleria
+controlla lo stato ogni 5 secondi per un massimo di 5 tentativi; se alcune
+anteprime non sono ancora pronte, conferma che gli originali sono stati caricati
+e invita l'utente a rientrare dopo qualche minuto.
 
 ### Amministratore
 
@@ -151,10 +156,10 @@ usa `pillow-heif` per generare una thumbnail JPEG compatibile con i browser.
 I video non vengono elaborati da Pillow. L'API della galleria utente non espone
 mai gli originali: restituisce URL firmati soltanto per le thumbnail gia' create
 e rappresenta i video con metadati privi di URL, usati dal frontend per un
-placeholder statico. La lista amministrativa carica subito le thumbnail delle
-immagini, ma non restituisce URL per i video: `POST /admin/photos/media-url`
-verifica nuovamente il ruolo admin e genera un URL valido 10 minuti soltanto
-dopo un click esplicito su riproduzione o download.
+placeholder statico. La lista amministrativa restituisce soltanto le thumbnail
+delle immagini e nessun URL degli originali. `POST /admin/photos/media-url`
+verifica nuovamente il ruolo admin e genera un URL originale valido 10 minuti
+soltanto dopo un click esplicito su riproduzione o download.
 
 ## Configurazione e dati sensibili
 

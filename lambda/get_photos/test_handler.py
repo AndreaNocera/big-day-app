@@ -74,7 +74,11 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
 
     assert response["statusCode"] == 200
     photos = json.loads(response["body"])["photos"]
-    assert [photo["PK"] for photo in photos] == ["PHOTO#image-ready", "PHOTO#video"]
+    assert [photo["PK"] for photo in photos] == [
+        "PHOTO#image-ready",
+        "PHOTO#video",
+        "PHOTO#image-processing",
+    ]
 
     image = photos[0]
     assert image["url"].endswith("thumbnails/original.jpg")
@@ -86,5 +90,11 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
     assert "url" not in video
     assert "originalUrl" not in video
     assert "s3Key" not in video
+
+    processing_image = photos[2]
+    assert processing_image["isOptimized"] is False
+    assert "url" not in processing_image
+    assert "originalUrl" not in processing_image
+    assert "s3Key" not in processing_image
 
     assert fake_s3.requested_keys == ["thumbnails/original.jpg"]

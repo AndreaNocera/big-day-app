@@ -60,9 +60,11 @@ def handler(event, context):
                 continue
 
             # Le immagini vengono esposte soltanto tramite thumbnail. Finche' il
-            # processore non l'ha creata, l'originale non compare nella galleria.
+            # processore non l'ha creata, restituiamo il record senza URL per
+            # permettere al frontend di mostrare lo stato di elaborazione.
             thumb_key = item.get("thumbKey")
             if not thumb_key:
+                photos.append(photo_entry)
                 continue
 
             try:
