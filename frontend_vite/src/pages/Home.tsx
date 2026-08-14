@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
-import { ACCEPT_ATTR, MAX_FILES_PER_BATCH, MAX_FILE_SIZE_MB, fmt } from '@/lib/uploadConfig';
+import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
 
 const HERO_IMAGE = "/photos/PXL_20250331_120242708.webp";
@@ -113,7 +113,7 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Area Pulsanti: solo Carica Foto, visibile ad admin o a chi ha il link speciale */}
+            {/* Area upload media, visibile ad admin o a chi ha il link speciale */}
             {canUsePhotos && (
                 <div className="rsvp-section home-actions">
                     {status === 'loading' && <Loader message={`${t('gallery.uploading')} ${progress.done}/${progress.total}`} />}
@@ -143,14 +143,17 @@ export default function Home() {
                             width: 'fit-content',
                             margin: '0 auto 8px',
                         }}>
-                            {fmt(t('gallery.uploadHint'), { max: MAX_FILES_PER_BATCH, mb: MAX_FILE_SIZE_MB })}
+                            {fmt(t('gallery.uploadHint'), {
+                                imageMb: MAX_IMAGE_SIZE_MB,
+                                videoMb: MAX_VIDEO_SIZE_MB,
+                            })}
                         </p>
                     )}
                     <Link
                         to={token ? "#" : "/accedi?redirect=/"}
                         onClick={token ? (e) => { e.preventDefault(); triggerFileInput(); } : undefined}
                         className="btn-primary photo"
-                        aria-label="Carica una foto del matrimonio"
+                        aria-label={t('gallery.uploadBtn')}
                     >
                         <Camera size={22} aria-hidden="true" style={{ marginRight: '8px' }} />
                         {token ? t('gallery.uploadBtn') : t('gallery.loginToUpload')}

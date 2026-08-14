@@ -178,6 +178,12 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        admin_get_media_url = _lambda.Function(self, "AdminGetMediaUrl",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/admin_get_media_url"),
+            **lambda_kwargs
+        )
+
         verify_photo_access = _lambda.Function(self, "VerifyPhotoAccess",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/verify_photo_access"),
@@ -205,6 +211,7 @@ class WeddingStack(Stack):
         photos_table.grant_read_write_data(process_photo) # Need write for thumbKey
         photos_table.grant_read_data(get_photos)
         photos_table.grant_read_data(admin_get_photos)
+        photos_table.grant_read_data(admin_get_media_url)
         rsvp_table.grant_read_data(admin_get_rsvps)
         invites_table.grant_read_data(admin_get_rsvps)
         
@@ -212,6 +219,7 @@ class WeddingStack(Stack):
         photos_bucket.grant_put_acl(get_upload_url)
         photos_bucket.grant_read(get_photos)
         photos_bucket.grant_read(admin_get_photos)
+        photos_bucket.grant_read(admin_get_media_url)
         photos_bucket.grant_read_write(process_photo) # Read original, write thumb
 
         # S3 Trigger for process_photo
@@ -259,7 +267,9 @@ class WeddingStack(Stack):
 
         admin = api.root.add_resource("admin")
         admin.add_resource("rsvps").add_method("GET", apigw.LambdaIntegration(admin_get_rsvps))
-        admin.add_resource("photos").add_method("GET", apigw.LambdaIntegration(admin_get_photos))
+        admin_photos = admin.add_resource("photos")
+        admin_photos.add_method("GET", apigw.LambdaIntegration(admin_get_photos))
+        admin_photos.add_resource("media-url").add_method("POST", apigw.LambdaIntegration(admin_get_media_url))
         
         # Frontend Hosting
         frontend_bucket = s3.Bucket(self, "WeddingFrontendBucket",

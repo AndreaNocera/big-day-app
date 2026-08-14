@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { getUploadUrl, uploadToS3, debugProcessPhoto } from '@/lib/photos';
 import { useI18nStore } from '@/store/i18nStore';
 import {
-    ALLOWED_IMAGE_TYPES,
-    MAX_FILES_PER_BATCH,
-    MAX_FILE_SIZE_BYTES,
-    MAX_FILE_SIZE_MB,
+    MAX_IMAGE_SIZE_BYTES,
+    MAX_IMAGE_SIZE_MB,
+    MAX_VIDEO_SIZE_BYTES,
+    MAX_VIDEO_SIZE_MB,
     UPLOAD_CONCURRENCY,
     fmt,
+    getMediaKind,
+    getSupportedContentType,
+    type MediaKind,
 } from '@/lib/uploadConfig';
 
 const IS_LOCAL = import.meta.env.VITE_API_URL?.includes('localhost');
@@ -18,38 +21,61 @@ export function usePhotoUpload(onSuccess?: () => void) {
     const [progress, setProgress] = useState({ done: 0, total: 0 });
     const [message, setMessage] = useState('');
 
-    /** Carica un batch di file: valida formato/dimensione, poi upload con concorrenza limitata. */
+    /** Carica un batch senza limite numerico: valida, chiede conferma e limita solo la concorrenza. */
     const uploadPhotos = async (fileList: FileList | File[]) => {
-        const all = Array.from(fileList);
-        if (all.length === 0) return;
+        const files = Array.from(fileList);
+        if (files.length === 0) return;
 
         const notes: string[] = [];
 
-        // Limite per batch: prendiamo i primi N e avvisiamo
-        let files = all;
-        if (files.length > MAX_FILES_PER_BATCH) {
-            files = files.slice(0, MAX_FILES_PER_BATCH);
-            notes.push(fmt(t('gallery.uploadTooMany'), { max: MAX_FILES_PER_BATCH }));
-        }
-
         // Validazione formato e dimensione
-        const badFormat = files.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type));
-        const tooBig = files.filter(f => ALLOWED_IMAGE_TYPES.includes(f.type) && f.size > MAX_FILE_SIZE_BYTES);
-        const valid = files.filter(f => ALLOWED_IMAGE_TYPES.includes(f.type) && f.size <= MAX_FILE_SIZE_BYTES);
+        const classified = files.map(file => ({
+            file,
+            contentType: getSupportedContentType(file),
+        }));
+        const badFormat = classified.filter(item => !item.contentType);
+        const tooBigImages = classified.filter(item =>
+            item.contentType && getMediaKind(item.contentType) === 'image' && item.file.size > MAX_IMAGE_SIZE_BYTES
+        );
+        const tooBigVideos = classified.filter(item =>
+            item.contentType && getMediaKind(item.contentType) === 'video' && item.file.size > MAX_VIDEO_SIZE_BYTES
+        );
+        const valid = classified.flatMap(({ file, contentType }) => {
+            if (!contentType) return [];
+
+            const kind = getMediaKind(contentType);
+            if (!kind) return [];
+
+            const maxSize = kind === 'image' ? MAX_IMAGE_SIZE_BYTES : MAX_VIDEO_SIZE_BYTES;
+            return file.size <= maxSize ? [{ file, kind, contentType }] : [];
+        });
 
         if (badFormat.length > 0) {
             notes.push(fmt(t('gallery.uploadSkippedFormat'), { n: badFormat.length }));
         }
-        if (tooBig.length > 0) {
-            notes.push(fmt(t('gallery.uploadSkippedSize'), { n: tooBig.length, mb: MAX_FILE_SIZE_MB }));
+        if (tooBigImages.length > 0) {
+            notes.push(fmt(t('gallery.uploadSkippedImageSize'), { n: tooBigImages.length, mb: MAX_IMAGE_SIZE_MB }));
+        }
+        if (tooBigVideos.length > 0) {
+            notes.push(fmt(t('gallery.uploadSkippedVideoSize'), { n: tooBigVideos.length, mb: MAX_VIDEO_SIZE_MB }));
         }
 
         if (valid.length === 0) {
             setStatus('error');
-            setMessage(fmt(t('gallery.uploadNoneValid'), { mb: MAX_FILE_SIZE_MB }));
+            setMessage(fmt(t('gallery.uploadNoneValid'), {
+                imageMb: MAX_IMAGE_SIZE_MB,
+                videoMb: MAX_VIDEO_SIZE_MB,
+            }));
             setTimeout(() => setStatus('idle'), 5000);
             return;
         }
+
+        const countByKind = (kind: MediaKind) => valid.filter(item => item.kind === kind).length;
+        const confirmed = window.confirm(fmt(t('gallery.uploadConfirm'), {
+            photos: countByKind('image'),
+            videos: countByKind('video'),
+        }));
+        if (!confirmed) return;
 
         setStatus('loading');
         setProgress({ done: 0, total: valid.length });
@@ -64,11 +90,11 @@ export function usePhotoUpload(onSuccess?: () => void) {
             while (!revoked) {
                 const index = nextIndex++;
                 if (index >= valid.length) break;
-                const file = valid[index];
+                const { file, kind, contentType } = valid[index];
                 try {
-                    const { uploadUrl, key } = await getUploadUrl(file.name, file.type);
-                    await uploadToS3(uploadUrl, file);
-                    if (IS_LOCAL) {
+                    const { uploadUrl, key } = await getUploadUrl(file.name, contentType);
+                    await uploadToS3(uploadUrl, file, contentType);
+                    if (IS_LOCAL && kind === 'image') {
                         await debugProcessPhoto(key);
                     }
                     ok++;

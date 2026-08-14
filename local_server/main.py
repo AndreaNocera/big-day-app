@@ -18,6 +18,7 @@ from update_profile.handler import handler as update_profile_handler
 from process_photo.handler import handler as process_photo_handler
 from admin_get_rsvps.handler import handler as admin_get_rsvps_handler
 from admin_get_photos.handler import handler as admin_get_photos_handler
+from admin_get_media_url.handler import handler as admin_get_media_url_handler
 from verify_photo_access.handler import handler as verify_photo_access_handler
 from guest_register.handler import handler as guest_register_handler
 
@@ -73,6 +74,10 @@ class InviteTrigger(BaseModel):
 
 class PhotoAccessRequest(BaseModel):
     code: str
+
+class AdminMediaUrlRequest(BaseModel):
+    photoId: str
+    disposition: str = "inline"
 
 class GuestRegisterRequest(BaseModel):
     code: str
@@ -150,14 +155,14 @@ async def rsvp_get_route(request: Request, auth: HTTPAuthorizationCredentials = 
 #     """Salva le risposte al sondaggio (musica, messaggi). Richiede header Authorization."""
 #     return await handle_lambda(request, survey_handler, body)
 
-@app.post("/photos/upload", summary="Ottieni URL per Upload Foto")
+@app.post("/photos/upload", summary="Ottieni URL per Upload Foto o Video")
 async def get_upload_url_route(request: Request, body: UploadUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Genera un URL firmato di S3/MinIO per caricare direttamente una foto dal browser."""
+    """Genera un URL firmato di S3/MinIO per caricare direttamente una foto o un video."""
     return await handle_lambda(request, get_upload_url_handler, body)
 
-@app.get("/photos", summary="Lista Foto")
+@app.get("/photos", summary="Lista Foto e Video")
 async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Recupera la lista delle foto caricate con URL firmati per la visualizzazione."""
+    """Recupera foto e video caricati con URL firmati per la visualizzazione."""
     return await handle_lambda(request, get_photos_handler)
 
 @app.post("/profile/email", summary="Aggiorna Profilo (Email)")
@@ -170,10 +175,15 @@ async def admin_get_rsvps_route(request: Request, auth: HTTPAuthorizationCredent
     """Restituisce tutti gli RSVP. Richiede token admin."""
     return await handle_lambda(request, admin_get_rsvps_handler)
 
-@app.get("/admin/photos", summary="[Admin] Tutte le foto per ospite")
+@app.get("/admin/photos", summary="[Admin] Foto e video per ospite")
 async def admin_get_photos_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Restituisce tutte le foto raggruppate per ospite. Richiede token admin."""
+    """Restituisce foto e video raggruppati per ospite. Richiede token admin."""
     return await handle_lambda(request, admin_get_photos_handler)
+
+@app.post("/admin/photos/media-url", summary="[Admin] URL temporaneo per un video")
+async def admin_get_media_url_route(request: Request, body: AdminMediaUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Genera l'URL firmato di un singolo video solo dopo un'azione esplicita dell'admin."""
+    return await handle_lambda(request, admin_get_media_url_handler, body)
 
 @app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")
 async def debug_process_photo(request: Request, body: Dict[str, str], auth: HTTPAuthorizationCredentials = Depends(security)):

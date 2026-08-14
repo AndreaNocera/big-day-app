@@ -136,21 +136,26 @@ export const example = {
         noRsvpFound: "[No RSVP was found for this profile.]"
     },
     gallery: {
-        title: "[Photo Gallery]",
-        uploadBtn: "[Upload Photo]",
-        uploadSuccess: "[Photo uploaded!]",
-        loginToUpload: "[Log in to upload photos]",
-        uploadRevoked: "[Your photo access has been revoked. Contact the couple to get a new one!]",
-        uploadDoneMulti: "[Upload complete: {n} photos!]",
+        title: "[Photo and Video Gallery]",
+        uploadBtn: "[Upload photos and videos]",
+        uploadSuccess: "[Media uploaded!]",
+        loginToUpload: "[Log in to upload photos and videos]",
+        uploadRevoked: "[Your photo and video access has been revoked. Contact the couple to get a new one!]",
+        uploadConfirm: "[You are about to upload {photos} photos and {videos} videos. Continue?]",
+        uploadDoneMulti: "[Upload complete: {n} files!]",
         uploadPartial: "[Uploaded: {ok} · Failed: {ko}]",
-        uploadSkippedFormat: "[{n} skipped: unsupported format (JPEG, PNG, WebP only)]",
-        uploadSkippedSize: "[{n} skipped: over {mb} MB]",
-        uploadTooMany: "[Max {max} photos at a time: only the first {max} were uploaded]",
-        uploadNoneValid: "[No valid files: JPEG, PNG or WebP up to {mb} MB are allowed]",
-        uploadHint: "[Up to {max} photos at a time, max {mb} MB each]",
+        uploadSkippedFormat: "[{n} skipped: unsupported format (JPEG, PNG, WebP, HEIC, HEIF, MP4, MOV or WebM)]",
+        uploadSkippedImageSize: "[{n} photos skipped: over {mb} MB]",
+        uploadSkippedVideoSize: "[{n} videos skipped: over {mb} MB]",
+        uploadNoneValid: "[No valid files: JPEG/PNG/WebP/HEIC/HEIF photos up to {imageMb} MB or MP4/MOV/WebM videos up to {videoMb} MB]",
+        uploadHint: "[Photos max {imageMb} MB · Videos max {videoMb} MB]",
         uploading: "[Uploading...]",
-        empty: "[You haven't uploaded any photos yet.]",
-        myPhotos: "[My photos]"
+        videoPlaceholder: "[Video uploaded]",
+        playVideo: "[Play]",
+        preparingVideo: "[Loading...]",
+        videoLoadError: "[Video unavailable. Try again.]",
+        empty: "[You haven't uploaded any photos or videos yet.]",
+        myPhotos: "[My photos and videos]"
     },
     profile: {
         title: "[Your profile]",
@@ -200,12 +205,11 @@ export const example = {
         dietaryRestrictions: "[Dietary restrictions]",
         emailsCollected: "[Emails collected]",
         noData: "[No data available]",
-        photosByGuest: "[Photos by guest]",
-        noPhotos: "[No photos uploaded]",
-        downloadPhoto: "[Download photo]",
+        photosByGuest: "[Photos and videos by guest]",
+        noPhotos: "[No photos or videos uploaded]",
+        downloadPhoto: "[Download media]",
         uploadPhotoBtn: "[Photos]",
         expand: "[Expand]",
         collapse: "[Collapse]"
     }
 };
-

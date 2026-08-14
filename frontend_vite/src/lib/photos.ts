@@ -11,6 +11,13 @@ export async function getAllPhotos() {
     return data.guests || [];
 }
 
+export async function getAdminVideoUrl(photoId: string, disposition: 'inline' | 'attachment' = 'inline') {
+    return fetchWithAuth('/admin/photos/media-url', {
+        method: 'POST',
+        body: JSON.stringify({ photoId, disposition }),
+    });
+}
+
 export async function getUploadUrl(filename: string, contentType: string) {
     // Il backend autorizza l'upload solo per admin o con codice foto valido
     const photoCode = usePhotoAccessStore.getState().photoCode;
@@ -28,12 +35,12 @@ export async function debugProcessPhoto(s3Key: string) {
     });
 }
 
-export async function uploadToS3(url: string, file: File) {
+export async function uploadToS3(url: string, file: File, contentType: string) {
     const response = await fetch(url, {
         method: 'PUT',
         body: file,
         headers: {
-            'Content-Type': file.type,
+            'Content-Type': contentType,
         },
     });
 

@@ -1,7 +1,7 @@
 # Big Day App
 
 Web app privata per un evento, con pagine informative multilingua, area invitati,
-monitoraggio RSVP e condivisione di foto. Il progetto usa un frontend statico
+monitoraggio RSVP e condivisione di foto e video. Il progetto usa un frontend statico
 React/Vite e un backend serverless AWS scritto in Python.
 
 Questo documento e `AGENTS.md` sono le fonti di verita' per riprendere lo
@@ -16,13 +16,16 @@ Il progetto e' in una fase operativa avanzata:
 - autenticazione, pagine informative e dashboard amministrativa sono presenti;
 - le conferme RSVP sono chiuse sia nell'interfaccia sia nel backend e mostrate
   in sola lettura;
-- il flusso foto tramite link revocabile e upload multiplo e' implementato;
+- il flusso foto/video tramite link revocabile e upload multiplo e' implementato;
 - esiste un solo ambiente di sviluppo locale e un ambiente AWS di produzione;
 - non esiste un ambiente remoto di test o staging.
 
-L'ultima area sviluppata e' il flusso foto: accesso tramite link speciale,
-registrazione semplificata dei photo guest, upload multiplo, thumbnail e download
-amministrativo.
+L'ultima area sviluppata e' il flusso media: accesso tramite link speciale,
+registrazione semplificata dei photo guest, upload multiplo senza limite numerico,
+conferma preventiva con conteggio di foto e video, thumbnail delle immagini e
+download amministrativo. Sono accettate immagini JPEG, PNG, WebP, HEIC e HEIF fino a 20 MB
+e video MP4, MOV e WebM fino a 500 MB per file; gli upload diretti verso S3/MinIO
+restano limitati a tre operazioni contemporanee.
 
 ## Architettura
 
@@ -31,7 +34,7 @@ Browser
   -> React 19 + Vite + TypeScript
   -> API Gateway
        -> Lambda Python 3.12
-            -> DynamoDB: inviti, RSVP, metadati foto
+            -> DynamoDB: inviti, RSVP, metadati foto/video
             -> S3: originali e thumbnail
             -> MailerSend: conferma email
 
@@ -65,7 +68,7 @@ Ambiente locale
 2. Riceve un JWT persistito nel browser.
 3. Consulta il proprio RSVP in sola lettura.
 4. Puo' salvare un indirizzo email e ricevere una conferma.
-5. Puo' usare le foto solo quando possiede un codice foto valido o e' admin.
+5. Puo' usare la galleria solo quando possiede un codice foto valido o e' admin.
 
 ### Photo guest
 
@@ -73,7 +76,7 @@ Ambiente locale
 2. Il backend verifica che il codice sia attivo.
 3. Se non ha gia' una sessione, si registra con nome e cognome.
 4. Riceve un JWT con `isPhotoGuest=true`.
-5. Puo' caricare e consultare le proprie foto, ma non accedere all'RSVP.
+5. Puo' caricare e consultare le proprie foto e i propri video, ma non accedere all'RSVP.
 
 Il codice foto in chiaro non viene salvato nel database: viene memorizzato solo
 il suo hash SHA-256. La revoca viene controllata nuovamente dal backend prima di
@@ -84,9 +87,9 @@ ogni richiesta di upload.
 Un JWT con `isAdmin=true` consente di:
 
 - visualizzare statistiche e risposte RSVP;
-- consultare le foto raggruppate per autore;
+- consultare foto e video raggruppati per autore;
 - scaricare gli originali;
-- caricare foto senza codice foto.
+- caricare foto e video senza codice foto.
 
 Le verifiche dei ruoli devono sempre restare anche nel backend. I controlli delle
 route React servono all'esperienza utente, non costituiscono autorizzazione.
@@ -95,11 +98,11 @@ route React servono all'esperienza utente, non costituiscono autorizzazione.
 
 Frontend:
 
-- `/`: home e accesso rapido alle foto quando abilitato;
+- `/`: home e accesso rapido alla galleria quando abilitata;
 - `/accedi`: login invitato o registrazione photo guest;
 - `/location`, `/viaggio`, `/regalo`, `/faq`: contenuti pubblici;
 - `/rsvp`: riepilogo RSVP per invitati autenticati;
-- `/foto`: galleria e upload;
+- `/foto`: galleria e upload di foto/video;
 - `/photos-on`: landing del link foto;
 - `/admin`: dashboard riservata agli amministratori.
 
@@ -112,7 +115,7 @@ API attive:
   modifiche mentre le conferme sono chiuse;
 - `GET /photos` e `POST /photos/upload`;
 - `POST /profile/email`;
-- `GET /admin/rsvps` e `GET /admin/photos`.
+- `GET /admin/rsvps`, `GET /admin/photos` e `POST /admin/photos/media-url`.
 
 Gli handler `send_invites` e `survey_handler` sono legacy: vengono ancora creati
 dallo stack, ma le loro route API sono commentate e non fanno parte del flusso
@@ -139,8 +142,19 @@ Tabella condivisa da piu' tipi di record, riconoscibili dal prefisso della PK:
 
 - PK `PHOTO#<uuid>`;
 - autore e nome visualizzato;
-- chiave S3 originale, eventuale chiave thumbnail e data di upload;
+- chiave S3 originale, eventuale chiave thumbnail, tipo media, MIME e data di upload;
 - GSI `S3KeyIndex`, usato dal processore delle thumbnail.
+
+I record storici senza `mediaType` e `contentType` sono interpretati come immagini.
+Gli originali HEIC/HEIF vengono conservati nel formato ricevuto; il processore
+usa `pillow-heif` per generare una thumbnail JPEG compatibile con i browser.
+I video non vengono elaborati da Pillow. L'API della galleria utente non espone
+mai gli originali: restituisce URL firmati soltanto per le thumbnail gia' create
+e rappresenta i video con metadati privi di URL, usati dal frontend per un
+placeholder statico. La lista amministrativa carica subito le thumbnail delle
+immagini, ma non restituisce URL per i video: `POST /admin/photos/media-url`
+verifica nuovamente il ruolo admin e genera un URL valido 10 minuti soltanto
+dopo un click esplicito su riproduzione o download.
 
 ## Configurazione e dati sensibili
 

@@ -1,11 +1,11 @@
 import json
 import os
 import sys
-from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import s3, dynamodb
 from shared.jwt_helper import verify_token
+from shared.media_utils import infer_media_type
 
 def handler(event, context):
     cors_headers = {
@@ -43,16 +43,32 @@ def handler(event, context):
         
         photos = []
         for item in items:
-            # Prefer thumbnail for the gallery view
-            s3_key = item.get("thumbKey") or item.get("s3Key")
-            if not s3_key:
+            media_type = infer_media_type(item)
+            photo_entry = {
+                "PK": item.get("PK"),
+                "uploadedBy": item.get("uploadedBy"),
+                "uploadedAt": item.get("uploadedAt"),
+                "isOptimized": media_type == "image" and "thumbKey" in item,
+                "mediaType": media_type,
+                "contentType": item.get("contentType"),
+            }
+
+            # Agli utenti normali i video sono rappresentati solo da un placeholder:
+            # non generiamo ne' restituiamo URL firmati dell'originale.
+            if media_type == "video":
+                photos.append(photo_entry)
                 continue
-                
-            # Generate GET presigned URL
+
+            # Le immagini vengono esposte soltanto tramite thumbnail. Finche' il
+            # processore non l'ha creata, l'originale non compare nella galleria.
+            thumb_key = item.get("thumbKey")
+            if not thumb_key:
+                continue
+
             try:
                 url = s3.generate_presigned_url(
                     'get_object',
-                    Params={'Bucket': bucket_name, 'Key': s3_key},
+                    Params={'Bucket': bucket_name, 'Key': thumb_key},
                     ExpiresIn=3600
                 )
                 
@@ -60,16 +76,10 @@ def handler(event, context):
                 if os.getenv("ENV", "local") == "local":
                     url = url.replace("http://minio:9000", "http://localhost:9000")
                 
-                photos.append({
-                    "PK": item.get("PK"),
-                    "url": url,
-                    "originalUrl": item.get("s3Key"), # Keep track for enlargement if needed
-                    "uploadedBy": item.get("uploadedBy"),
-                    "uploadedAt": item.get("uploadedAt"),
-                    "isOptimized": "thumbKey" in item
-                })
+                photo_entry["url"] = url
+                photos.append(photo_entry)
             except Exception as e:
-                print(f"Errore generazione URL per {s3_key}: {e}")
+                print(f"Errore generazione URL per {thumb_key}: {e}")
                 
         return {
             "statusCode": 200,

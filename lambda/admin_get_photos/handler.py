@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import s3, dynamodb
 from shared.jwt_helper import verify_token
+from shared.media_utils import infer_media_type
 
 def handler(event, context):
     cors_headers = {
@@ -44,52 +45,55 @@ def handler(event, context):
         for item in items:
             uploaded_by = item.get("uploadedBy", "Sconosciuto")
             guest_name = item.get("uploaderName", "Ospite Sconosciuto")
+            media_type = infer_media_type(item)
 
-            # Thumbnail URL for gallery display
-            thumb_key = item.get("thumbKey") or item.get("s3Key")
-            # Original URL for downloading
-            original_key = item.get("s3Key")
+            photo_entry = {
+                "PK": item.get("PK"),
+                "uploadedBy": uploaded_by,
+                "guestName": guest_name,
+                "uploadedAt": item.get("uploadedAt", ""),
+                "isOptimized": media_type == "image" and "thumbKey" in item,
+                "mediaType": media_type,
+                "contentType": item.get("contentType"),
+            }
 
-            if not thumb_key:
-                continue
+            # I video non ricevono URL durante il caricamento della galleria:
+            # l'admin lo richiede on demand quando preme play o download.
+            if media_type == "image":
+                thumb_key = item.get("thumbKey") or item.get("s3Key")
+                original_key = item.get("s3Key")
+                if not thumb_key:
+                    continue
 
-            try:
-                thumb_url = s3.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': bucket_name, 'Key': thumb_key},
-                    ExpiresIn=3600
-                )
-                original_url = s3.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': bucket_name, 'Key': original_key},
-                    ExpiresIn=3600
-                ) if original_key else thumb_url
+                try:
+                    thumb_url = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': bucket_name, 'Key': thumb_key},
+                        ExpiresIn=3600
+                    )
+                    original_url = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': bucket_name, 'Key': original_key},
+                        ExpiresIn=3600
+                    ) if original_key else thumb_url
 
-                # Fix local dev URL
-                if os.getenv("ENV", "local") == "local":
-                    thumb_url = thumb_url.replace("http://minio:9000", "http://localhost:9000")
-                    original_url = original_url.replace("http://minio:9000", "http://localhost:9000")
+                    if os.getenv("ENV", "local") == "local":
+                        thumb_url = thumb_url.replace("http://minio:9000", "http://localhost:9000")
+                        original_url = original_url.replace("http://minio:9000", "http://localhost:9000")
 
-                photo_entry = {
-                    "PK": item.get("PK"),
-                    "thumbUrl": thumb_url,
-                    "originalUrl": original_url,
-                    "uploadedBy": uploaded_by,
+                    photo_entry["thumbUrl"] = thumb_url
+                    photo_entry["originalUrl"] = original_url
+                except Exception as e:
+                    print(f"Errore generazione URL per {thumb_key}: {e}")
+                    continue
+
+            if uploaded_by not in photos_by_guest:
+                photos_by_guest[uploaded_by] = {
                     "guestName": guest_name,
-                    "uploadedAt": item.get("uploadedAt", ""),
-                    "isOptimized": "thumbKey" in item
+                    "phone": uploaded_by,
+                    "photos": []
                 }
-
-                if uploaded_by not in photos_by_guest:
-                    photos_by_guest[uploaded_by] = {
-                        "guestName": guest_name,
-                        "phone": uploaded_by,
-                        "photos": []
-                    }
-                photos_by_guest[uploaded_by]["photos"].append(photo_entry)
-
-            except Exception as e:
-                print(f"Errore generazione URL per {thumb_key}: {e}")
+            photos_by_guest[uploaded_by]["photos"].append(photo_entry)
 
         # Sort photos within each group by date desc
         for guest in photos_by_guest.values():

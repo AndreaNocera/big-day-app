@@ -1,21 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Download, Film, Play } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
-import { getPhotos, getAllPhotos } from '@/lib/photos';
+import { getPhotos, getAllPhotos, getAdminVideoUrl } from '@/lib/photos';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
-import { ACCEPT_ATTR, MAX_FILES_PER_BATCH, MAX_FILE_SIZE_MB, fmt } from '@/lib/uploadConfig';
+import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
 
 interface Photo {
     PK: string;
-    url: string;
+    url?: string;
     originalUrl?: string;
     thumbUrl?: string;
     uploadedBy: string;
     uploadedAt: string;
     isOptimized: boolean;
+    mediaType?: 'image' | 'video';
+    contentType?: string;
 }
 
 interface GuestGroup {
@@ -25,6 +27,135 @@ interface GuestGroup {
 }
 
 const enablePhotos = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
+
+function AdminMediaTile({ photo }: { photo: Photo }) {
+    const { t } = useI18nStore();
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    const [loadingAction, setLoadingAction] = useState<'play' | 'download' | null>(null);
+    const [videoError, setVideoError] = useState(false);
+    const isVideo = photo.mediaType === 'video';
+    const thumbSrc = photo.thumbUrl || photo.url;
+    const downloadSrc = photo.originalUrl || photo.url;
+
+    const requestVideo = async (disposition: 'inline' | 'attachment') => {
+        try {
+            setVideoError(false);
+            setLoadingAction(disposition === 'inline' ? 'play' : 'download');
+            const { url } = await getAdminVideoUrl(photo.PK, disposition);
+
+            if (disposition === 'inline') {
+                setVideoUrl(url);
+            } else {
+                const link = document.createElement('a');
+                link.href = url;
+                link.click();
+            }
+        } catch (error) {
+            console.error('Admin video URL error:', error);
+            setVideoError(true);
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
+    return (
+        <div style={{
+            aspectRatio: '1/1',
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+            position: 'relative',
+            display: 'block',
+            boxShadow: 'var(--shadow-sm)',
+            background: '#f3f4f6',
+        }}>
+            {isVideo ? (
+                videoUrl ? (
+                    <video
+                        src={videoUrl}
+                        controls
+                        autoPlay
+                        playsInline
+                        preload="metadata"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                ) : (
+                    <div style={{
+                        width: '100%', height: '100%',
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center', gap: 8,
+                        color: 'var(--color-primary)',
+                        background: 'linear-gradient(145deg, #f4effa, #e8ddf3)',
+                    }}>
+                        <Film size={34} aria-hidden="true" />
+                        <span style={{ fontSize: 11, fontWeight: 600 }}>{t('gallery.videoPlaceholder')}</span>
+                        <button
+                            type="button"
+                            onClick={() => requestVideo('inline')}
+                            disabled={loadingAction !== null}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 5,
+                                border: 0, borderRadius: 999, padding: '6px 10px',
+                                background: 'var(--color-primary)', color: 'white',
+                                cursor: loadingAction ? 'wait' : 'pointer', fontSize: 11,
+                            }}
+                        >
+                            <Play size={13} fill="currentColor" aria-hidden="true" />
+                            {loadingAction === 'play' ? t('gallery.preparingVideo') : t('gallery.playVideo')}
+                        </button>
+                        {videoError && (
+                            <span style={{ color: 'var(--color-error)', fontSize: 9, textAlign: 'center', padding: '0 6px' }}>
+                                {t('gallery.videoLoadError')}
+                            </span>
+                        )}
+                    </div>
+                )
+            ) : thumbSrc ? (
+                <img
+                    src={thumbSrc}
+                    alt="Foto ospite"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
+                    loading="lazy"
+                />
+            ) : null}
+
+            <div style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0,
+                padding: '4px 6px',
+                background: 'rgba(0,0,0,0.55)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
+                <span style={{ color: 'white', fontSize: 9 }}>{new Date(photo.uploadedAt).toLocaleDateString('it-IT')}</span>
+                {isVideo ? (
+                    <button
+                        type="button"
+                        onClick={() => requestVideo('attachment')}
+                        disabled={loadingAction !== null}
+                        title={t('admin.downloadPhoto')}
+                        aria-label={t('admin.downloadPhoto')}
+                        style={{ display: 'flex', color: 'white', border: 0, padding: 0, background: 'none', cursor: loadingAction ? 'wait' : 'pointer' }}
+                    >
+                        <Download size={14} />
+                    </button>
+                ) : downloadSrc ? (
+                    <a
+                        href={downloadSrc}
+                        download
+                        title={t('admin.downloadPhoto')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={t('admin.downloadPhoto')}
+                        style={{ display: 'flex', color: 'white' }}
+                    >
+                        <Download size={14} />
+                    </a>
+                ) : null}
+            </div>
+        </div>
+    );
+}
 
 function AdminAccordion({ group }: { group: GuestGroup }) {
     const [open, setOpen] = useState(false);
@@ -57,7 +188,7 @@ function AdminAccordion({ group }: { group: GuestGroup }) {
                 <span>
                     {group.guestName}
                     <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--color-text-secondary)', marginLeft: 8 }}>
-                        ({group.photos.length} {group.photos.length === 1 ? 'foto' : 'foto'})
+                        ({group.photos.length})
                     </span>
                 </span>
                 {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -73,49 +204,9 @@ function AdminAccordion({ group }: { group: GuestGroup }) {
                             gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
                             gap: 10
                         }}>
-                            {group.photos.map((photo) => {
-                                const thumbSrc = photo.thumbUrl || photo.url;
-                                const downloadSrc = photo.originalUrl || photo.url;
-                                return (
-                                    <a
-                                        key={photo.PK}
-                                        href={downloadSrc}
-                                        download
-                                        title={t('admin.downloadPhoto')}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            aspectRatio: '1/1',
-                                            borderRadius: 'var(--radius-sm)',
-                                            overflow: 'hidden',
-                                            position: 'relative',
-                                            display: 'block',
-                                            boxShadow: 'var(--shadow-sm)',
-                                            background: '#f3f4f6',
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        <img
-                                            src={thumbSrc}
-                                            alt="Foto ospite"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
-                                            loading="lazy"
-                                        />
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: 0, left: 0, right: 0,
-                                            padding: '4px 6px',
-                                            background: 'rgba(0,0,0,0.55)',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
-                                        }}>
-                                            <span style={{ color: 'white', fontSize: 9 }}>{new Date(photo.uploadedAt).toLocaleDateString('it-IT')}</span>
-                                            <Download size={12} color="white" />
-                                        </div>
-                                    </a>
-                                );
-                            })}
+                            {group.photos.map((photo) => (
+                                <AdminMediaTile key={photo.PK} photo={photo} />
+                            ))}
                         </div>
                     )}
                 </div>
@@ -180,7 +271,7 @@ export default function Photos() {
             <main className="page-content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                     <h1 className="hero-title" style={{ fontSize: '32px', margin: 0 }}>
-                        {isAdmin ? t('admin.photosByGuest') : 'Il tuo Album'}
+                        {isAdmin ? t('admin.photosByGuest') : t('gallery.title')}
                     </h1>
                     {canUpload && (
                         <div>
@@ -204,7 +295,10 @@ export default function Photos() {
                                     : t('gallery.uploadBtn')}
                             </button>
                             <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '6px 0 0', textAlign: 'right', maxWidth: 160 }}>
-                                {fmt(t('gallery.uploadHint'), { max: MAX_FILES_PER_BATCH, mb: MAX_FILE_SIZE_MB })}
+                                {fmt(t('gallery.uploadHint'), {
+                                    imageMb: MAX_IMAGE_SIZE_MB,
+                                    videoMb: MAX_VIDEO_SIZE_MB,
+                                })}
                             </p>
                         </div>
                     )}
@@ -274,19 +368,34 @@ export default function Photos() {
                                             overflow: 'hidden', position: 'relative',
                                             boxShadow: 'var(--shadow-sm)', background: '#f3f4f6'
                                         }}>
-                                            <img
-                                                src={photo.url}
-                                                alt="Uploaded"
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
-                                                loading="lazy"
-                                            />
+                                            {photo.mediaType === 'video' ? (
+                                                <div style={{
+                                                    width: '100%', height: '100%',
+                                                    display: 'flex', flexDirection: 'column',
+                                                    alignItems: 'center', justifyContent: 'center', gap: 8,
+                                                    color: 'var(--color-primary)',
+                                                    background: 'linear-gradient(145deg, #f4effa, #e8ddf3)',
+                                                }}>
+                                                    <Film size={38} aria-hidden="true" />
+                                                    <span style={{ fontSize: 12, fontWeight: 600, textAlign: 'center', padding: '0 8px' }}>
+                                                        {t('gallery.videoPlaceholder')}
+                                                    </span>
+                                                </div>
+                                            ) : photo.url ? (
+                                                <img
+                                                    src={photo.url}
+                                                    alt="Uploaded"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: photo.isOptimized ? 1 : 0.6 }}
+                                                    loading="lazy"
+                                                />
+                                            ) : null}
                                             <div style={{
-                                                position: 'absolute', bottom: 0, left: 0, right: 0,
+                                                position: 'absolute', top: 0, left: 0, right: 0,
                                                 padding: '4px 8px', background: 'rgba(0,0,0,0.5)',
                                                 color: 'white', fontSize: '10px', display: 'flex', justifyContent: 'space-between'
                                             }}>
                                                 <span>{new Date(photo.uploadedAt).toLocaleDateString()}</span>
-                                                {!photo.isOptimized && <span>...</span>}
+                                                {photo.mediaType !== 'video' && !photo.isOptimized && <span>...</span>}
                                             </div>
                                         </div>
                                     ))}

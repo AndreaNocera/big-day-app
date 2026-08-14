@@ -2,21 +2,14 @@ import json
 import os
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.aws_clients import s3, dynamodb
 from shared.jwt_helper import verify_token
 from shared.photo_access import validate_photo_code
 from shared.api_utils import json_response
-
-# Formati immagine ammessi (i piu' comuni da telefono).
-# L'estensione della chiave S3 deriva dal contentType validato, non dal filename utente.
-ALLOWED_IMAGE_TYPES = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-}
+from shared.media_utils import get_media_config
 
 def handler(event, context):
     try:
@@ -37,7 +30,7 @@ def handler(event, context):
         is_admin = bool(payload.get("isAdmin", False))
         photo_code = headers.get("x-photo-code", headers.get("X-Photo-Code", ""))
         if not is_admin and not validate_photo_code(photo_code):
-            return json_response(403, {"error": "Caricamento foto non abilitato"})
+            return json_response(403, {"error": "Caricamento foto e video non abilitato"})
 
         user_name = payload.get("name", "Ospite").replace(" ", "")
         
@@ -48,9 +41,14 @@ def handler(event, context):
         if not filename:
             return json_response(400, {"error": "Filename mancante"})
 
-        ext = ALLOWED_IMAGE_TYPES.get(content_type)
-        if not ext:
-            return json_response(400, {"error": "Formato non supportato: sono ammessi JPEG, PNG e WebP"})
+        media_config = get_media_config(content_type)
+        if not media_config:
+            return json_response(400, {
+                "error": "Formato non supportato: sono ammessi JPEG, PNG, WebP, HEIC, HEIF, MP4, MOV e WebM"
+            })
+
+        ext = media_config["extension"]
+        media_type = media_config["mediaType"]
 
         # Generate identifier and unique key
         photo_id = str(uuid.uuid4())
@@ -82,9 +80,11 @@ def handler(event, context):
                 "uploadedBy": payload.get("phone"),
                 "uploaderName": payload.get("name", "Ospite"),
                 "s3Key": s3_key,
-                "uploadedAt": datetime.utcnow().isoformat(),
+                "uploadedAt": datetime.now(timezone.utc).isoformat(),
                 "approved": False,
-                "type": "PHOTO"
+                "type": "PHOTO",
+                "mediaType": media_type,
+                "contentType": content_type,
             }
         )
         

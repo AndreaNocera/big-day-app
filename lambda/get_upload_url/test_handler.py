@@ -56,6 +56,58 @@ def test_get_upload_url_success(aws_mock, monkeypatch):
     assert len(items) == 1
     assert items[0]["uploadedBy"] == "+390000000001"
     assert items[0]["s3Key"] == body["key"]
+    assert items[0]["mediaType"] == "image"
+    assert items[0]["contentType"] == "image/jpeg"
+
+def test_get_video_upload_url_success(aws_mock, monkeypatch):
+    dynamodb_mock, s3_mock = aws_mock
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
+
+    token = jwt_helper.generate_token("+390000000001", "Test Admin", is_admin=True)
+    event = {
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({
+            "filename": "video.mov",
+            "contentType": "video/quicktime"
+        })
+    }
+
+    response = handler_module.handler(event, {})
+    assert response["statusCode"] == 200
+
+    body = json.loads(response["body"])
+    assert body["key"].endswith(".mov")
+
+    items = dynamodb_mock.Table("WeddingPhotos").scan()["Items"]
+    assert len(items) == 1
+    assert items[0]["mediaType"] == "video"
+    assert items[0]["contentType"] == "video/quicktime"
+
+def test_get_heic_upload_url_success(aws_mock, monkeypatch):
+    dynamodb_mock, s3_mock = aws_mock
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
+
+    token = jwt_helper.generate_token("+390000000001", "Test Admin", is_admin=True)
+    event = {
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({
+            "filename": "foto.heic",
+            "contentType": "image/heic"
+        })
+    }
+
+    response = handler_module.handler(event, {})
+    assert response["statusCode"] == 200
+
+    body = json.loads(response["body"])
+    assert body["key"].endswith(".heic")
+
+    items = dynamodb_mock.Table("WeddingPhotos").scan()["Items"]
+    assert len(items) == 1
+    assert items[0]["mediaType"] == "image"
+    assert items[0]["contentType"] == "image/heic"
 
 def test_get_upload_url_invalid_token():
     event = {
@@ -64,3 +116,18 @@ def test_get_upload_url_invalid_token():
     }
     response = handler_module.handler(event, {})
     assert response["statusCode"] == 401
+
+def test_get_upload_url_rejects_unsupported_media(aws_mock, monkeypatch):
+    dynamodb_mock, s3_mock = aws_mock
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
+
+    token = jwt_helper.generate_token("+390000000001", "Test Admin", is_admin=True)
+    event = {
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({"filename": "file.avi", "contentType": "video/x-msvideo"})
+    }
+
+    response = handler_module.handler(event, {})
+    assert response["statusCode"] == 400
+    assert dynamodb_mock.Table("WeddingPhotos").scan()["Items"] == []
