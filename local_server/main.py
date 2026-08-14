@@ -19,11 +19,12 @@ from process_photo.handler import handler as process_photo_handler
 from admin_get_rsvps.handler import handler as admin_get_rsvps_handler
 from admin_get_photos.handler import handler as admin_get_photos_handler
 from admin_get_media_url.handler import handler as admin_get_media_url_handler
+from admin_delete_media.handler import handler as admin_delete_media_handler
 from verify_photo_access.handler import handler as verify_photo_access_handler
 from guest_register.handler import handler as guest_register_handler
 
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends
@@ -78,6 +79,10 @@ class PhotoAccessRequest(BaseModel):
 class AdminMediaUrlRequest(BaseModel):
     photoId: str
     disposition: str = "inline"
+
+class AdminDeleteMediaRequest(BaseModel):
+    photoIds: list[str]
+    mode: Literal["logical", "physical"]
 
 class GuestRegisterRequest(BaseModel):
     code: str
@@ -165,6 +170,11 @@ async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials 
     """Recupera foto e video caricati con URL firmati per la visualizzazione."""
     return await handle_lambda(request, get_photos_handler)
 
+@app.post("/photos/delete", summary="Elimina un proprio contenuto")
+async def delete_media_route(request: Request, body: AdminDeleteMediaRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Elimina fisicamente una propria foto o un proprio video."""
+    return await handle_lambda(request, admin_delete_media_handler, body)
+
 @app.post("/profile/email", summary="Aggiorna Profilo (Email)")
 async def update_profile_route(request: Request, body: ProfileRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Salva l'email opzionale nel profilo dell'utente."""
@@ -184,6 +194,11 @@ async def admin_get_photos_route(request: Request, auth: HTTPAuthorizationCreden
 async def admin_get_media_url_route(request: Request, body: AdminMediaUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Genera l'URL firmato di un originale solo dopo un'azione esplicita dell'admin."""
     return await handle_lambda(request, admin_get_media_url_handler, body)
+
+@app.post("/admin/photos/delete", summary="[Admin] Elimina foto e video")
+async def admin_delete_media_route(request: Request, body: AdminDeleteMediaRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Elimina logicamente o fisicamente uno o piu' media. Richiede token admin."""
+    return await handle_lambda(request, admin_delete_media_handler, body)
 
 @app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")
 async def debug_process_photo(request: Request, body: Dict[str, str], auth: HTTPAuthorizationCredentials = Depends(security)):

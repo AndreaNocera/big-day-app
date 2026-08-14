@@ -22,8 +22,12 @@ Il progetto e' in una fase operativa avanzata:
 
 L'ultima area sviluppata e' il flusso media: accesso tramite link speciale,
 registrazione semplificata dei photo guest, upload multiplo senza limite numerico,
-conferma preventiva con conteggio di foto e video, thumbnail delle immagini e
-download amministrativo on demand. Sono accettate immagini JPEG, PNG, WebP, HEIC e HEIF fino a 20 MB
+conferma preventiva tramite la stessa modale applicativa in homepage e galleria
+(con conteggio delle sole categorie presenti), thumbnail delle immagini e
+download amministrativo on demand. Ogni utente puo' eliminare fisicamente un
+proprio contenuto; l'admin puo' inoltre eliminare media di qualunque utente in
+modalita' logica o fisica, anche in modo massivo. Sono accettate immagini JPEG,
+PNG, WebP, HEIC e HEIF fino a 20 MB
 e video MP4, MOV e WebM fino a 500 MB per file; gli upload diretti verso S3/MinIO
 restano limitati a tre operazioni contemporanee.
 
@@ -76,7 +80,9 @@ Ambiente locale
 2. Il backend verifica che il codice sia attivo.
 3. Se non ha gia' una sessione, si registra con nome e cognome.
 4. Riceve un JWT con `isPhotoGuest=true`.
-5. Puo' caricare e consultare le proprie foto e i propri video, ma non accedere all'RSVP.
+5. Puo' caricare, consultare ed eliminare fisicamente le proprie foto e i propri
+   video, ma non accedere all'RSVP. La proprieta' e' verificata usando
+   l'identificativo sintetico nel JWT e nel campo `uploadedBy`.
 
 Il codice foto in chiaro non viene salvato nel database: viene memorizzato solo
 il suo hash SHA-256. La revoca viene controllata nuovamente dal backend prima di
@@ -94,7 +100,14 @@ Un JWT con `isAdmin=true` consente di:
 - visualizzare statistiche e risposte RSVP;
 - consultare foto e video raggruppati per autore;
 - scaricare gli originali;
+- eliminare un singolo media o tutti i media visibili di un utente;
 - caricare foto e video senza codice foto.
+
+L'eliminazione amministrativa richiede sempre una conferma esplicita. La
+modalita' logica marca i record come eliminati e li nasconde da tutte le
+gallerie, conservando record DynamoDB e file S3 per un eventuale recupero. La
+modalita' fisica elimina originali e thumbnail da S3 e rimuove definitivamente
+i record DynamoDB.
 
 Le verifiche dei ruoli devono sempre restare anche nel backend. I controlli delle
 route React servono all'esperienza utente, non costituiscono autorizzazione.
@@ -118,9 +131,11 @@ API attive:
 - `POST /photos/access/verify`;
 - `GET /rsvp`; `POST /rsvp` e' mantenuta per compatibilita', ma rifiuta le
   modifiche mentre le conferme sono chiuse;
-- `GET /photos` e `POST /photos/upload`;
+- `GET /photos`, `POST /photos/upload` e `POST /photos/delete` (solo
+  cancellazione fisica di un singolo media appartenente all'utente autenticato);
 - `POST /profile/email`;
-- `GET /admin/rsvps`, `GET /admin/photos` e `POST /admin/photos/media-url`.
+- `GET /admin/rsvps`, `GET /admin/photos`, `POST /admin/photos/media-url` e
+  `POST /admin/photos/delete`.
 
 Gli handler `send_invites` e `survey_handler` sono legacy: vengono ancora creati
 dallo stack, ma le loro route API sono commentate e non fanno parte del flusso
@@ -148,6 +163,7 @@ Tabella condivisa da piu' tipi di record, riconoscibili dal prefisso della PK:
 - PK `PHOTO#<uuid>`;
 - autore e nome visualizzato;
 - chiave S3 originale, eventuale chiave thumbnail, tipo media, MIME e data di upload;
+- per le eliminazioni logiche: `deletedAt`, `deletionMode` e `deletedBy`;
 - GSI `S3KeyIndex`, usato dal processore delle thumbnail.
 
 I record storici senza `mediaType` e `contentType` sono interpretati come immagini.
@@ -234,6 +250,10 @@ Servizi locali:
 - DynamoDB Local: `http://localhost:8001`;
 - MinIO Console: `http://localhost:9001`;
 - MailHog: `http://localhost:8025`.
+
+Il reload automatico dell'API osserva gli handler e l'adapter FastAPI, ma
+esclude `lambda/layer`: quella directory puo' essere rigenerata durante la
+sintesi CDK e non contiene route applicative da ricaricare.
 
 Per creare un link foto esclusivamente locale:
 

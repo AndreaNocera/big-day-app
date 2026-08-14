@@ -1,5 +1,6 @@
 import os
 import io
+from botocore.exceptions import ClientError
 
 os.environ["ENV"] = "test"
 
@@ -41,12 +42,16 @@ class RecordingS3:
     def __init__(self, original):
         self.original = original
         self.upload = None
+        self.deleted = None
 
     def get_object(self, **kwargs):
         return {"Body": FakeBody(self.original)}
 
     def put_object(self, **kwargs):
         self.upload = kwargs
+
+    def delete_object(self, **kwargs):
+        self.deleted = kwargs
 
 
 class FakeTable:
@@ -95,3 +100,37 @@ def test_heic_generates_browser_compatible_jpeg_thumbnail(monkeypatch):
     thumbnail = Image.open(io.BytesIO(fake_s3.upload["Body"].getvalue()))
     assert thumbnail.format == "JPEG"
     assert thumbnail.size == (20, 10)
+
+
+class DeletedDuringProcessingTable(FakeTable):
+    def update_item(self, **kwargs):
+        raise ClientError(
+            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "deleted"}},
+            "UpdateItem",
+        )
+
+
+def test_thumbnail_is_removed_if_media_was_deleted_during_processing(monkeypatch):
+    source = io.BytesIO()
+    Image.new("RGB", (20, 10), color="blue").save(source, format="JPEG")
+
+    fake_s3 = RecordingS3(source.getvalue())
+    fake_dynamodb = FakeDynamoDB()
+    fake_dynamodb.table = DeletedDuringProcessingTable()
+    monkeypatch.setattr(handler_module, "s3", fake_s3)
+    monkeypatch.setattr(handler_module, "dynamodb", fake_dynamodb)
+
+    event = {
+        "Records": [{
+            "s3": {
+                "bucket": {"name": "test-bucket"},
+                "object": {"key": "uploads/deleted-photo.jpg"},
+            }
+        }]
+    }
+
+    assert handler_module.handler(event, {}) is None
+    assert fake_s3.deleted == {
+        "Bucket": "test-bucket",
+        "Key": "thumbnails/deleted-photo.jpg",
+    }

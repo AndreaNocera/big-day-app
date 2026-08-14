@@ -1,6 +1,9 @@
 import { fetchWithAuth } from './api';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 
+export type MediaDeletionMode = 'logical' | 'physical';
+const MEDIA_DELETE_BATCH_SIZE = 500;
+
 export async function getPhotos() {
     const data = await fetchWithAuth('/photos');
     return data.photos || [];
@@ -15,6 +18,37 @@ export async function getAdminMediaUrl(photoId: string, disposition: 'inline' | 
     return fetchWithAuth('/admin/photos/media-url', {
         method: 'POST',
         body: JSON.stringify({ photoId, disposition }),
+    });
+}
+
+export async function deleteAdminMedia(photoIds: string[], mode: MediaDeletionMode) {
+    const result = {
+        mode,
+        deletedCount: 0,
+        missingCount: 0,
+        deletedS3Objects: 0,
+    };
+
+    for (let index = 0; index < photoIds.length; index += MEDIA_DELETE_BATCH_SIZE) {
+        const response = await fetchWithAuth('/admin/photos/delete', {
+            method: 'POST',
+            body: JSON.stringify({
+                photoIds: photoIds.slice(index, index + MEDIA_DELETE_BATCH_SIZE),
+                mode,
+            }),
+        });
+        result.deletedCount += response.deletedCount || 0;
+        result.missingCount += response.missingCount || 0;
+        result.deletedS3Objects += response.deletedS3Objects || 0;
+    }
+
+    return result;
+}
+
+export async function deleteOwnMedia(photoId: string) {
+    return fetchWithAuth('/photos/delete', {
+        method: 'POST',
+        body: JSON.stringify({ photoIds: [photoId], mode: 'physical' }),
     });
 }
 

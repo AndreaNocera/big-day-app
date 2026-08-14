@@ -37,7 +37,7 @@ def handler(event, context):
             return json_response(400, {"error": "Modalita' non valida"})
 
         item = dynamodb.Table("WeddingPhotos").get_item(Key={"PK": photo_id}).get("Item")
-        if not item:
+        if not item or item.get("deletedAt"):
             return json_response(404, {"error": "Media non trovato"})
 
         media_type = infer_media_type(item)

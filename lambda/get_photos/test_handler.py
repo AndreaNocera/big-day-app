@@ -61,6 +61,15 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
             "mediaType": "image",
             "contentType": "image/jpeg",
         },
+        {
+            "PK": "PHOTO#deleted",
+            "uploadedBy": "guest-1",
+            "uploadedAt": "2026-08-14T09:00:00+00:00",
+            "s3Key": "uploads/deleted.jpg",
+            "thumbKey": "thumbnails/deleted.jpg",
+            "mediaType": "image",
+            "deletedAt": "2026-08-14T09:30:00+00:00",
+        },
     ]
     fake_s3 = RecordingS3()
     monkeypatch.setattr(handler_module, "dynamodb", FakeDynamoDB(items))

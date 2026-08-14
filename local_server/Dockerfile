@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r local_server/requirements.txt
 
 ENV PYTHONPATH=/app/lambda
 
-CMD ["uvicorn", "local_server.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/lambda", "--reload-dir", "/app/local_server"]
+CMD ["uvicorn", "local_server.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/lambda", "--reload-dir", "/app/local_server", "--reload-exclude", "/app/lambda/layer"]

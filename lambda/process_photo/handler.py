@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import io
+from botocore.exceptions import ClientError
 
 # Add lambda path so shared components can be imported
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -99,15 +100,25 @@ def handler(event, context):
         items = query_response.get("Items", [])
         if items:
             pk = items[0]["PK"]
-            table.update_item(
-                Key={"PK": pk},
-                UpdateExpression="SET thumbKey = :tk, approved = :app",
-                ExpressionAttributeValues={
-                    ":tk": thumb_key,
-                    ":app": True # Auto-approve for now since it's processed
-                }
-            )
-            print(f"DynamoDB updated for PK: {pk}")
+            try:
+                table.update_item(
+                    Key={"PK": pk},
+                    UpdateExpression="SET thumbKey = :tk, approved = :app",
+                    ExpressionAttributeValues={
+                        ":tk": thumb_key,
+                        ":app": True # Auto-approve for now since it's processed
+                    },
+                    ConditionExpression="attribute_exists(PK) AND attribute_not_exists(deletedAt)",
+                )
+                print(f"DynamoDB updated for PK: {pk}")
+            except ClientError as exc:
+                if exc.response.get("Error", {}).get("Code") != "ConditionalCheckFailedException":
+                    raise
+                # Il media e' stato eliminato mentre la thumbnail era in
+                # elaborazione: rimuoviamo l'asset appena generato e non
+                # ricreiamo un record parziale.
+                s3.delete_object(Bucket=bucket_name, Key=thumb_key)
+                print("Thumbnail rimossa per media eliminato durante l'elaborazione")
         else:
             print(f"No DynamoDB item found for s3Key: {s3_key}")
 

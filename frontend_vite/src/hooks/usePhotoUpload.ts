@@ -15,14 +15,32 @@ import {
 
 const IS_LOCAL = import.meta.env.VITE_API_URL?.includes('localhost');
 
+interface ValidatedMedia {
+    file: File;
+    kind: MediaKind;
+    contentType: string;
+}
+
+interface PendingUpload {
+    valid: ValidatedMedia[];
+    notes: string[];
+}
+
+export interface UploadConfirmation {
+    photos: number;
+    videos: number;
+    notes: string[];
+}
+
 export function usePhotoUpload(onSuccess?: () => void) {
     const { t } = useI18nStore();
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [progress, setProgress] = useState({ done: 0, total: 0 });
     const [message, setMessage] = useState('');
+    const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(null);
 
-    /** Carica un batch senza limite numerico: valida, chiede conferma e limita solo la concorrenza. */
-    const uploadPhotos = async (fileList: FileList | File[]) => {
+    /** Valida un batch senza limite numerico e apre il riepilogo applicativo. */
+    const uploadPhotos = (fileList: FileList | File[]) => {
         const files = Array.from(fileList);
         if (files.length === 0) return;
 
@@ -70,12 +88,16 @@ export function usePhotoUpload(onSuccess?: () => void) {
             return;
         }
 
-        const countByKind = (kind: MediaKind) => valid.filter(item => item.kind === kind).length;
-        const confirmed = window.confirm(fmt(t('gallery.uploadConfirm'), {
-            photos: countByKind('image'),
-            videos: countByKind('video'),
-        }));
-        if (!confirmed) return;
+        setStatus('idle');
+        setMessage('');
+        setPendingUpload({ valid, notes });
+    };
+
+    /** Avvia l'upload solo dopo la conferma esplicita nella modale. */
+    const confirmUpload = async () => {
+        if (!pendingUpload) return;
+        const { valid, notes } = pendingUpload;
+        setPendingUpload(null);
 
         setStatus('loading');
         setProgress({ done: 0, total: valid.length });
@@ -135,8 +157,23 @@ export function usePhotoUpload(onSuccess?: () => void) {
         setTimeout(() => setStatus('idle'), 5000);
     };
 
+    const cancelUpload = () => {
+        setPendingUpload(null);
+    };
+
+    const uploadConfirmation: UploadConfirmation | null = pendingUpload
+        ? {
+            photos: pendingUpload.valid.filter(item => item.kind === 'image').length,
+            videos: pendingUpload.valid.filter(item => item.kind === 'video').length,
+            notes: pendingUpload.notes,
+        }
+        : null;
+
     return {
         uploadPhotos,
+        confirmUpload,
+        cancelUpload,
+        uploadConfirmation,
         status,
         progress,
         message,

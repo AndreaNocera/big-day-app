@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Play } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Play, Trash2 } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
-import { getPhotos, getAllPhotos, getAdminMediaUrl } from '@/lib/photos';
+import { deleteAdminMedia, deleteOwnMedia, getPhotos, getAllPhotos, getAdminMediaUrl, type MediaDeletionMode } from '@/lib/photos';
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
+import { MediaDeleteModal } from '@/components/MediaDeleteModal';
+import { UploadConfirmModal } from '@/components/UploadConfirmModal';
 
 interface Photo {
     PK: string;
@@ -29,7 +31,7 @@ const enablePhotos = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
 const THUMBNAIL_POLL_INTERVAL_MS = 5000;
 const MAX_THUMBNAIL_POLL_ATTEMPTS = 5;
 
-function AdminMediaTile({ photo }: { photo: Photo }) {
+function AdminMediaTile({ photo, onDelete }: { photo: Photo; onDelete: (photo: Photo) => void }) {
     const { t } = useI18nStore();
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [loadingAction, setLoadingAction] = useState<'play' | 'download' | null>(null);
@@ -88,20 +90,27 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                     }}>
                         <Film size={34} aria-hidden="true" />
                         <span style={{ fontSize: 11, fontWeight: 600 }}>{t('gallery.videoPlaceholder')}</span>
-                        <button
-                            type="button"
-                            onClick={() => requestOriginal('inline')}
-                            disabled={loadingAction !== null}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: 5,
-                                border: 0, borderRadius: 999, padding: '6px 10px',
-                                background: 'var(--color-primary)', color: 'white',
-                                cursor: loadingAction ? 'wait' : 'pointer', fontSize: 11,
-                            }}
-                        >
-                            <Play size={13} fill="currentColor" aria-hidden="true" />
-                            {loadingAction === 'play' ? t('gallery.preparingVideo') : t('gallery.playVideo')}
-                        </button>
+                        <div className="admin-video-actions">
+                            <button
+                                type="button"
+                                onClick={() => requestOriginal('inline')}
+                                disabled={loadingAction !== null}
+                                className="admin-video-action"
+                            >
+                                <Play size={13} fill="currentColor" aria-hidden="true" />
+                                {loadingAction === 'play' ? t('gallery.preparingVideo') : t('gallery.playVideo')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => requestOriginal('attachment')}
+                                disabled={loadingAction !== null}
+                                className="admin-video-action icon-only"
+                                title={t('admin.downloadPhoto')}
+                                aria-label={t('admin.downloadPhoto')}
+                            >
+                                <Download size={16} aria-hidden="true" />
+                            </button>
+                        </div>
                         {mediaError && (
                             <span style={{ color: 'var(--color-error)', fontSize: 9, textAlign: 'center', padding: '0 6px' }}>
                                 {t('gallery.videoLoadError')}
@@ -131,6 +140,32 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                 </div>
             )}
 
+            {!isVideo && thumbSrc && (
+                <button
+                    type="button"
+                    onClick={() => requestOriginal('attachment')}
+                    disabled={loadingAction !== null}
+                    className="admin-media-download-overlay"
+                    title={t('admin.downloadPhoto')}
+                    aria-label={t('admin.downloadPhoto')}
+                >
+                    <Download size={20} aria-hidden="true" />
+                </button>
+            )}
+
+            {isVideo && videoUrl && (
+                <button
+                    type="button"
+                    onClick={() => requestOriginal('attachment')}
+                    disabled={loadingAction !== null}
+                    className="admin-media-download-overlay"
+                    title={t('admin.downloadPhoto')}
+                    aria-label={t('admin.downloadPhoto')}
+                >
+                    <Download size={20} aria-hidden="true" />
+                </button>
+            )}
+
             <div style={{
                 position: 'absolute',
                 top: 0, left: 0, right: 0,
@@ -141,22 +176,31 @@ function AdminMediaTile({ photo }: { photo: Photo }) {
                 alignItems: 'center'
             }}>
                 <span style={{ color: 'white', fontSize: 9 }}>{new Date(photo.uploadedAt).toLocaleDateString('it-IT')}</span>
-                <button
-                    type="button"
-                    onClick={() => requestOriginal('attachment')}
-                    disabled={loadingAction !== null}
-                    title={t('admin.downloadPhoto')}
-                    aria-label={t('admin.downloadPhoto')}
-                    style={{ display: 'flex', color: 'white', border: 0, padding: 0, background: 'none', cursor: loadingAction ? 'wait' : 'pointer' }}
-                >
-                    <Download size={14} />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                        type="button"
+                        onClick={() => onDelete(photo)}
+                        title={t('admin.deleteMedia')}
+                        aria-label={t('admin.deleteMedia')}
+                        style={{ display: 'flex', color: '#fecaca', border: 0, padding: 0, background: 'none', cursor: 'pointer' }}
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
             </div>
         </div>
     );
 }
 
-function AdminAccordion({ group }: { group: GuestGroup }) {
+function AdminAccordion({
+    group,
+    onDeleteMedia,
+    onDeleteGroup,
+}: {
+    group: GuestGroup;
+    onDeleteMedia: (photo: Photo) => void;
+    onDeleteGroup: (group: GuestGroup) => void;
+}) {
     const [open, setOpen] = useState(false);
     const { t } = useI18nStore();
 
@@ -168,30 +212,50 @@ function AdminAccordion({ group }: { group: GuestGroup }) {
             marginBottom: 12,
             background: 'rgba(255,255,255,0.8)'
         }}>
-            <button
-                onClick={() => setOpen(o => !o)}
-                style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: 15,
-                    color: 'var(--color-text-primary)',
-                }}
-            >
-                <span>
-                    {group.guestName}
-                    <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--color-text-secondary)', marginLeft: 8 }}>
-                        ({group.photos.length})
+            <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                <button
+                    onClick={() => setOpen(o => !o)}
+                    style={{
+                        flex: 1,
+                        padding: '14px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        fontSize: 15,
+                        color: 'var(--color-text-primary)',
+                    }}
+                >
+                    <span>
+                        {group.guestName}
+                        <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--color-text-secondary)', marginLeft: 8 }}>
+                            ({group.photos.length})
+                        </span>
                     </span>
-                </span>
-                {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
+                    {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onDeleteGroup(group)}
+                    disabled={group.photos.length === 0}
+                    title={t('admin.deleteAllMedia')}
+                    aria-label={t('admin.deleteAllMedia')}
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        margin: '8px 10px 8px 0', padding: '0 10px',
+                        border: '1px solid rgba(220, 38, 38, 0.2)', borderRadius: 10,
+                        background: 'rgba(254, 242, 242, 0.8)', color: '#b91c1c',
+                        cursor: group.photos.length ? 'pointer' : 'not-allowed',
+                        fontSize: 11, fontWeight: 600,
+                    }}
+                >
+                    <Trash2 size={13} aria-hidden="true" />
+                    <span>{t('admin.deleteAllMedia')}</span>
+                </button>
+            </div>
 
             {open && (
                 <div style={{ padding: '0 16px 16px' }}>
@@ -204,7 +268,7 @@ function AdminAccordion({ group }: { group: GuestGroup }) {
                             gap: 10
                         }}>
                             {group.photos.map((photo) => (
-                                <AdminMediaTile key={photo.PK} photo={photo} />
+                                <AdminMediaTile key={photo.PK} photo={photo} onDelete={onDeleteMedia} />
                             ))}
                         </div>
                     )}
@@ -224,6 +288,9 @@ export default function Photos() {
     const [errorMsg, setErrorMsg] = useState('');
     const [thumbnailPollAttempts, setThumbnailPollAttempts] = useState(0);
     const [thumbnailWarning, setThumbnailWarning] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<{ photoIds: string[] } | null>(null);
+    const [deleteLoadingMode, setDeleteLoadingMode] = useState<MediaDeletionMode | null>(null);
+    const [deleteError, setDeleteError] = useState('');
 
     // Upload: admin sempre; gli altri con kill-switch attivo + codice foto valido
     const canUpload = isAdmin || (enablePhotos && !!photoCode);
@@ -254,7 +321,15 @@ export default function Photos() {
     }, [loadPhotos]);
 
     // Stesso hook di upload usato in Home: multi-file, validazione, progresso
-    const { uploadPhotos, status: uploadStatus, progress, message: uploadMessage } = usePhotoUpload(refreshAfterUpload);
+    const {
+        uploadPhotos,
+        confirmUpload,
+        cancelUpload,
+        uploadConfirmation,
+        status: uploadStatus,
+        progress,
+        message: uploadMessage,
+    } = usePhotoUpload(refreshAfterUpload);
 
     useEffect(() => {
         setThumbnailPollAttempts(0);
@@ -291,10 +366,51 @@ export default function Photos() {
         return () => window.clearTimeout(timer);
     }, [loadPhotos, pendingThumbnailCount, thumbnailPollAttempts]);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const openDeleteMedia = useCallback((photo: Photo) => {
+        setDeleteError('');
+        setDeleteTarget({ photoIds: [photo.PK] });
+    }, []);
+
+    const openDeleteGroup = useCallback((group: GuestGroup) => {
+        setDeleteError('');
+        setDeleteTarget({ photoIds: group.photos.map(photo => photo.PK) });
+    }, []);
+
+    const closeDeleteModal = useCallback(() => {
+        if (deleteLoadingMode) return;
+        setDeleteError('');
+        setDeleteTarget(null);
+    }, [deleteLoadingMode]);
+
+    const confirmDelete = useCallback(async (mode: MediaDeletionMode) => {
+        if (!deleteTarget || deleteLoadingMode) return;
+        try {
+            setDeleteLoadingMode(mode);
+            setDeleteError('');
+            if (isAdmin) {
+                await deleteAdminMedia(deleteTarget.photoIds, mode);
+            } else {
+                if (mode !== 'physical' || deleteTarget.photoIds.length !== 1) return;
+                await deleteOwnMedia(deleteTarget.photoIds[0]);
+            }
+            setDeleteTarget(null);
+            setThumbnailPollAttempts(0);
+            setThumbnailWarning(false);
+            await loadPhotos(true);
+        } catch (error) {
+            console.error('Media deletion error:', error);
+            setDeleteError(error instanceof Error
+                ? error.message
+                : t(isAdmin ? 'admin.deleteMediaError' : 'gallery.deleteMediaError'));
+        } finally {
+            setDeleteLoadingMode(null);
+        }
+    }, [deleteLoadingMode, deleteTarget, isAdmin, loadPhotos, t]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files && files.length > 0) {
-            await uploadPhotos(files);
+            uploadPhotos(files);
         }
         // Reset per poter riselezionare gli stessi file
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -306,6 +422,9 @@ export default function Photos() {
 
     return (
         <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '40px' }}>
+            {uploadStatus === 'loading' && (
+                <Loader message={`${t('gallery.uploading')} ${progress.done}/${progress.total}`} />
+            )}
             <main className="page-content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                     <h1 className="hero-title" style={{ fontSize: '32px', margin: 0 }}>
@@ -390,7 +509,12 @@ export default function Photos() {
                                 </div>
                             ) : (
                                 guestGroups.map((group) => (
-                                    <AdminAccordion key={group.phone} group={group} />
+                                    <AdminAccordion
+                                        key={group.phone}
+                                        group={group}
+                                        onDeleteMedia={openDeleteMedia}
+                                        onDeleteGroup={openDeleteGroup}
+                                    />
                                 ))
                             )}
                         </>
@@ -457,10 +581,25 @@ export default function Photos() {
                                             <div style={{
                                                 position: 'absolute', top: 0, left: 0, right: 0,
                                                 padding: '4px 8px', background: 'rgba(0,0,0,0.5)',
-                                                color: 'white', fontSize: '10px', display: 'flex', justifyContent: 'space-between'
+                                                color: 'white', fontSize: '10px', display: 'flex',
+                                                justifyContent: 'space-between', alignItems: 'center'
                                             }}>
                                                 <span>{new Date(photo.uploadedAt).toLocaleDateString()}</span>
-                                                {photo.mediaType !== 'video' && !photo.isOptimized && <span>...</span>}
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    {photo.mediaType !== 'video' && !photo.isOptimized && <span>...</span>}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openDeleteMedia(photo)}
+                                                        title={t('gallery.deleteMedia')}
+                                                        aria-label={t('gallery.deleteMedia')}
+                                                        style={{
+                                                            display: 'flex', color: '#fecaca', border: 0,
+                                                            padding: 0, background: 'none', cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <Trash2 size={14} aria-hidden="true" />
+                                                    </button>
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
@@ -470,6 +609,23 @@ export default function Photos() {
                     )}
                 </section>
             </main>
+            {deleteTarget && (
+                <MediaDeleteModal
+                    count={deleteTarget.photoIds.length}
+                    physicalOnly={!isAdmin}
+                    loadingMode={deleteLoadingMode}
+                    error={deleteError}
+                    onCancel={closeDeleteModal}
+                    onConfirm={confirmDelete}
+                />
+            )}
+            {uploadConfirmation && (
+                <UploadConfirmModal
+                    confirmation={uploadConfirmation}
+                    onCancel={cancelUpload}
+                    onConfirm={() => void confirmUpload()}
+                />
+            )}
         </div>
     );
 }

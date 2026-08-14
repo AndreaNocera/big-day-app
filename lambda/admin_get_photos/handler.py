@@ -43,6 +43,9 @@ def handler(event, context):
         # Group photos by guest (uploadedBy = phone number)
         photos_by_guest: dict = {}
         for item in items:
+            if item.get("deletedAt"):
+                continue
+
             uploaded_by = item.get("uploadedBy", "Sconosciuto")
             guest_name = item.get("uploaderName", "Ospite Sconosciuto")
             media_type = infer_media_type(item)

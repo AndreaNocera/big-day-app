@@ -7,6 +7,7 @@ import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nSto
 import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { ACCEPT_ATTR, MAX_IMAGE_SIZE_MB, MAX_VIDEO_SIZE_MB, fmt } from '@/lib/uploadConfig';
 import { Loader } from '@/components/Loader';
+import { UploadConfirmModal } from '@/components/UploadConfirmModal';
 
 const HERO_IMAGE = "/photos/PXL_20250331_120242708.webp";
 
@@ -33,12 +34,20 @@ export default function Home() {
     const canUsePhotos = isAdmin || (photosEnabled && !!photoCode);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { uploadPhotos, status, progress, message } = usePhotoUpload();
+    const {
+        uploadPhotos,
+        confirmUpload,
+        cancelUpload,
+        uploadConfirmation,
+        status,
+        progress,
+        message,
+    } = usePhotoUpload();
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files && files.length > 0) {
-            await uploadPhotos(files);
+            uploadPhotos(files);
         }
         // Reset per poter riselezionare gli stessi file
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -167,6 +176,13 @@ export default function Home() {
                         style={{ display: 'none' }}
                     />
                 </div>
+            )}
+            {uploadConfirmation && (
+                <UploadConfirmModal
+                    confirmation={uploadConfirmation}
+                    onCancel={cancelUpload}
+                    onConfirm={() => void confirmUpload()}
+                />
             )}
         </main>
     );

@@ -184,6 +184,13 @@ class WeddingStack(Stack):
             **lambda_kwargs
         )
 
+        admin_delete_media = _lambda.Function(self, "AdminDeleteMedia",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/admin_delete_media"),
+            timeout=Duration.seconds(60),
+            **lambda_kwargs
+        )
+
         verify_photo_access = _lambda.Function(self, "VerifyPhotoAccess",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/verify_photo_access"),
@@ -212,6 +219,7 @@ class WeddingStack(Stack):
         photos_table.grant_read_data(get_photos)
         photos_table.grant_read_data(admin_get_photos)
         photos_table.grant_read_data(admin_get_media_url)
+        photos_table.grant_read_write_data(admin_delete_media)
         rsvp_table.grant_read_data(admin_get_rsvps)
         invites_table.grant_read_data(admin_get_rsvps)
         
@@ -220,6 +228,7 @@ class WeddingStack(Stack):
         photos_bucket.grant_read(get_photos)
         photos_bucket.grant_read(admin_get_photos)
         photos_bucket.grant_read(admin_get_media_url)
+        photos_bucket.grant_delete(admin_delete_media)
         photos_bucket.grant_read_write(process_photo) # Read original, write thumb
 
         # S3 Trigger for process_photo
@@ -260,6 +269,7 @@ class WeddingStack(Stack):
         photos = api.root.add_resource("photos")
         photos.add_method("GET", apigw.LambdaIntegration(get_photos))
         photos.add_resource("upload").add_method("POST", apigw.LambdaIntegration(get_upload_url))
+        photos.add_resource("delete").add_method("POST", apigw.LambdaIntegration(admin_delete_media))
         photos.add_resource("access").add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_photo_access))
         
         profile = api.root.add_resource("profile")
@@ -270,6 +280,7 @@ class WeddingStack(Stack):
         admin_photos = admin.add_resource("photos")
         admin_photos.add_method("GET", apigw.LambdaIntegration(admin_get_photos))
         admin_photos.add_resource("media-url").add_method("POST", apigw.LambdaIntegration(admin_get_media_url))
+        admin_photos.add_resource("delete").add_method("POST", apigw.LambdaIntegration(admin_delete_media))
         
         # Frontend Hosting
         frontend_bucket = s3.Bucket(self, "WeddingFrontendBucket",

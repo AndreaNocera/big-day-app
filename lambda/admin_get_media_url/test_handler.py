@@ -75,3 +75,23 @@ def test_non_admin_cannot_generate_media_url():
     }, {})
 
     assert response["statusCode"] == 403
+
+
+def test_logically_deleted_media_has_no_new_download_url(aws_mock, monkeypatch):
+    dynamodb, s3 = aws_mock
+    dynamodb.Table("WeddingPhotos").put_item(Item={
+        "PK": "PHOTO#deleted",
+        "s3Key": "uploads/deleted.jpg",
+        "mediaType": "image",
+        "deletedAt": "2026-08-14T20:00:00+00:00",
+    })
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb)
+    monkeypatch.setattr(handler_module, "s3", s3)
+
+    token = jwt_helper.generate_token("admin-test", "Test Admin", is_admin=True)
+    response = handler_module.handler({
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({"photoId": "PHOTO#deleted", "disposition": "attachment"}),
+    }, {})
+
+    assert response["statusCode"] == 404

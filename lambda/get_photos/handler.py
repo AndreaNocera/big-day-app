@@ -43,6 +43,9 @@ def handler(event, context):
         
         photos = []
         for item in items:
+            if item.get("deletedAt"):
+                continue
+
             media_type = infer_media_type(item)
             photo_entry = {
                 "PK": item.get("PK"),
