@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Play, Trash2 } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Info, Play, Trash2 } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
@@ -460,6 +460,23 @@ export default function Photos() {
                         </div>
                     )}
                 </div>
+
+                {!isAdmin && (
+                    <div
+                        role="note"
+                        style={{
+                            display: 'flex', alignItems: 'flex-start', gap: 10,
+                            marginBottom: 20, padding: '12px 14px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid rgba(95, 45, 120, 0.2)',
+                            background: 'rgba(244, 239, 250, 0.85)',
+                            color: 'var(--color-text-primary)', fontSize: 14,
+                        }}
+                    >
+                        <Info size={18} style={{ flexShrink: 0, marginTop: 1, color: 'var(--color-primary)' }} aria-hidden="true" />
+                        <span>{t('gallery.downloadNotice')}</span>
+                    </div>
+                )}
 
                 {uploadStatus === 'error' && (
                     <div className="form-error" style={{ marginBottom: 16 }}>

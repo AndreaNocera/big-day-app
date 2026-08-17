@@ -175,6 +175,7 @@ export const example = {
         noRsvpFound: "[No RSVP was found for this profile.]"
     },
     gallery: {
+        downloadNotice: "[The images shown are previews. Original files are not available for download.]",
         title: "[Photo and Video Gallery]",
         uploadBtn: "[Upload photos and videos]",
         uploadSuccess: "[Media uploaded!]",

@@ -1274,14 +1274,20 @@ textarea {
   background: rgba(94, 57, 130, 0.11);
 }
 
-.home-ceremony-highlight > span:nth-child(2) {
+.home-ceremony-label {
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.home-ceremony-highlight strong {
+.home-ceremony-label strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.home-ceremony-highlight > strong {
   font-size: clamp(26px, 8vw, 34px);
   font-weight: 900;
   letter-spacing: -0.04em;

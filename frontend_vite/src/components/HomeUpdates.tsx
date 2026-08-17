@@ -101,6 +101,20 @@ function BusStopLink() {
     );
 }
 
+function CeremonyLabel({ label }: { label: string }) {
+    const parts = label.split(/(\*\*.*?\*\*)/g);
+
+    return (
+        <span className="home-ceremony-label">
+            {parts.map((part, index) => (
+                part.startsWith('**') && part.endsWith('**')
+                    ? <strong key={index}>{part.slice(2, -2)}</strong>
+                    : part
+            ))}
+        </span>
+    );
+}
+
 export function HomeUpdates() {
     const { t } = useI18nStore();
     const eventTitle = t('home.updatesCalendarEventTitle');
@@ -181,7 +195,7 @@ export function HomeUpdates() {
                 <span className="home-ceremony-icon" aria-hidden="true">
                     <Clock3 size={28} />
                 </span>
-                <span>{t('home.updatesCeremonyLabel')}</span>
+                <CeremonyLabel label={t('home.updatesCeremonyLabel')} />
                 <strong>{t('home.updatesCeremonyTime')}</strong>
                 <details className="home-calendar-menu">
                     <summary>
