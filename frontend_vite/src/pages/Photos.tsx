@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Download, Film, ImageIcon, Info, Play, Trash2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, Film, ImageIcon, Info, Play, Trash2 } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
@@ -499,7 +499,7 @@ export default function Photos() {
                     >
                         {uploadStatus === 'success'
                             ? <CheckCircle2 size={18} aria-hidden="true" />
-                            : <AlertCircle size={18} aria-hidden="true" />}
+                            : <AlertTriangle size={18} aria-hidden="true" />}
                         <span>{uploadMessage}</span>
                     </div>
                 )}

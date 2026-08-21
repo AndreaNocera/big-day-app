@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Camera, AlertCircle, Heart } from 'lucide-react';
+import { CheckCircle2, Camera, AlertTriangle, Heart } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore, type NestedKeyOf, type Dictionary } from '@/store/i18nStore';
@@ -146,7 +146,7 @@ export default function Home() {
                     )}
                     {status === 'error' && (
                         <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
-                            <AlertCircle color="var(--color-error)" size={20} />
+                            <AlertTriangle color="var(--color-error)" size={20} />
                             <span style={{ fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-line' }}>{message}</span>
                         </div>
                     )}

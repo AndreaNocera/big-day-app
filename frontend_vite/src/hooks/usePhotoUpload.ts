@@ -104,7 +104,7 @@ export function usePhotoUpload(onSuccess?: () => void) {
     /** Avvia l'upload solo dopo la conferma esplicita nella modale. */
     const confirmUpload = async () => {
         if (!pendingUpload) return;
-        const { valid, notes } = pendingUpload;
+        const { valid } = pendingUpload;
         setPendingUpload(null);
 
         setStatus('loading');
@@ -180,31 +180,24 @@ export function usePhotoUpload(onSuccess?: () => void) {
         const succeeded = completedOutcomes.filter(item => item.ok);
         const failed = completedOutcomes.filter(item => !item.ok);
         const summary = summarizeUploadOutcomes(completedOutcomes);
-        const resultLines = [
-            `OK: ${summary.ok}`,
-            `KO: ${summary.ko}`,
+        const resultSummary = [
+            `Completati: ${summary.ok}`,
+            ...(summary.ko > 0 ? [`Errori: ${summary.ko}`] : []),
         ];
-        const resultIntro = t('gallery.uploadCompleteTitle');
-
         if (revoked) {
             setStatus('error');
-            setMessage([t('gallery.uploadRevoked'), ...resultLines, ...notes].join('\n'));
+            setMessage(resultSummary.join('\n'));
             setTimeout(() => setStatus('idle'), 15000);
             return;
         }
 
         if (succeeded.length > 0) {
             setStatus(failed.length > 0 ? 'error' : 'success');
-            setMessage([
-                resultIntro,
-                ...resultLines,
-                t('gallery.uploadProcessingNotice'),
-                ...notes,
-            ].join('\n'));
+            setMessage(resultSummary.join('\n'));
             if (onSuccess) onSuccess();
         } else {
             setStatus('error');
-            setMessage([resultIntro, ...resultLines, ...notes].join('\n'));
+            setMessage(resultSummary.join('\n'));
         }
         setTimeout(() => setStatus('idle'), 15000);
     };

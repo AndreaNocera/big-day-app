@@ -29,13 +29,15 @@ test('abort is limited to explicit S3 failures', () => {
     assert.match(uploadHook, /await abortUpload\(photoId\)/);
 });
 
-test('the UI has one refresh after the batch and no thumbnail polling', () => {
+test('the UI has one refresh after the batch, no thumbnail polling, and a compact result toast', () => {
     const removedPollingConstant = ['THUMBNAIL', 'POLL'].join('_');
     const removedPollingState = ['thumbnail', 'PollAttempts'].join('');
     assert.match(uploadHook, /if \(onSuccess\) onSuccess\(\)/);
     assert.equal(photosPage.includes(removedPollingConstant), false);
     assert.equal(photosPage.includes(removedPollingState), false);
-    assert.match(uploadHook, /gallery\.uploadProcessingNotice/);
+    assert.match(uploadHook, /Completati: \$\{summary\.ok\}/);
+    assert.match(uploadHook, /summary\.ko > 0 \? \[`Errori: \$\{summary\.ko\}`\] : \[\]/);
+    assert.doesNotMatch(uploadHook, /gallery\.uploadProcessingNotice/);
 });
 
 test('admin UI renders completed, pending, and failed counters', () => {
