@@ -4,9 +4,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.api_utils import json_response
-from shared.aws_clients import dynamodb, s3
+from photo_shared.aws_clients import dynamodb, s3, presigning_s3_client
 from shared.jwt_helper import verify_token
-from shared.media_utils import infer_media_type
+from photo_shared.media_utils import infer_media_type
 
 
 URL_EXPIRY_SECONDS = 600
@@ -39,6 +39,8 @@ def handler(event, context):
         item = dynamodb.Table("WeddingPhotos").get_item(Key={"PK": photo_id}).get("Item")
         if not item or item.get("deletedAt"):
             return json_response(404, {"error": "Media non trovato"})
+        if item.get("uploadStatus") != "completed":
+            return json_response(409, {"error": "Originale non disponibile"})
 
         media_type = infer_media_type(item)
 
@@ -56,7 +58,7 @@ def handler(event, context):
             if os.getenv("ENV", "local") == "local"
             else os.getenv("S3_BUCKET", "wedding-photos-prod")
         )
-        url = s3.generate_presigned_url(
+        url = presigning_s3_client(s3).generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": bucket_name,
@@ -66,12 +68,12 @@ def handler(event, context):
             ExpiresIn=URL_EXPIRY_SECONDS,
         )
 
-        if os.getenv("ENV", "local") == "local":
-            url = url.replace("http://minio:9000", "http://localhost:9000")
-
-        return json_response(200, {"url": url, "expiresIn": URL_EXPIRY_SECONDS})
+        return json_response(200, {
+            "url": url,
+            "expiresIn": URL_EXPIRY_SECONDS,
+        })
     except (json.JSONDecodeError, TypeError):
         return json_response(400, {"error": "Richiesta non valida"})
     except Exception as exc:
-        print(f"Errore generazione URL media admin: {exc}")
+        print(f"Admin media URL error: {type(exc).__name__}")
         return json_response(500, {"error": "Errore interno server"})

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from shared.api_utils import json_response
-from shared.aws_clients import dynamodb, s3
+from photo_shared.aws_clients import dynamodb, s3
 from shared.jwt_helper import verify_token
 
 

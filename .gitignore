@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 lambda/layer/
+lambda/photo_layer/
 *.py[cod]
 *.pyo
 *.pyd

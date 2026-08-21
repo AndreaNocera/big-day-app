@@ -62,10 +62,10 @@ export async function getUploadUrl(filename: string, contentType: string) {
     });
 }
 
-export async function debugProcessPhoto(s3Key: string) {
-    return fetchWithAuth('/photos/debug-process', {
+export async function abortUpload(photoId: string) {
+    return fetchWithAuth('/photos/upload/abort', {
         method: 'POST',
-        body: JSON.stringify({ s3Key }),
+        body: JSON.stringify({ photoId }),
     });
 }
 
@@ -78,9 +78,13 @@ export async function uploadToS3(url: string, file: File, contentType: string) {
         },
     });
 
-    if (!response.ok) {
-        throw new Error('Errore nel caricamento su S3');
-    }
+    if (response.ok) return;
 
-    return true;
+    const error = new Error(`Errore storage HTTP ${response.status}`) as Error & {
+        status: number;
+        storageResponded: true;
+    };
+    error.status = response.status;
+    error.storageResponded = true;
+    throw error;
 }

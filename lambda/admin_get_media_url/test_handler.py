@@ -48,6 +48,7 @@ def test_admin_generates_original_url_only_on_request(
         "s3Key": s3_key,
         "mediaType": media_type,
         "contentType": content_type,
+        "uploadStatus": "completed",
     })
     monkeypatch.setattr(handler_module, "dynamodb", dynamodb)
     monkeypatch.setattr(handler_module, "s3", s3)
@@ -95,3 +96,21 @@ def test_logically_deleted_media_has_no_new_download_url(aws_mock, monkeypatch):
     }, {})
 
     assert response["statusCode"] == 404
+
+
+def test_pending_media_has_no_original_url(aws_mock, monkeypatch):
+    dynamodb, s3 = aws_mock
+    dynamodb.Table("WeddingPhotos").put_item(Item={
+        "PK": "PHOTO#pending",
+        "s3Key": "uploads/pending.jpg",
+        "mediaType": "image",
+        "uploadStatus": "pending",
+    })
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb)
+    monkeypatch.setattr(handler_module, "s3", s3)
+    token = jwt_helper.generate_token("admin-test", "Test Admin", is_admin=True)
+    response = handler_module.handler({
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({"photoId": "PHOTO#pending"}),
+    }, {})
+    assert response["statusCode"] == 409

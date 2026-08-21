@@ -2,10 +2,12 @@ import json
 import os
 import sys
 
+from boto3.dynamodb.conditions import Key
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from shared.aws_clients import s3, dynamodb
+from photo_shared.aws_clients import s3, dynamodb, presigning_s3_client
 from shared.jwt_helper import verify_token
-from shared.media_utils import infer_media_type
+from photo_shared.media_utils import infer_media_type
 
 def handler(event, context):
     cors_headers = {
@@ -25,28 +27,33 @@ def handler(event, context):
         if not payload:
             return {"statusCode": 401, "headers": cors_headers, "body": json.dumps({"error": "Token invalido o scaduto"})}
             
-        # Filter photos by the current user's phone
+        # UploadedByIndex evita la scansione completa della tabella condivisa.
         phone = payload.get("phone")
         table = dynamodb.Table("WeddingPhotos")
-        
-        # Using scan with FilterExpression for simplicity in local dev (no GSI)
-        response = table.scan(
-            FilterExpression="uploadedBy = :phone",
-            ExpressionAttributeValues={":phone": phone}
-        )
-        items = response.get("Items", [])
-        
-        # Sort by date
-        items.sort(key=lambda x: x.get("uploadedAt", ""), reverse=True)
+        query_args = {
+            "IndexName": "UploadedByIndex",
+            "KeyConditionExpression": Key("uploadedBy").eq(phone),
+            "ScanIndexForward": False,
+        }
+        items = []
+        while True:
+            response = table.query(**query_args)
+            items.extend(response.get("Items", []))
+            if not response.get("LastEvaluatedKey"):
+                break
+            query_args["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         
         bucket_name = "wedding-photos-local" if os.getenv("ENV", "local") == "local" else os.getenv("S3_BUCKET", "wedding-photos-prod")
         
         photos = []
         for item in items:
-            if item.get("deletedAt"):
+            if item.get("deletedAt") or item.get("uploadStatus") != "completed":
                 continue
 
             media_type = infer_media_type(item)
+            expected_processing = "not_required" if media_type == "video" else "completed"
+            if item.get("processingStatus") != expected_processing:
+                continue
             photo_entry = {
                 "PK": item.get("PK"),
                 "uploadedBy": item.get("uploadedBy"),
@@ -62,29 +69,22 @@ def handler(event, context):
                 photos.append(photo_entry)
                 continue
 
-            # Le immagini vengono esposte soltanto tramite thumbnail. Finche' il
-            # processore non l'ha creata, restituiamo il record senza URL per
-            # permettere al frontend di mostrare lo stato di elaborazione.
             thumb_key = item.get("thumbKey")
             if not thumb_key:
-                photos.append(photo_entry)
                 continue
 
             try:
-                url = s3.generate_presigned_url(
+                url = presigning_s3_client(s3).generate_presigned_url(
                     'get_object',
                     Params={'Bucket': bucket_name, 'Key': thumb_key},
                     ExpiresIn=3600
                 )
                 
                 # In local dev, fix the URL if needed
-                if os.getenv("ENV", "local") == "local":
-                    url = url.replace("http://minio:9000", "http://localhost:9000")
-                
                 photo_entry["url"] = url
                 photos.append(photo_entry)
             except Exception as e:
-                print(f"Errore generazione URL per {thumb_key}: {e}")
+                print(f"Errore generazione URL thumbnail: {type(e).__name__}")
                 
         return {
             "statusCode": 200,
@@ -93,5 +93,5 @@ def handler(event, context):
         }
         
     except Exception as e:
-        print(f"Errore get_photos: {e}")
+        print(f"Get photos error: {type(e).__name__}")
         return {"statusCode": 500, "headers": cors_headers, "body": json.dumps({"error": "Errore interno server"})}

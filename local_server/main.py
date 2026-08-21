@@ -13,9 +13,9 @@ from verify_magic_link.handler import handler as verify_magic_link_handler
 from rsvp_handler.handler import handler as rsvp_handler
 from survey_handler.handler import handler as survey_handler
 from get_upload_url.handler import handler as get_upload_url_handler
+from abort_upload.handler import handler as abort_upload_handler
 from get_photos.handler import handler as get_photos_handler
 from update_profile.handler import handler as update_profile_handler
-from process_photo.handler import handler as process_photo_handler
 from admin_get_rsvps.handler import handler as admin_get_rsvps_handler
 from admin_get_photos.handler import handler as admin_get_photos_handler
 from admin_get_media_url.handler import handler as admin_get_media_url_handler
@@ -69,6 +69,9 @@ class SurveyRequest(BaseModel):
 class UploadUrlRequest(BaseModel):
     filename: str
     contentType: str = "image/jpeg"
+
+class AbortUploadRequest(BaseModel):
+    photoId: str
 
 class InviteTrigger(BaseModel):
     pass
@@ -162,8 +165,13 @@ async def rsvp_get_route(request: Request, auth: HTTPAuthorizationCredentials = 
 
 @app.post("/photos/upload", summary="Ottieni URL per Upload Foto o Video")
 async def get_upload_url_route(request: Request, body: UploadUrlRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
-    """Genera un URL firmato di S3/MinIO per caricare direttamente una foto o un video."""
+    """Genera un URL firmato S3 per caricare direttamente una foto o un video."""
     return await handle_lambda(request, get_upload_url_handler, body)
+
+@app.post("/photos/upload/abort", summary="Annulla Upload Foto o Video")
+async def abort_upload_route(request: Request, body: AbortUploadRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
+    """Compensa un PUT rifiutato esplicitamente dallo storage."""
+    return await handle_lambda(request, abort_upload_handler, body)
 
 @app.get("/photos", summary="Lista Foto e Video")
 async def get_photos_route(request: Request, auth: HTTPAuthorizationCredentials = Depends(security)):
@@ -199,31 +207,6 @@ async def admin_get_media_url_route(request: Request, body: AdminMediaUrlRequest
 async def admin_delete_media_route(request: Request, body: AdminDeleteMediaRequest, auth: HTTPAuthorizationCredentials = Depends(security)):
     """Elimina logicamente o fisicamente uno o piu' media. Richiede token admin."""
     return await handle_lambda(request, admin_delete_media_handler, body)
-
-@app.post("/photos/debug-process", summary="DEBUG: Trigger Process Photo manually")
-async def debug_process_photo(request: Request, body: Dict[str, str], auth: HTTPAuthorizationCredentials = Depends(security)):
-    """
-    Simula il trigger S3 per processare una foto in locale.
-    Passa {"s3Key": "uploads/..."} nel body.
-    """
-    s3_key = body.get("s3Key")
-    bucket_name = "wedding-photos-local"
-    
-    # Costruisci l'evento S3 finto
-    event = {
-        "Records": [{
-            "s3": {
-                "bucket": {"name": bucket_name},
-                "object": {"key": s3_key}
-            }
-        }]
-    }
-    
-    try:
-        process_photo_handler(event, {})
-        return {"status": "success", "message": f"Processed {s3_key}"}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 if __name__ == "__main__":
     import uvicorn

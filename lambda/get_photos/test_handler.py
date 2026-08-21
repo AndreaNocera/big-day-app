@@ -10,7 +10,8 @@ class FakeTable:
     def __init__(self, items):
         self.items = items
 
-    def scan(self, **kwargs):
+    def query(self, **kwargs):
+        assert kwargs["IndexName"] == "UploadedByIndex"
         return {"Items": self.items}
 
 
@@ -44,6 +45,8 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
             "thumbKey": "thumbnails/original.jpg",
             "mediaType": "image",
             "contentType": "image/jpeg",
+            "uploadStatus": "completed",
+            "processingStatus": "completed",
         },
         {
             "PK": "PHOTO#video",
@@ -52,6 +55,18 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
             "s3Key": "uploads/original.mp4",
             "mediaType": "video",
             "contentType": "video/mp4",
+            "uploadStatus": "completed",
+            "processingStatus": "not_required",
+        },
+        {
+            "PK": "PHOTO#new-pending",
+            "uploadedBy": "guest-1",
+            "uploadedAt": "2026-08-14T10:30:00+00:00",
+            "s3Key": "uploads/new-pending.jpg",
+            "mediaType": "image",
+            "contentType": "image/jpeg",
+            "uploadStatus": "pending",
+            "processingStatus": "pending",
         },
         {
             "PK": "PHOTO#image-processing",
@@ -60,6 +75,8 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
             "s3Key": "uploads/not-ready.jpg",
             "mediaType": "image",
             "contentType": "image/jpeg",
+            "uploadStatus": "completed",
+            "processingStatus": "pending",
         },
         {
             "PK": "PHOTO#deleted",
@@ -86,7 +103,6 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
     assert [photo["PK"] for photo in photos] == [
         "PHOTO#image-ready",
         "PHOTO#video",
-        "PHOTO#image-processing",
     ]
 
     image = photos[0]
@@ -99,11 +115,5 @@ def test_regular_gallery_exposes_only_thumbnails_and_video_placeholders(monkeypa
     assert "url" not in video
     assert "originalUrl" not in video
     assert "s3Key" not in video
-
-    processing_image = photos[2]
-    assert processing_image["isOptimized"] is False
-    assert "url" not in processing_image
-    assert "originalUrl" not in processing_image
-    assert "s3Key" not in processing_image
 
     assert fake_s3.requested_keys == ["thumbnails/original.jpg"]

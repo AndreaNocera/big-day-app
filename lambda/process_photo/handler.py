@@ -1,127 +1,353 @@
+import io
 import json
 import os
+import re
 import sys
-import io
+import time
+from datetime import datetime, timezone
+from urllib.parse import unquote_plus
+
 from botocore.exceptions import ClientError
 
-# Add lambda path so shared components can be imported
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from shared.aws_clients import s3, dynamodb
-from shared.media_utils import is_image_key
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from photo_shared.aws_clients import dynamodb, s3
+from photo_shared.media_utils import infer_media_type, validate_stored_object
 
 try:
-    from PIL import Image, ImageOps
-except Exception as e:
-    import traceback
-    print(f"Error importing PIL: {e}")
-    traceback.print_exc()
+    from PIL import Image, ImageOps, UnidentifiedImageError
+except Exception as exc:  # pragma: no cover - errore di packaging, ritentato via SQS
+    print(f"Photo processor dependency error: {type(exc).__name__}")
     Image = None
     ImageOps = None
+    UnidentifiedImageError = OSError
 
 try:
     from pillow_heif import register_heif_opener
+
     register_heif_opener()
-except Exception as e:
-    print(f"Error enabling HEIC/HEIF support: {e}")
+except Exception as exc:  # pragma: no cover - errore di packaging, ritentato via SQS
+    print(f"HEIF processor dependency error: {type(exc).__name__}")
 
-def handler(event, context):
-    """
-    Triggered by S3 ObjectCreated event.
-    Generates a thumbnail and updates DynamoDB.
-    """
+
+UUID_FILENAME_RE = re.compile(
+    r"^(?P<photo_id>[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-"
+    r"[89ab][0-9a-f]{3}-[0-9a-f]{12})\.[a-z0-9]+$",
+    re.IGNORECASE,
+)
+
+
+def _bucket_name():
+    if os.getenv("ENV", "local") == "local":
+        return os.getenv("S3_BUCKET", "wedding-photos-local")
+    return os.getenv("S3_BUCKET", "wedding-photos-prod")
+
+
+def _technical_reference(photo_id: str) -> str:
+    return photo_id[-8:] if photo_id else "unknown"
+
+
+def _conditional_failed(exc: ClientError) -> bool:
+    return exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException"
+
+
+def _delete_object(bucket_name: str, key: str):
     try:
-        # Get bucket and key from the S3 event
-        record = event['Records'][0]
-        bucket_name = record['s3']['bucket']['name']
-        s3_key = record['s3']['object']['key']
-        
-        # Skip if it's already a thumbnail or not an upload
-        if not s3_key.startswith("uploads/") or "thumbnails/" in s3_key:
-            print(f"Skipping key: {s3_key}")
-            return
+        s3.delete_object(Bucket=bucket_name, Key=key)
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") not in {
+            "404", "NoSuchKey", "NotFound"
+        }:
+            raise
 
-        # I video restano originali: il processore thumbnail usa Pillow solo per immagini.
-        if not is_image_key(s3_key):
-            print(f"Skipping non-image media: {s3_key}")
-            return
-            
-        print(f"Processing photo: {bucket_name}/{s3_key}")
-        
-        # 1. Download original image
-        response = s3.get_object(Bucket=bucket_name, Key=s3_key)
-        image_content = response['Body'].read()
-        
-        if not Image:
-            print("Pillow not available, skipping resize.")
-            return
 
-        # 2. Generate Thumbnail
-        img = Image.open(io.BytesIO(image_content))
-        img = ImageOps.exif_transpose(img)
-        
-        # Maintain aspect ratio
-        thumb_size = (300, 300)
-        img.thumbnail(thumb_size)
-        
-        # Save to buffer
-        buffer = io.BytesIO()
-        ext = s3_key.rsplit(".", 1)[-1].upper()
-        # Map extension to PIL format
-        fmt = "JPEG" if ext in ["JPG", "JPEG", "HEIC", "HEIF"] else ext
-        if fmt == "JPEG" and img.mode not in ("RGB", "L"):
-            img = img.convert("RGB")
-        save_options = {"quality": 85, "optimize": True} if fmt == "JPEG" else {}
-        img.save(buffer, format=fmt, **save_options)
-        buffer.seek(0)
-        
-        # 3. Upload Thumbnail
-        thumb_key = s3_key.replace("uploads/", "thumbnails/")
-        if ext in ["HEIC", "HEIF"]:
-            thumb_key = thumb_key.rsplit(".", 1)[0] + ".jpg"
+def _photo_id_from_key(s3_key: str) -> str | None:
+    if not s3_key.startswith("uploads/"):
+        return None
+    filename = s3_key.rsplit("/", 1)[-1]
+    match = UUID_FILENAME_RE.fullmatch(filename)
+    return match.group("photo_id").lower() if match else None
+
+
+def _iter_s3_records(event: dict):
+    """Estrae eventi S3 incapsulati in SQS; accetta S3 diretto solo nei test."""
+    for outer_record in event.get("Records", []):
+        receive_count = int(
+            outer_record.get("attributes", {}).get("ApproximateReceiveCount", "1")
+        )
+        if "body" in outer_record:
+            payload = json.loads(outer_record.get("body") or "{}")
+            if payload.get("Event") == "s3:TestEvent":
+                continue
+            for s3_record in payload.get("Records", []):
+                if s3_record.get("eventSource") in (None, "aws:s3") and "s3" in s3_record:
+                    yield s3_record, receive_count
+        elif "s3" in outer_record:
+            yield outer_record, receive_count
+
+
+def _mark_invalid(table, item: dict, bucket_name: str, s3_key: str, failure_code: str):
+    _delete_object(bucket_name, s3_key)
+    thumb_key = item.get("thumbKey")
+    if thumb_key:
+        _delete_object(bucket_name, thumb_key)
+    now = int(time.time())
+    try:
+        table.update_item(
+            Key={"PK": item["PK"]},
+            UpdateExpression=(
+                "SET uploadStatus = :failed, processingStatus = :failed, "
+                "failedAt = :now, failureCode = :code, processingUpdatedAt = :updated "
+                "REMOVE s3Key, thumbKey"
+            ),
+            ConditionExpression=(
+                "attribute_exists(PK) AND attribute_not_exists(deletedAt) AND "
+                "uploadStatus IN (:pending, :completed) AND "
+                "processingStatus <> :processing_completed"
+            ),
+            ExpressionAttributeValues={
+                ":pending": "pending",
+                ":completed": "completed",
+                ":failed": "failed",
+                ":processing_completed": "completed",
+                ":now": now,
+                ":updated": datetime.now(timezone.utc).isoformat(),
+                ":code": failure_code,
+            },
+        )
+    except ClientError as exc:
+        if not _conditional_failed(exc):
+            raise
+
+
+def _mark_original_completed(table, item: dict, receive_count: int):
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        table.update_item(
+            Key={"PK": item["PK"]},
+            UpdateExpression=(
+                "SET uploadStatus = :completed, uploadCompletedAt = :now, "
+                "processingStatus = :processing_pending, processingUpdatedAt = :now, "
+                "processingAttempts = :attempts"
+            ),
+            ConditionExpression=(
+                "attribute_exists(PK) AND attribute_not_exists(deletedAt) AND "
+                "uploadStatus IN (:pending, :completed) AND "
+                "processingStatus = :processing_pending"
+            ),
+            ExpressionAttributeValues={
+                ":pending": "pending",
+                ":completed": "completed",
+                ":processing_pending": "pending",
+                ":now": now_iso,
+                ":attempts": receive_count,
+            },
+        )
+    except ClientError as exc:
+        if not _conditional_failed(exc):
+            raise
+
+
+def _mark_video_completed(table, item: dict, receive_count: int):
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        table.update_item(
+            Key={"PK": item["PK"]},
+            UpdateExpression=(
+                "SET uploadStatus = :completed, uploadCompletedAt = :now, "
+                "processingStatus = :not_required, processingUpdatedAt = :now, "
+                "processingAttempts = :attempts"
+            ),
+            ConditionExpression=(
+                "attribute_exists(PK) AND attribute_not_exists(deletedAt) AND "
+                "uploadStatus IN (:pending, :completed) AND "
+                "processingStatus = :processing_pending"
+            ),
+            ExpressionAttributeValues={
+                ":pending": "pending",
+                ":completed": "completed",
+                ":processing_pending": "pending",
+                ":not_required": "not_required",
+                ":now": now_iso,
+                ":attempts": receive_count,
+            },
+        )
+    except ClientError as exc:
+        if not _conditional_failed(exc):
+            raise
+
+
+def _thumbnail_bytes(bucket_name: str, s3_key: str):
+    if Image is None or ImageOps is None:
+        raise RuntimeError("Pillow unavailable")
+    response = s3.get_object(Bucket=bucket_name, Key=s3_key)
+    raw = response["Body"].read()
+    try:
+        image = Image.open(io.BytesIO(raw))
+        image = ImageOps.exif_transpose(image)
+        image.thumbnail((300, 300))
+        extension = s3_key.rsplit(".", 1)[-1].lower()
+        image_format = "JPEG" if extension in {"jpg", "jpeg", "heic", "heif"} else extension.upper()
+        if image_format == "JPEG" and image.mode not in ("RGB", "L"):
+            image = image.convert("RGB")
+        output = io.BytesIO()
+        save_options = {"quality": 85, "optimize": True} if image_format == "JPEG" else {}
+        image.save(output, format=image_format, **save_options)
+        output.seek(0)
+        return output, image_format
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise ValueError("invalid image") from exc
+
+
+def _mark_thumbnail_completed(table, item: dict, thumb_key: str, receive_count: int):
+    try:
+        table.update_item(
+            Key={"PK": item["PK"]},
+            UpdateExpression=(
+                "SET thumbKey = :thumb, approved = :approved, "
+                "processingStatus = :completed, processingUpdatedAt = :now, "
+                "processingAttempts = :attempts REMOVE failureCode, failedAt"
+            ),
+            ConditionExpression=(
+                "attribute_exists(PK) AND attribute_not_exists(deletedAt) AND "
+                "uploadStatus = :completed AND processingStatus = :pending"
+            ),
+            ExpressionAttributeValues={
+                ":thumb": thumb_key,
+                ":approved": True,
+                ":completed": "completed",
+                ":pending": "pending",
+                ":now": datetime.now(timezone.utc).isoformat(),
+                ":attempts": receive_count,
+            },
+        )
+        return True
+    except ClientError as exc:
+        if _conditional_failed(exc):
+            return False
+        raise
+
+
+def _mark_thumbnail_retry(table, item: dict, receive_count: int, final_attempt: bool):
+    values = {
+        ":completed": "completed",
+        ":pending": "pending",
+        ":attempts": receive_count,
+        ":updated": datetime.now(timezone.utc).isoformat(),
+    }
+    update = "SET processingAttempts = :attempts, processingUpdatedAt = :updated"
+    if final_attempt:
+        update += ", processingStatus = :failed, failedAt = :failed_at, failureCode = :code"
+        values.update({
+            ":failed": "failed",
+            ":failed_at": int(time.time()),
+            ":code": "THUMBNAIL_PROCESSING_FAILED",
+        })
+    try:
+        table.update_item(
+            Key={"PK": item["PK"]},
+            UpdateExpression=update,
+            ConditionExpression="uploadStatus = :completed AND processingStatus = :pending",
+            ExpressionAttributeValues=values,
+        )
+    except ClientError as exc:
+        if not _conditional_failed(exc):
+            raise
+
+
+def _process_s3_record(record: dict, receive_count: int):
+    bucket_name = record.get("s3", {}).get("bucket", {}).get("name", "")
+    encoded_key = record.get("s3", {}).get("object", {}).get("key", "")
+    s3_key = unquote_plus(encoded_key)
+    photo_id = _photo_id_from_key(s3_key)
+    if bucket_name != _bucket_name() or not photo_id:
+        print("Ignored unexpected photo event")
+        return
+
+    table = dynamodb.Table("WeddingPhotos")
+    pk = f"PHOTO#{photo_id}"
+    item = table.get_item(Key={"PK": pk}, ConsistentRead=True).get("Item")
+    if not item:
+        _delete_object(bucket_name, s3_key)
+        print(f"Removed orphan media {_technical_reference(photo_id)}")
+        return
+
+    upload_status = item.get("uploadStatus")
+    processing_status = item.get("processingStatus")
+    if item.get("deletedAt") or upload_status in {"cleaning", "failed"}:
+        _delete_object(bucket_name, s3_key)
+        print(f"Removed late media {_technical_reference(photo_id)}")
+        return
+    if item.get("s3Key") != s3_key:
+        _delete_object(bucket_name, s3_key)
+        print(f"Removed mismatched media {_technical_reference(photo_id)}")
+        return
+    if upload_status == "completed" and processing_status in {
+        "completed", "not_required", "failed"
+    }:
+        print(f"Duplicate media event {_technical_reference(photo_id)}")
+        return
+    if upload_status not in {"pending", "completed"} or processing_status != "pending":
+        print(f"Ignored stale media event {_technical_reference(photo_id)}")
+        return
+
+    try:
+        head = s3.head_object(Bucket=bucket_name, Key=s3_key)
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") not in {
+            "404", "NoSuchKey", "NotFound"
+        }:
+            raise
+        max_attempts = int(os.getenv("SQS_MAX_RECEIVE_COUNT", "5"))
+        if receive_count >= max_attempts:
+            _mark_invalid(table, item, bucket_name, s3_key, "UPLOAD_NOT_RECEIVED")
+        raise RuntimeError("uploaded object not available") from exc
+
+    failure_code = validate_stored_object(item, head)
+    if failure_code:
+        _mark_invalid(table, item, bucket_name, s3_key, failure_code)
+        print(f"Rejected invalid media {_technical_reference(photo_id)}")
+        return
+
+    media_type = infer_media_type(item)
+    if media_type == "video":
+        _mark_video_completed(table, item, receive_count)
+        print(f"Completed video {_technical_reference(photo_id)}")
+        return
+
+    _mark_original_completed(table, item, receive_count)
+    try:
+        thumbnail, image_format = _thumbnail_bytes(bucket_name, s3_key)
+    except ValueError:
+        _mark_invalid(table, item, bucket_name, s3_key, "INVALID_IMAGE")
+        print(f"Rejected invalid image {_technical_reference(photo_id)}")
+        return
+    except Exception:
+        max_attempts = int(os.getenv("SQS_MAX_RECEIVE_COUNT", "5"))
+        _mark_thumbnail_retry(table, item, receive_count, receive_count >= max_attempts)
+        raise
+
+    extension = "jpg" if image_format == "JPEG" else image_format.lower()
+    thumb_key = f"thumbnails/{s3_key.split('/', 2)[1]}/{photo_id}.{extension}"
+    try:
         s3.put_object(
             Bucket=bucket_name,
             Key=thumb_key,
-            Body=buffer,
-            ContentType=f"image/{fmt.lower()}"
+            Body=thumbnail,
+            ContentType=f"image/{'jpeg' if image_format == 'JPEG' else image_format.lower()}",
         )
-        print(f"Thumbnail uploaded: {thumb_key}")
-        
-        # 4. Update DynamoDB
-        # We need to find the item by s3Key. 
-        # Since s3Key is not our primary key, we scan (in local/small scale) 
-        # or we could use GSI if we had one.
-        table = dynamodb.Table("WeddingPhotos")
-        query_response = table.query(
-            IndexName="S3KeyIndex",
-            KeyConditionExpression="s3Key = :key",
-            ExpressionAttributeValues={":key": s3_key}
-        )
-        
-        items = query_response.get("Items", [])
-        if items:
-            pk = items[0]["PK"]
-            try:
-                table.update_item(
-                    Key={"PK": pk},
-                    UpdateExpression="SET thumbKey = :tk, approved = :app",
-                    ExpressionAttributeValues={
-                        ":tk": thumb_key,
-                        ":app": True # Auto-approve for now since it's processed
-                    },
-                    ConditionExpression="attribute_exists(PK) AND attribute_not_exists(deletedAt)",
-                )
-                print(f"DynamoDB updated for PK: {pk}")
-            except ClientError as exc:
-                if exc.response.get("Error", {}).get("Code") != "ConditionalCheckFailedException":
-                    raise
-                # Il media e' stato eliminato mentre la thumbnail era in
-                # elaborazione: rimuoviamo l'asset appena generato e non
-                # ricreiamo un record parziale.
-                s3.delete_object(Bucket=bucket_name, Key=thumb_key)
-                print("Thumbnail rimossa per media eliminato durante l'elaborazione")
-        else:
-            print(f"No DynamoDB item found for s3Key: {s3_key}")
+        if not _mark_thumbnail_completed(table, item, thumb_key, receive_count):
+            _delete_object(bucket_name, thumb_key)
+            print(f"Removed stale thumbnail {_technical_reference(photo_id)}")
+            return
+    except Exception:
+        max_attempts = int(os.getenv("SQS_MAX_RECEIVE_COUNT", "5"))
+        _mark_thumbnail_retry(table, item, receive_count, receive_count >= max_attempts)
+        raise
 
-    except Exception as e:
-        print(f"Error processing photo: {e}")
-        raise e
+    print(f"Completed image {_technical_reference(photo_id)}")
+
+
+def handler(event, context):
+    """Elabora messaggi SQS contenenti eventi S3 ObjectCreated, con batch size 1."""
+    for s3_record, receive_count in _iter_s3_records(event):
+        _process_s3_record(s3_record, receive_count)

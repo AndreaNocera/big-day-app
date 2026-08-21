@@ -141,13 +141,13 @@ export default function Home() {
                     {status === 'success' && (
                         <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
                             <CheckCircle2 color="var(--color-success)" size={20} />
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{message}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-line' }}>{message}</span>
                         </div>
                     )}
                     {status === 'error' && (
                         <div style={{ position: 'fixed', bottom: '100px', right: '24px', background: 'white', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 100 }}>
                             <AlertCircle color="var(--color-error)" size={20} />
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{message}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600, whiteSpace: 'pre-line' }}>{message}</span>
                         </div>
                     )}
 

@@ -3,7 +3,7 @@ import os
 import sys
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add shared folder to path for local execution and AWS Lambda
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -11,6 +11,7 @@ from shared.aws_clients import dynamodb
 from shared.jwt_helper import generate_token
 from shared.photo_access import validate_photo_code
 from shared.api_utils import json_response
+from photo_shared.media_utils import normalize_person_name
 
 
 def handler(event, context):
@@ -22,11 +23,19 @@ def handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         code = body.get("code")
-        first_name = (body.get("firstName") or "").strip()
-        last_name = (body.get("lastName") or "").strip()
+        first_name = body.get("firstName") or ""
+        last_name = body.get("lastName") or ""
 
         if not code or not first_name or not last_name:
             return json_response(400, {"error": "Richiesti codice, nome e cognome"})
+
+        try:
+            first_name = normalize_person_name(first_name)
+            last_name = normalize_person_name(last_name)
+        except (TypeError, ValueError):
+            return json_response(400, {
+                "error": "Nome e cognome possono contenere solo lettere, spazi, apostrofi e trattini"
+            })
 
         if not validate_photo_code(code):
             return json_response(401, {"error": "Codice di accesso non valido"})
@@ -47,7 +56,7 @@ def handler(event, context):
                 "isAdmin": False,
                 "isPhotoGuest": True,
                 "expiresAt": int(time.time()) + (expiry_days * 86400),
-                "createdAt": datetime.utcnow().isoformat(),
+                "createdAt": datetime.now(timezone.utc).isoformat(),
             }
         )
 
@@ -62,5 +71,5 @@ def handler(event, context):
         })
 
     except Exception as e:
-        print(f"Errore: {e}")
+        print(f"Photo guest registration error: {type(e).__name__}")
         return json_response(500, {"error": "Errore interno server"})

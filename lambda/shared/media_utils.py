@@ -14,9 +14,16 @@ ALLOWED_MEDIA_TYPES = {
 IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic", "heif"}
 VIDEO_EXTENSIONS = {"mp4", "mov", "webm"}
 
+MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024
+MAX_VIDEO_SIZE_BYTES = 500 * 1024 * 1024
+
 
 def get_media_config(content_type: str):
     return ALLOWED_MEDIA_TYPES.get((content_type or "").lower())
+
+
+def get_max_media_size(media_type: str) -> int:
+    return MAX_VIDEO_SIZE_BYTES if media_type == "video" else MAX_IMAGE_SIZE_BYTES
 
 
 def infer_media_type(item: dict) -> str:

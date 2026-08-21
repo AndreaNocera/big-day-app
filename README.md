@@ -25,14 +25,19 @@ Il progetto e' in una fase operativa avanzata:
 - non esiste un ambiente remoto di test o staging.
 
 L'ultima area sviluppata e' il flusso media: accesso tramite link speciale,
-registrazione semplificata dei photo guest, upload multiplo senza limite numerico,
-conferma preventiva tramite la stessa modale applicativa in homepage e galleria
-(con conteggio delle sole categorie presenti), thumbnail delle immagini e
-download amministrativo on demand. Ogni utente puo' eliminare fisicamente un
+registrazione semplificata dei photo guest con validazione Unicode del nome,
+upload multiplo senza limite numerico, conferma preventiva tramite la stessa
+modale applicativa in homepage e galleria (con conteggio delle sole categorie
+presenti), thumbnail delle immagini e download amministrativo on demand.
+L'upload diretto su S3 crea un record pending; un evento `ObjectCreated` passa
+da una coda SQS Standard al processore, che verifica l'originale e rende visibile
+il media senza una conferma del frontend. Errori e browser chiusi vengono
+riconciliati da una pulizia oraria. Ogni utente puo'
+eliminare fisicamente un
 proprio contenuto; l'admin puo' inoltre eliminare media di qualunque utente in
 modalita' logica o fisica, anche in modo massivo. Sono accettate immagini JPEG,
 PNG, WebP, HEIC e HEIF fino a 20 MB
-e video MP4, MOV e WebM fino a 500 MB per file; gli upload diretti verso S3/MinIO
+e video MP4, MOV e WebM fino a 500 MB per file; gli upload diretti verso S3
 restano limitati a tre operazioni contemporanee.
 
 ## Architettura
@@ -44,6 +49,7 @@ Browser
        -> Lambda Python 3.12
             -> DynamoDB: inviti, RSVP, metadati foto/video
             -> S3: originali e thumbnail
+            -> SQS: elaborazione asincrona e DLQ foto
             -> MailerSend: conferma email
 
 Ambiente locale
@@ -51,7 +57,7 @@ Ambiente locale
        -> frontend Vite
        -> FastAPI, wrapper degli handler Lambda
        -> DynamoDB Local
-       -> MinIO
+       -> LocalStack S3/SQS + worker foto
        -> MailHog
 ```
 
@@ -63,7 +69,8 @@ Ambiente locale
 | `frontend_vite/src/pages/` | Pagine e route applicative. |
 | `frontend_vite/src/locales/` | Contenuti in italiano, spagnolo, inglese e francese. |
 | `lambda/` | Handler backend, uno per funzione AWS. |
-| `lambda/shared/` | JWT, client AWS, risposte HTTP e autorizzazione foto condivisi. |
+| `lambda/shared/` | JWT, client AWS e risposte HTTP condivisi dall'applicazione. |
+| `lambda/photo_shared/` | Client LocalStack/SQS e validazioni isolate nel layer delle sole Lambda foto. |
 | `local_server/` | Adattatore FastAPI per eseguire le Lambda in locale. |
 | `infra/` | Stack AWS CDK in Python. |
 | `scripts/` | Inizializzazione locale, seed e strumenti operativi. |
@@ -98,10 +105,22 @@ Il codice foto in chiaro non viene salvato nel database: viene memorizzato solo
 il suo hash SHA-256. La revoca viene controllata nuovamente dal backend prima di
 ogni richiesta di upload.
 
-Le immagini in attesa della thumbnail appaiono con un placeholder. La galleria
-controlla lo stato ogni 5 secondi per un massimo di 5 tentativi; se alcune
-anteprime non sono ancora pronte, conferma che gli originali sono stati caricati
-e invita l'utente a rientrare dopo qualche minuto.
+Ogni file selezionato produce un risultato esplicito `OK` o `KO`. Per i nuovi
+upload, `POST /photos/upload` crea una sessione `pending` e restituisce un URL
+firmato. Una risposta S3 `2xx` produce subito `OK`; una risposta HTTP negativa
+produce `KO` e chiama `POST /photos/upload/abort`. Timeout, errori di rete ambigui
+e chiusura della pagina non chiamano abort. L'evento S3 viene accodato in SQS e
+`ProcessPhoto` esegue `HeadObject`, verifica MIME e dimensione, genera la thumbnail
+e aggiorna gli stati DynamoDB. La galleria viene aggiornata una sola volta dopo il
+batch e non usa polling; il riepilogo avvisa che l'elaborazione puo' richiedere
+qualche minuto.
+
+Una Lambda oraria riconcilia i pending oltre `cleanupAfter`: riaccoda gli oggetti
+validi, elimina quelli invalidi e marca come `failed` gli upload mai ricevuti. I
+record KO restano visibili all'admin per 48 ore, poi vengono eliminati. La DLQ
+conserva per 14 giorni i messaggi falliti dopo cinque tentativi ed e' monitorata
+da un allarme CloudWatch. Non si tratta di una transazione ACID distribuita, ma il
+flusso converge verso media completo oppure audit KO e risorse ripulite.
 
 ### Amministratore
 
@@ -109,6 +128,8 @@ Un JWT con `isAdmin=true` consente di:
 
 - visualizzare statistiche e risposte RSVP;
 - consultare foto e video raggruppati per autore;
+- vedere nello stesso accordion completati, pending/in elaborazione e KO con
+  tempo trascorso e motivo sintetico;
 - scaricare gli originali;
 - eliminare un singolo media o tutti i media visibili di un utente;
 - caricare foto e video senza codice foto.
@@ -141,7 +162,8 @@ API attive:
 - `POST /photos/access/verify`;
 - `GET /rsvp`; `POST /rsvp` e' mantenuta per compatibilita', ma rifiuta le
   modifiche mentre le conferme sono chiuse;
-- `GET /photos`, `POST /photos/upload` e `POST /photos/delete` (solo
+- `GET /photos`, `POST /photos/upload`, `POST /photos/upload/abort` e
+  `POST /photos/delete` (solo
   cancellazione fisica di un singolo media appartenente all'utente autenticato);
 - `POST /profile/email`;
 - `GET /admin/rsvps`, `GET /admin/photos`, `POST /admin/photos/media-url` e
@@ -173,10 +195,22 @@ Tabella condivisa da piu' tipi di record, riconoscibili dal prefisso della PK:
 - PK `PHOTO#<uuid>`;
 - autore e nome visualizzato;
 - chiave S3 originale, eventuale chiave thumbnail, tipo media, MIME e data di upload;
+- per le nuove sessioni: `uploadStatus` (`pending`, `completed`, `cleaning`,
+  `failed`) e `processingStatus` (`pending`, `completed`, `not_required`,
+  `failed`), oltre a `cleanupAfter`, `processingAttempts`, timestamp e
+  `failureCode` tecnici;
 - per le eliminazioni logiche: `deletedAt`, `deletionMode` e `deletedBy`;
-- GSI `S3KeyIndex`, usato dal processore delle thumbnail.
+- GSI `UploadedByIndex` su `uploadedBy` e `uploadedAt`, usato dalla galleria
+  personale senza scansioni complete;
+- GSI storico `S3KeyIndex`, non piu' usato e mantenuto temporaneamente per
+  rimuoverlo in un deploy CloudFormation successivo.
 
 I record storici senza `mediaType` e `contentType` sono interpretati come immagini.
+La galleria pubblica espone soltanto immagini `completed/completed` e video
+`completed/not_required`; pending e failed sono restituiti soltanto all'admin.
+Le chiavi nuove hanno formato
+`uploads/<nome-normalizzato>/<uuid-completo>.<estensione>` e il processore ricava
+la PK direttamente dall'UUID, senza interrogare un indice sulla chiave S3.
 Gli originali HEIC/HEIF vengono conservati nel formato ricevuto; il processore
 usa `pillow-heif` per generare una thumbnail JPEG compatibile con i browser.
 I video non vengono elaborati da Pillow. L'API della galleria utente non espone
@@ -210,6 +244,10 @@ un agente IA. Per documentare la configurazione usare solo i nomi presenti in
 Variabili principali:
 
 - backend: `ENV`, `AWS_REGION`, `JWT_SECRET`, `TOKEN_EXPIRY_DAYS`,
+  `UPLOAD_URL_EXPIRY_SECONDS`, `UPLOAD_RECONCILIATION_DELAY_SECONDS`,
+  `UPLOAD_FAILED_AUDIT_RETENTION_SECONDS`, `S3_ENDPOINT_URL`,
+  `S3_PUBLIC_ENDPOINT_URL`, `SQS_ENDPOINT_URL`, `PHOTO_PROCESSING_QUEUE_URL`,
+  `SQS_MAX_RECEIVE_COUNT`,
   `MAILERSEND_API_KEY`, `MAILERSEND_FROM_EMAIL`, `S3_BUCKET`,
   `COUPLE_NAMES_IT`, `COUPLE_NAMES_ES`, `COUPLE_NAMES_EN`;
 - frontend: `VITE_API_URL`, `VITE_ENABLE_PHOTOS`,
@@ -264,7 +302,7 @@ Servizi locali:
 - frontend: `http://localhost:5173`;
 - API e Swagger: `http://localhost:8000` e `http://localhost:8000/docs`;
 - DynamoDB Local: `http://localhost:8001`;
-- MinIO Console: `http://localhost:9001`;
+- LocalStack S3/SQS: `http://localhost:4566`;
 - MailHog: `http://localhost:8025`.
 
 Il reload automatico dell'API osserva gli handler e l'adapter FastAPI, ma
@@ -292,12 +330,13 @@ Frontend:
 
 ```bash
 cd frontend_vite
+npm test
 npm run build
 ```
 
-Non esiste ancora una suite frontend. Prima di considerare conclusa una modifica
-alla UI, verificare manualmente almeno navigazione mobile, cambio lingua,
-persistenza della sessione e stati loading/error.
+I test frontend verificano i contratti architetturali dell'upload; prima di
+considerare conclusa una modifica alla UI, verificare manualmente anche navigazione
+mobile, cambio lingua, persistenza della sessione e stati loading/error.
 
 ## Deploy
 
@@ -311,7 +350,10 @@ esplicita del proprietario del progetto.
 ```
 
 Le opzioni `--skip-layer` e `--skip-frontend` saltano rispettivamente la
-ricostruzione del layer e il deploy degli asset frontend.
+preparazione dei layer e il deploy degli asset frontend. Il layer condiviso
+esistente viene preservato per non aggiornare Lambda estranee al dominio foto;
+usare `--rebuild-shared-layer` soltanto quando cambiano intenzionalmente helper
+comuni a tutta l'applicazione. Il layer foto viene invece rigenerato a ogni deploy.
 
 ## Debito tecnico noto
 
@@ -323,8 +365,8 @@ Da considerare prima di interventi non banali:
 3. L'autenticazione degli invitati usa un PIN condiviso dallo script di import;
    non copiarne il valore in documentazione o test.
 4. Gli handler legacy per inviti e survey contengono logica superata.
-5. Non ci sono test automatici per frontend, generazione thumbnail ed
-   email MailerSend.
+5. Non ci sono test comportamentali DOM per frontend ed email MailerSend; il
+   flusso browser-S3 richiede ancora una verifica end-to-end locale/manuale.
 6. CloudFront viene invalidato dallo script di deploy, ma la distribuzione non e'
    definita nello stack CDK: puo' esistere configurazione esterna allo IaC.
 

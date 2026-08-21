@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { getUploadUrl, uploadToS3, debugProcessPhoto } from '@/lib/photos';
+import {
+    abortUpload,
+    getUploadUrl,
+    uploadToS3,
+} from '@/lib/photos';
 import { useI18nStore } from '@/store/i18nStore';
 import {
     MAX_IMAGE_SIZE_BYTES,
@@ -12,8 +16,7 @@ import {
     getSupportedContentType,
     type MediaKind,
 } from '@/lib/uploadConfig';
-
-const IS_LOCAL = import.meta.env.VITE_API_URL?.includes('localhost');
+import { shouldAbortStorageFailure, summarizeUploadOutcomes } from '@/lib/uploadOutcome.js';
 
 interface ValidatedMedia {
     file: File;
@@ -30,6 +33,11 @@ export interface UploadConfirmation {
     photos: number;
     videos: number;
     notes: string[];
+}
+
+interface UploadOutcome {
+    ok: boolean;
+    cleanup: 'completed' | 'deferred' | 'not-needed';
 }
 
 export function usePhotoUpload(onSuccess?: () => void) {
@@ -103,30 +111,51 @@ export function usePhotoUpload(onSuccess?: () => void) {
         setProgress({ done: 0, total: valid.length });
         setMessage('');
 
-        let ok = 0;
-        let ko = 0;
         let revoked = false;
         let nextIndex = 0;
+        const outcomes: Array<UploadOutcome | undefined> = new Array(valid.length);
 
         const worker = async () => {
             while (!revoked) {
                 const index = nextIndex++;
                 if (index >= valid.length) break;
-                const { file, kind, contentType } = valid[index];
+                const { file, contentType } = valid[index];
+                let photoId: string | null = null;
                 try {
-                    const { uploadUrl, key } = await getUploadUrl(file.name, contentType);
+                    const uploadSession = await getUploadUrl(file.name, contentType);
+                    const { uploadUrl } = uploadSession;
+                    photoId = uploadSession.photoId;
+                    if (!photoId) throw new Error('Sessione di upload non valida');
                     await uploadToS3(uploadUrl, file, contentType);
-                    if (IS_LOCAL && kind === 'image') {
-                        await debugProcessPhoto(key);
-                    }
-                    ok++;
+                    outcomes[index] = {
+                        ok: true,
+                        cleanup: 'not-needed',
+                    };
                 } catch (err) {
                     console.error('Upload error:', err);
                     // 403 = codice foto revocato: inutile continuare col resto del batch
-                    if ((err as { status?: number })?.status === 403) {
+                    if (!photoId && (err as { status?: number })?.status === 403) {
                         revoked = true;
                     }
-                    ko++;
+                    let cleanup: UploadOutcome['cleanup'] = photoId
+                        ? 'deferred'
+                        : 'not-needed';
+                    // Soltanto una risposta HTTP esplicitamente negativa da S3
+                    // prova che il PUT non e' riuscito. Errori di rete e timeout
+                    // restano pending e vengono riconciliati dal backend.
+                    if (photoId && shouldAbortStorageFailure(photoId, err)) {
+                        try {
+                            await abortUpload(photoId);
+                            cleanup = 'completed';
+                        } catch (cleanupError) {
+                            // Il reaper backend eliminera' la sessione pending scaduta.
+                            console.error('Deferred upload cleanup:', cleanupError);
+                        }
+                    }
+                    outcomes[index] = {
+                        ok: false,
+                        cleanup,
+                    };
                 }
                 setProgress(p => ({ ...p, done: p.done + 1 }));
             }
@@ -136,25 +165,48 @@ export function usePhotoUpload(onSuccess?: () => void) {
             Array.from({ length: Math.min(UPLOAD_CONCURRENCY, valid.length) }, worker)
         );
 
+        // Se il codice e' stato revocato, i file non ancora iniziati sono KO
+        // senza risorse allocate da ripulire.
+        valid.forEach((_, index) => {
+            if (!outcomes[index]) {
+                outcomes[index] = {
+                    ok: false,
+                    cleanup: 'not-needed',
+                };
+            }
+        });
+
+        const completedOutcomes = outcomes.filter((item): item is UploadOutcome => !!item);
+        const succeeded = completedOutcomes.filter(item => item.ok);
+        const failed = completedOutcomes.filter(item => !item.ok);
+        const summary = summarizeUploadOutcomes(completedOutcomes);
+        const resultLines = [
+            `OK: ${summary.ok}`,
+            `KO: ${summary.ko}`,
+        ];
+        const resultIntro = t('gallery.uploadCompleteTitle');
+
         if (revoked) {
             setStatus('error');
-            setMessage(t('gallery.uploadRevoked'));
-            setTimeout(() => setStatus('idle'), 5000);
+            setMessage([t('gallery.uploadRevoked'), ...resultLines, ...notes].join('\n'));
+            setTimeout(() => setStatus('idle'), 15000);
             return;
         }
 
-        if (ok > 0) {
-            const summary = ko > 0
-                ? fmt(t('gallery.uploadPartial'), { ok, ko })
-                : fmt(t('gallery.uploadDoneMulti'), { n: ok });
-            setStatus('success');
-            setMessage([summary, ...notes].join(' · '));
+        if (succeeded.length > 0) {
+            setStatus(failed.length > 0 ? 'error' : 'success');
+            setMessage([
+                resultIntro,
+                ...resultLines,
+                t('gallery.uploadProcessingNotice'),
+                ...notes,
+            ].join('\n'));
             if (onSuccess) onSuccess();
         } else {
             setStatus('error');
-            setMessage(t('rsvp.errorText'));
+            setMessage([resultIntro, ...resultLines, ...notes].join('\n'));
         }
-        setTimeout(() => setStatus('idle'), 5000);
+        setTimeout(() => setStatus('idle'), 15000);
     };
 
     const cancelUpload = () => {

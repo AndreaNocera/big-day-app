@@ -35,12 +35,19 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?set in .env.local}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?set in .env.local}
       - JWT_SECRET=${JWT_SECRET:?set in .env.local}
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?set in .env.local}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?set in .env.local}
       - AWS_DEFAULT_REGION=eu-west-1
+      - S3_BUCKET=wedding-photos-local
+      - S3_ENDPOINT_URL=http://localstack:4566
+      - S3_PUBLIC_ENDPOINT_URL=http://localhost:4566
+      - SQS_ENDPOINT_URL=http://localstack:4566
+      - PHOTO_PROCESSING_QUEUE_URL=http://localstack:4566/000000000000/photo-processing
+      - UPLOAD_URL_EXPIRY_SECONDS=${UPLOAD_URL_EXPIRY_SECONDS:-3600}
+      - UPLOAD_RECONCILIATION_DELAY_SECONDS=${UPLOAD_RECONCILIATION_DELAY_SECONDS:-14400}
+      - UPLOAD_FAILED_AUDIT_RETENTION_SECONDS=${UPLOAD_FAILED_AUDIT_RETENTION_SECONDS:-172800}
+      - SQS_MAX_RECEIVE_COUNT=5
     depends_on:
       - dynamodb-local
-      - minio
+      - localstack
 
   dynamodb-local:
     image: amazon/dynamodb-local:latest
@@ -48,15 +55,37 @@ services:
       - "8001:8000"
     command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
 
-  minio:
-    image: minio/minio
+  localstack:
+    image: localstack/localstack:3.8
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "4566:4566"
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?set in .env.local}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?set in .env.local}
-    command: server /data --console-address ":9001"
+      - SERVICES=s3,sqs
+      - AWS_DEFAULT_REGION=eu-west-1
+      - SQS_ENDPOINT_STRATEGY=path
+
+  photo-worker:
+    build:
+      context: .
+      dockerfile: ./local_server/Dockerfile
+    volumes:
+      - ./lambda:/app/lambda
+      - ./local_server:/app/local_server
+    command: python /app/local_server/photo_worker.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=local
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?set in .env.local}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?set in .env.local}
+      - S3_BUCKET=wedding-photos-local
+      - S3_ENDPOINT_URL=http://localstack:4566
+      - SQS_ENDPOINT_URL=http://localstack:4566
+      - PHOTO_PROCESSING_QUEUE_URL=http://localstack:4566/000000000000/photo-processing
+      - SQS_MAX_RECEIVE_COUNT=5
+    depends_on:
+      - dynamodb-local
+      - localstack
 
   mailhog:
     image: mailhog/mailhog
@@ -77,10 +106,10 @@ services:
       - AWS_REGION=eu-west-1
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?set in .env.local}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?set in .env.local}
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?set in .env.local}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?set in .env.local}
+      - S3_ENDPOINT_URL=http://localstack:4566
+      - SQS_ENDPOINT_URL=http://localstack:4566
     depends_on:
       dynamodb-local:
         condition: service_started
-      minio:
+      localstack:
         condition: service_started

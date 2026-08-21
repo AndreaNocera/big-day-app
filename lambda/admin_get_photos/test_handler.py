@@ -45,6 +45,18 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
             "thumbKey": "thumbnails/photo.jpg",
             "mediaType": "image",
             "contentType": "image/heic",
+            "uploadStatus": "completed",
+            "processingStatus": "completed",
+        },
+        {
+            "PK": "PHOTO#new-pending",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T11:45:00+00:00",
+            "s3Key": "uploads/new-pending.jpg",
+            "mediaType": "image",
+            "uploadStatus": "pending",
+            "processingStatus": "pending",
         },
         {
             "PK": "PHOTO#heic-pending",
@@ -54,6 +66,8 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
             "s3Key": "uploads/pending.heic",
             "mediaType": "image",
             "contentType": "image/heic",
+            "uploadStatus": "completed",
+            "processingStatus": "pending",
         },
         {
             "PK": "PHOTO#video",
@@ -62,6 +76,8 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
             "uploadedAt": "2026-08-14T11:00:00+00:00",
             "s3Key": "uploads/video.mp4",
             "mediaType": "video",
+            "uploadStatus": "completed",
+            "processingStatus": "not_required",
         },
         {
             "PK": "PHOTO#deleted",
@@ -86,12 +102,42 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
 
     assert response["statusCode"] == 200
     photos = json.loads(response["body"])["guests"][0]["photos"]
-    ready_image, pending_image, video = photos
+    ready_image, pending_upload, pending_image, video = photos
 
     assert ready_image["thumbUrl"].endswith("thumbnails/photo.jpg")
     assert "originalUrl" not in ready_image
+    assert pending_upload["uploadStatus"] == "pending"
+    assert pending_image["processingStatus"] == "pending"
+    assert "thumbUrl" not in pending_upload
     assert "thumbUrl" not in pending_image
     assert "originalUrl" not in pending_image
     assert "thumbUrl" not in video
     assert "originalUrl" not in video
     assert fake_s3.requested_keys == ["thumbnails/photo.jpg"]
+
+
+def test_admin_list_includes_failed_upload_reason(monkeypatch):
+    items = [{
+        "PK": "PHOTO#failed",
+        "uploadedBy": "guest-1",
+        "uploaderName": "Test Guest",
+        "uploadedAt": "2026-08-14T12:00:00+00:00",
+        "mediaType": "image",
+        "uploadStatus": "failed",
+        "processingStatus": "failed",
+        "failureCode": "UPLOAD_NOT_RECEIVED",
+        "failedAt": 1786708800,
+    }]
+    monkeypatch.setattr(handler_module, "dynamodb", FakeDynamoDB(items))
+    monkeypatch.setattr(handler_module, "s3", RecordingS3())
+    monkeypatch.setattr(handler_module, "verify_token", lambda _token: {"isAdmin": True})
+
+    response = handler_module.handler(
+        {"headers": {"Authorization": "Bearer valid-test-token"}},
+        {},
+    )
+
+    failed = json.loads(response["body"])["guests"][0]["photos"][0]
+    assert failed["uploadStatus"] == "failed"
+    assert failed["failureCode"] == "UPLOAD_NOT_RECEIVED"
+    assert "thumbUrl" not in failed

@@ -2,6 +2,7 @@ import json
 import pytest
 import boto3
 import os
+import uuid
 os.environ["ENV"] = "test"
 os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long"
 
@@ -48,6 +49,7 @@ def test_get_upload_url_success(aws_mock, monkeypatch):
     body = json.loads(response["body"])
     assert "uploadUrl" in body
     assert "key" in body
+    assert body["photoId"].startswith("PHOTO#")
     assert "foto.jpg" not in body["key"] # uuid is used
     
     table = dynamodb_mock.Table("WeddingPhotos")
@@ -58,6 +60,13 @@ def test_get_upload_url_success(aws_mock, monkeypatch):
     assert items[0]["s3Key"] == body["key"]
     assert items[0]["mediaType"] == "image"
     assert items[0]["contentType"] == "image/jpeg"
+    assert items[0]["uploadStatus"] == "pending"
+    assert items[0]["processingStatus"] == "pending"
+    assert items[0]["uploadExpiresAt"]
+    assert items[0]["cleanupAfter"] > items[0]["uploadExpiresAt"]
+    key_parts = body["key"].split("/")
+    assert key_parts[:2] == ["uploads", "test-admin"]
+    assert str(uuid.UUID(key_parts[2].rsplit(".", 1)[0])) in body["key"]
 
 def test_get_video_upload_url_success(aws_mock, monkeypatch):
     dynamodb_mock, s3_mock = aws_mock
@@ -131,3 +140,33 @@ def test_get_upload_url_rejects_unsupported_media(aws_mock, monkeypatch):
     response = handler_module.handler(event, {})
     assert response["statusCode"] == 400
     assert dynamodb_mock.Table("WeddingPhotos").scan()["Items"] == []
+
+
+def test_unicode_name_is_normalized_in_full_uuid_key(aws_mock, monkeypatch):
+    dynamodb_mock, s3_mock = aws_mock
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
+    token = jwt_helper.generate_token("guest-unicode", "Élodie D’Angelo", is_admin=True)
+    response = handler_module.handler({
+        "headers": {"Authorization": f"Bearer {token}"},
+        "body": json.dumps({"filename": "foto.jpg", "contentType": "image/jpeg"}),
+    }, {})
+    key = json.loads(response["body"])["key"]
+    assert key.startswith("uploads/elodie-d-angelo/")
+    uuid.UUID(key.rsplit("/", 1)[-1].removesuffix(".jpg"))
+
+
+def test_homonyms_receive_distinct_keys(aws_mock, monkeypatch):
+    dynamodb_mock, s3_mock = aws_mock
+    monkeypatch.setattr(handler_module, "dynamodb", dynamodb_mock)
+    monkeypatch.setattr(handler_module, "s3", s3_mock)
+    keys = []
+    for user_id in ("guest-one", "guest-two"):
+        token = jwt_helper.generate_token(user_id, "Mario Rossi", is_admin=True)
+        response = handler_module.handler({
+            "headers": {"Authorization": f"Bearer {token}"},
+            "body": json.dumps({"filename": "foto.jpg", "contentType": "image/jpeg"}),
+        }, {})
+        keys.append(json.loads(response["body"])["key"])
+    assert all(key.startswith("uploads/mario-rossi/") for key in keys)
+    assert keys[0] != keys[1]

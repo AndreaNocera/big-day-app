@@ -10,6 +10,12 @@ from aws_cdk import (
     CfnOutput,
     RemovalPolicy,
     aws_s3_deployment as s3_deploy,
+    aws_events as events,
+    aws_events_targets as events_targets,
+    aws_lambda_event_sources as lambda_event_sources,
+    aws_s3_notifications as s3_notifications,
+    aws_sqs as sqs,
+    aws_cloudwatch as cloudwatch,
     IAspect,
     Aspects,
     Duration
@@ -74,6 +80,12 @@ class WeddingStack(Stack):
             partition_key=dynamodb.Attribute(name="s3Key", type=dynamodb.AttributeType.STRING),
             projection_type=dynamodb.ProjectionType.ALL
         )
+        photos_table.add_global_secondary_index(
+            index_name="UploadedByIndex",
+            partition_key=dynamodb.Attribute(name="uploadedBy", type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(name="uploadedAt", type=dynamodb.AttributeType.STRING),
+            projection_type=dynamodb.ProjectionType.ALL
+        )
 
         photos_bucket = s3.Bucket(self, "WeddingPhotosBucket",
             bucket_name="wedding-photos-prod-nocera", # Changed to be more unique
@@ -83,6 +95,26 @@ class WeddingStack(Stack):
                 allowed_headers=["*"]
             )],
             removal_policy=RemovalPolicy.DESTROY
+        )
+
+        photo_processing_dlq = sqs.Queue(self, "PhotoProcessingDeadLetterQueue",
+            encryption=sqs.QueueEncryption.SQS_MANAGED,
+            retention_period=Duration.days(14)
+        )
+        photo_processing_queue = sqs.Queue(self, "PhotoProcessingQueue",
+            encryption=sqs.QueueEncryption.SQS_MANAGED,
+            retention_period=Duration.days(4),
+            visibility_timeout=Duration.seconds(120),
+            dead_letter_queue=sqs.DeadLetterQueue(
+                queue=photo_processing_dlq,
+                max_receive_count=5
+            )
+        )
+        cloudwatch.Alarm(self, "PhotoProcessingDlqAlarm",
+            metric=photo_processing_dlq.metric_approximate_number_of_messages_visible(),
+            threshold=1,
+            evaluation_periods=1,
+            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD
         )
 
         # Environment variables from .env.production
@@ -99,7 +131,17 @@ class WeddingStack(Stack):
             "COUPLE_NAMES_ES": os.getenv("COUPLE_NAMES_ES", "los novios"),
             "COUPLE_NAMES_EN": os.getenv("COUPLE_NAMES_EN", "the couple"),
             "SNS_SENDER_ID": os.getenv("SNS_SENDER_ID", "Matrimonio"),
-            "TOKEN_EXPIRY_DAYS": os.getenv("TOKEN_EXPIRY_DAYS", "30")
+            "TOKEN_EXPIRY_DAYS": os.getenv("TOKEN_EXPIRY_DAYS", "30"),
+            "UPLOAD_URL_EXPIRY_SECONDS": os.getenv("UPLOAD_URL_EXPIRY_SECONDS", "3600"),
+            # Mantenuta per non modificare l'environment delle Lambda non foto.
+            "UPLOAD_SESSION_EXPIRY_SECONDS": os.getenv("UPLOAD_SESSION_EXPIRY_SECONDS", "7200"),
+        }
+        photo_env = {
+            **shared_env,
+            "UPLOAD_RECONCILIATION_DELAY_SECONDS": os.getenv("UPLOAD_RECONCILIATION_DELAY_SECONDS", "14400"),
+            "UPLOAD_FAILED_AUDIT_RETENTION_SECONDS": os.getenv("UPLOAD_FAILED_AUDIT_RETENTION_SECONDS", "172800"),
+            "SQS_MAX_RECEIVE_COUNT": "5",
+            "PHOTO_PROCESSING_QUEUE_URL": photo_processing_queue.queue_url,
         }
 
         # Shared Layer for code (must be in python/shared structure)
@@ -108,12 +150,22 @@ class WeddingStack(Stack):
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
             description="Shared helpers and AWS clients"
         )
+        photo_shared_layer = _lambda.LayerVersion(self, "PhotoSharedCodeLayer",
+            code=_lambda.Code.from_asset("../lambda/photo_layer"),
+            compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
+            description="Async photo pipeline helpers and AWS clients"
+        )
 
         # Lambdas
         lambda_kwargs = {
             "runtime": _lambda.Runtime.PYTHON_3_12, 
             "environment": shared_env,
             "layers": [shared_layer]
+        }
+        photo_lambda_kwargs = {
+            **lambda_kwargs,
+            "environment": photo_env,
+            "layers": [shared_layer, photo_shared_layer],
         }
         
         # (Shared layer moved above)
@@ -146,13 +198,26 @@ class WeddingStack(Stack):
         get_upload_url = _lambda.Function(self, "GetUploadUrl",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/get_upload_url"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
+        )
+
+        abort_upload = _lambda.Function(self, "AbortUpload",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/abort_upload"),
+            **photo_lambda_kwargs
+        )
+
+        cleanup_pending_uploads = _lambda.Function(self, "CleanupPendingUploads",
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../lambda/cleanup_pending_uploads"),
+            timeout=Duration.seconds(60),
+            **photo_lambda_kwargs
         )
 
         get_photos = _lambda.Function(self, "GetPhotos",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/get_photos"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         process_photo = _lambda.Function(self, "ProcessPhoto",
@@ -160,7 +225,7 @@ class WeddingStack(Stack):
             code=_lambda.Code.from_asset("../lambda/process_photo"),
             memory_size=512, # Increase for image processing
             timeout=Duration.seconds(60),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         update_profile = _lambda.Function(self, "UpdateProfile",
@@ -178,32 +243,32 @@ class WeddingStack(Stack):
         admin_get_photos = _lambda.Function(self, "AdminGetPhotos",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/admin_get_photos"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         admin_get_media_url = _lambda.Function(self, "AdminGetMediaUrl",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/admin_get_media_url"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         admin_delete_media = _lambda.Function(self, "AdminDeleteMedia",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/admin_delete_media"),
             timeout=Duration.seconds(60),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         verify_photo_access = _lambda.Function(self, "VerifyPhotoAccess",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/verify_photo_access"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         guest_register = _lambda.Function(self, "GuestRegister",
             handler="handler.handler",
             code=_lambda.Code.from_asset("../lambda/guest_register"),
-            **lambda_kwargs
+            **photo_lambda_kwargs
         )
 
         # Permissions
@@ -213,6 +278,8 @@ class WeddingStack(Stack):
         rsvp_table.grant_read_write_data(survey_handler)
         rsvp_table.grant_read_write_data(update_profile)
         photos_table.grant_read_write_data(get_upload_url)
+        photos_table.grant_read_write_data(abort_upload)
+        photos_table.grant_read_write_data(cleanup_pending_uploads)
         # get_upload_url valida il codice foto (item PHOTOACCESS# in WeddingInvites)
         invites_table.grant_read_data(get_upload_url)
         # verify_photo_access legge solo; guest_register valida il codice e crea il profilo PHOTOGUEST#
@@ -228,18 +295,38 @@ class WeddingStack(Stack):
         
         photos_bucket.grant_put(get_upload_url)
         photos_bucket.grant_put_acl(get_upload_url)
+        photos_bucket.grant_read(abort_upload)
+        photos_bucket.grant_delete(abort_upload)
+        photos_bucket.grant_read_write(cleanup_pending_uploads)
         photos_bucket.grant_read(get_photos)
         photos_bucket.grant_read(admin_get_photos)
         photos_bucket.grant_read(admin_get_media_url)
         photos_bucket.grant_delete(admin_delete_media)
         photos_bucket.grant_read_write(process_photo) # Read original, write thumb
+        photo_processing_queue.grant_send_messages(abort_upload)
+        photo_processing_queue.grant_send_messages(cleanup_pending_uploads)
 
-        # S3 Trigger for process_photo
-        from aws_cdk import aws_s3_notifications as s3n
+        # Gli eventi S3 passano da SQS per retry, DLQ e assorbimento dei picchi.
         photos_bucket.add_event_notification(
             s3.EventType.OBJECT_CREATED,
-            s3n.LambdaDestination(process_photo),
+            s3_notifications.SqsDestination(photo_processing_queue),
             s3.NotificationKeyFilter(prefix="uploads/")
+        )
+        # SqsDestination limita gia' la policy al bucket. L'override aggiunge
+        # anche l'account sorgente alla stessa statement generata da CDK.
+        queue_policy = photo_processing_queue.node.find_child("Policy").node.default_child
+        queue_policy.add_property_override(
+            "PolicyDocument.Statement.0.Condition.StringEquals.aws:SourceAccount",
+            self.account
+        )
+        process_photo.add_event_source(lambda_event_sources.SqsEventSource(
+            photo_processing_queue,
+            batch_size=1
+        ))
+
+        events.Rule(self, "CleanupPendingUploadsSchedule",
+            schedule=events.Schedule.rate(Duration.hours(1)),
+            targets=[events_targets.LambdaFunction(cleanup_pending_uploads)]
         )
 
         # Add SNS permissions to send_invites
@@ -271,7 +358,9 @@ class WeddingStack(Stack):
         # api.root.add_resource("survey").add_method("POST", apigw.LambdaIntegration(survey_handler))
         photos = api.root.add_resource("photos")
         photos.add_method("GET", apigw.LambdaIntegration(get_photos))
-        photos.add_resource("upload").add_method("POST", apigw.LambdaIntegration(get_upload_url))
+        photos_upload = photos.add_resource("upload")
+        photos_upload.add_method("POST", apigw.LambdaIntegration(get_upload_url))
+        photos_upload.add_resource("abort").add_method("POST", apigw.LambdaIntegration(abort_upload))
         photos.add_resource("delete").add_method("POST", apigw.LambdaIntegration(admin_delete_media))
         photos.add_resource("access").add_resource("verify").add_method("POST", apigw.LambdaIntegration(verify_photo_access))
         

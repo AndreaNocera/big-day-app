@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronRight, LogIn } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
 import { useI18nStore } from '@/store/i18nStore';
@@ -121,56 +122,78 @@ export default function Auth() {
             )}
 
             {isGuestMode ? (
-                <form onSubmit={handleGuestRegister} className="form-card" noValidate>
-                    {status === 'error' && (
-                        <div className="form-error" role="alert">{errorMsg}</div>
-                    )}
+                <>
+                    <form onSubmit={handleGuestRegister} className="form-card" noValidate>
+                        <p className="auth-guest-register-help">
+                            {t('auth.guestRegisterHelp')}
+                        </p>
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="first-name">{t('auth.firstNameLabel')}</label>
-                        <input
-                            id="first-name"
-                            type="text"
-                            className="form-input"
-                            required
-                            placeholder={t('auth.firstNamePlaceholder')}
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            autoComplete="given-name"
-                        />
-                    </div>
+                        {status === 'error' && (
+                            <div className="form-error" role="alert">{errorMsg}</div>
+                        )}
 
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="last-name">{t('auth.lastNameLabel')}</label>
-                        <input
-                            id="last-name"
-                            type="text"
-                            className="form-input"
-                            required
-                            placeholder={t('auth.lastNamePlaceholder')}
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            autoComplete="family-name"
-                        />
-                    </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="first-name">{t('auth.firstNameLabel')}</label>
+                            <input
+                                id="first-name"
+                                type="text"
+                                className="form-input"
+                                required
+                                placeholder={t('auth.firstNamePlaceholder')}
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                autoComplete="given-name"
+                            />
+                        </div>
 
-                    <button
-                        type="submit"
-                        className="btn-primary mt-6"
-                        disabled={isLoading || !firstName.trim() || !lastName.trim()}
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="last-name">{t('auth.lastNameLabel')}</label>
+                            <input
+                                id="last-name"
+                                type="text"
+                                className="form-input"
+                                required
+                                placeholder={t('auth.lastNamePlaceholder')}
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                autoComplete="family-name"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn-primary mt-6"
+                            disabled={isLoading || !firstName.trim() || !lastName.trim()}
+                        >
+                            {isLoading ? t('auth.loading') : t('auth.guestRegisterBtn')}
+                        </button>
+                    </form>
+
+                    <div
+                        className="auth-mode-divider"
+                        role="separator"
+                        aria-label={t('auth.guestModeDivider')}
                     >
-                        {isLoading ? t('auth.loading') : t('auth.guestRegisterBtn')}
-                    </button>
+                        <span aria-hidden="true" />
+                        <strong>{t('auth.guestModeDivider')}</strong>
+                        <span aria-hidden="true" />
+                    </div>
 
                     <button
                         type="button"
-                        className="text-muted"
-                        style={{ background: 'none', border: 'none', marginTop: 16, textDecoration: 'underline', cursor: 'pointer', width: '100%' }}
+                        className="auth-existing-login"
                         onClick={() => { setGuestMode(false); setStatus('idle'); setErrorMsg(''); }}
                     >
-                        {t('auth.guestBackToLogin')}
+                        <span className="auth-existing-login-icon" aria-hidden="true">
+                            <LogIn size={22} />
+                        </span>
+                        <span className="auth-existing-login-copy">
+                            <strong>{t('auth.loginBtn')}</strong>
+                            <span>{t('auth.guestBackToLogin')}</span>
+                        </span>
+                        <ChevronRight className="auth-existing-login-chevron" size={22} aria-hidden="true" />
                     </button>
-                </form>
+                </>
             ) : (
             <form onSubmit={handleManualLogin} className="form-card" noValidate>
                 {status === 'error' && (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Download, Film, ImageIcon, Info, Play, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Download, Film, ImageIcon, Info, Play, Trash2 } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
 import { useAuthStore } from '@/store/authStore';
 import { usePhotoAccessStore } from '@/store/photoAccessStore';
@@ -19,6 +19,12 @@ interface Photo {
     isOptimized: boolean;
     mediaType?: 'image' | 'video';
     contentType?: string;
+    uploadStatus?: 'pending' | 'completed' | 'cleaning' | 'failed';
+    processingStatus?: 'pending' | 'completed' | 'not_required' | 'failed';
+    processingAttempts?: number;
+    processingUpdatedAt?: string;
+    failedAt?: number;
+    failureCode?: string;
 }
 
 interface GuestGroup {
@@ -28,16 +34,38 @@ interface GuestGroup {
 }
 
 const enablePhotos = import.meta.env.VITE_ENABLE_PHOTOS === 'true';
-const THUMBNAIL_POLL_INTERVAL_MS = 5000;
-const MAX_THUMBNAIL_POLL_ATTEMPTS = 5;
 
 function AdminMediaTile({ photo, onDelete }: { photo: Photo; onDelete: (photo: Photo) => void }) {
-    const { t } = useI18nStore();
+    const { t, language } = useI18nStore();
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [loadingAction, setLoadingAction] = useState<'play' | 'download' | null>(null);
     const [mediaError, setMediaError] = useState(false);
     const isVideo = photo.mediaType === 'video';
     const thumbSrc = photo.thumbUrl || photo.url;
+    const isFailed = photo.uploadStatus === 'failed' || photo.processingStatus === 'failed';
+    const isReady = photo.uploadStatus === 'completed'
+        && photo.processingStatus === (isVideo ? 'not_required' : 'completed');
+    const elapsedMinutes = Math.max(
+        0,
+        Math.floor((Date.now() - new Date(photo.uploadedAt).getTime()) / 60000),
+    );
+    const elapsed = elapsedMinutes < 60
+        ? fmt(t('admin.photoElapsedMinutes'), { n: elapsedMinutes })
+        : fmt(t('admin.photoElapsedHours'), { n: Math.floor(elapsedMinutes / 60) });
+
+    const failureMessage = (() => {
+        switch (photo.failureCode) {
+            case 'INVALID_CONTENT_TYPE': return t('admin.photoFailureFormat');
+            case 'FILE_TOO_LARGE': return t('admin.photoFailureSize');
+            case 'INVALID_IMAGE': return t('admin.photoFailureImage');
+            case 'THUMBNAIL_PROCESSING_FAILED': return t('admin.photoFailureProcessing');
+            case 'UPLOAD_NOT_RECEIVED': return t('admin.photoFailureNotReceived');
+            default: return t('admin.photoFailureExpired');
+        }
+    })();
+    const pendingMessage = photo.uploadStatus === 'completed'
+        ? t('admin.photoPendingProcessing')
+        : t('admin.photoPendingUpload');
 
     const requestOriginal = async (disposition: 'inline' | 'attachment') => {
         try {
@@ -70,7 +98,16 @@ function AdminMediaTile({ photo, onDelete }: { photo: Photo; onDelete: (photo: P
             boxShadow: 'var(--shadow-sm)',
             background: '#f3f4f6',
         }}>
-            {isVideo ? (
+            {!isReady ? (
+                <div className={`admin-media-state admin-media-state-${isFailed ? 'failed' : 'pending'}`}>
+                    {isFailed
+                        ? <AlertCircle size={30} aria-hidden="true" />
+                        : <div className="spinner purple admin-media-state-spinner" aria-hidden="true" />}
+                    <strong>{isFailed ? t('admin.photoStatusFailed') : t('admin.photoStatusPending')}</strong>
+                    <span>{isFailed ? failureMessage : pendingMessage}</span>
+                    <small lang={language}>{elapsed}</small>
+                </div>
+            ) : isVideo ? (
                 videoUrl ? (
                     <video
                         src={videoUrl}
@@ -140,7 +177,7 @@ function AdminMediaTile({ photo, onDelete }: { photo: Photo; onDelete: (photo: P
                 </div>
             )}
 
-            {!isVideo && thumbSrc && (
+            {isReady && !isVideo && thumbSrc && (
                 <button
                     type="button"
                     onClick={() => requestOriginal('attachment')}
@@ -153,7 +190,7 @@ function AdminMediaTile({ photo, onDelete }: { photo: Photo; onDelete: (photo: P
                 </button>
             )}
 
-            {isVideo && videoUrl && (
+            {isReady && isVideo && videoUrl && (
                 <button
                     type="button"
                     onClick={() => requestOriginal('attachment')}
@@ -203,6 +240,18 @@ function AdminAccordion({
 }) {
     const [open, setOpen] = useState(false);
     const { t } = useI18nStore();
+    const counts = group.photos.reduce(
+        (result, photo) => {
+            const failed = photo.uploadStatus === 'failed' || photo.processingStatus === 'failed';
+            const ready = photo.uploadStatus === 'completed'
+                && photo.processingStatus === (photo.mediaType === 'video' ? 'not_required' : 'completed');
+            if (failed) result.failed += 1;
+            else if (ready) result.completed += 1;
+            else result.pending += 1;
+            return result;
+        },
+        { completed: 0, pending: 0, failed: 0 },
+    );
 
     return (
         <div style={{
@@ -231,8 +280,10 @@ function AdminAccordion({
                 >
                     <span>
                         {group.guestName}
-                        <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--color-text-secondary)', marginLeft: 8 }}>
-                            ({group.photos.length})
+                        <span className="admin-media-counts">
+                            {t('admin.photoStatusCompleted')}: {counts.completed} ·{' '}
+                            {t('admin.photoStatusPending')}: {counts.pending} ·{' '}
+                            {t('admin.photoStatusFailed')}: {counts.failed}
                         </span>
                     </span>
                     {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -286,8 +337,6 @@ export default function Photos() {
     const [guestGroups, setGuestGroups] = useState<GuestGroup[]>([]);
     const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('loading');
     const [errorMsg, setErrorMsg] = useState('');
-    const [thumbnailPollAttempts, setThumbnailPollAttempts] = useState(0);
-    const [thumbnailWarning, setThumbnailWarning] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<{ photoIds: string[] } | null>(null);
     const [deleteLoadingMode, setDeleteLoadingMode] = useState<MediaDeletionMode | null>(null);
     const [deleteError, setDeleteError] = useState('');
@@ -315,8 +364,6 @@ export default function Photos() {
     }, [isAdmin, t]);
 
     const refreshAfterUpload = useCallback(() => {
-        setThumbnailPollAttempts(0);
-        setThumbnailWarning(false);
         void loadPhotos(true);
     }, [loadPhotos]);
 
@@ -332,39 +379,8 @@ export default function Photos() {
     } = usePhotoUpload(refreshAfterUpload);
 
     useEffect(() => {
-        setThumbnailPollAttempts(0);
-        setThumbnailWarning(false);
         void loadPhotos();
     }, [loadPhotos]);
-
-    const pendingThumbnailCount = isAdmin
-        ? guestGroups.reduce(
-            (count, group) => count + group.photos.filter(
-                photo => photo.mediaType !== 'video' && !photo.thumbUrl && !photo.url
-            ).length,
-            0
-        )
-        : photos.filter(photo => photo.mediaType !== 'video' && !photo.url).length;
-
-    useEffect(() => {
-        if (pendingThumbnailCount === 0) {
-            setThumbnailWarning(false);
-            return;
-        }
-
-        if (thumbnailPollAttempts >= MAX_THUMBNAIL_POLL_ATTEMPTS) {
-            setThumbnailWarning(true);
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            void loadPhotos(true).finally(() => {
-                setThumbnailPollAttempts(attempts => attempts + 1);
-            });
-        }, THUMBNAIL_POLL_INTERVAL_MS);
-
-        return () => window.clearTimeout(timer);
-    }, [loadPhotos, pendingThumbnailCount, thumbnailPollAttempts]);
 
     const openDeleteMedia = useCallback((photo: Photo) => {
         setDeleteError('');
@@ -394,8 +410,6 @@ export default function Photos() {
                 await deleteOwnMedia(deleteTarget.photoIds[0]);
             }
             setDeleteTarget(null);
-            setThumbnailPollAttempts(0);
-            setThumbnailWarning(false);
             await loadPhotos(true);
         } catch (error) {
             console.error('Media deletion error:', error);
@@ -478,34 +492,21 @@ export default function Photos() {
                     </div>
                 )}
 
-                {uploadStatus === 'error' && (
-                    <div className="form-error" style={{ marginBottom: 16 }}>
-                        <AlertCircle size={16} /> {uploadMessage}
-                    </div>
-                )}
-                {uploadStatus === 'success' && (
-                    <div style={{ marginBottom: 16, color: 'var(--color-success)', fontWeight: 500 }}>
-                        ✓ {uploadMessage}
+                {(uploadStatus === 'success' || uploadStatus === 'error') && (
+                    <div
+                        className={`upload-result upload-result-${uploadStatus}`}
+                        role={uploadStatus === 'error' ? 'alert' : 'status'}
+                    >
+                        {uploadStatus === 'success'
+                            ? <CheckCircle2 size={18} aria-hidden="true" />
+                            : <AlertCircle size={18} aria-hidden="true" />}
+                        <span>{uploadMessage}</span>
                     </div>
                 )}
 
                 {status === 'error' && (
                     <div className="form-error" style={{ marginBottom: 20 }}>
                         <AlertCircle size={18} /> {errorMsg}
-                    </div>
-                )}
-
-                {thumbnailWarning && (
-                    <div style={{
-                        display: 'flex', alignItems: 'flex-start', gap: 8,
-                        marginBottom: 20, padding: '12px 14px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid #f0b44d',
-                        background: '#fff8e8', color: '#7a4b00',
-                        fontSize: 14,
-                    }}>
-                        <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span>{t('gallery.thumbnailWarning')}</span>
                     </div>
                 )}
 
