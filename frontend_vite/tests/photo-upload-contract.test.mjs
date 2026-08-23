@@ -37,7 +37,7 @@ test('the UI has one refresh after the batch, no thumbnail polling, and a compac
     assert.equal(photosPage.includes(removedPollingState), false);
     assert.match(uploadHook, /Completati: \$\{summary\.ok\}/);
     assert.match(uploadHook, /summary\.ko > 0 \? \[`Errori: \$\{summary\.ko\}`\] : \[\]/);
-    assert.doesNotMatch(uploadHook, /gallery\.uploadProcessingNotice/);
+    assert.match(uploadHook, /summary\.ok > 0 \? \[t\('gallery\.uploadProcessingNotice'\)\] : \[\]/);
 });
 
 test('admin UI renders completed, pending, and failed counters', () => {

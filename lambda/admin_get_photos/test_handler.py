@@ -34,7 +34,7 @@ class RecordingS3:
         return f"https://signed.invalid/{Params['Key']}"
 
 
-def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
+def test_admin_list_returns_only_received_media_and_no_video_urls(monkeypatch):
     items = [
         {
             "PK": "PHOTO#heic-ready",
@@ -80,6 +80,17 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
             "processingStatus": "not_required",
         },
         {
+            "PK": "PHOTO#processing-failed",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T10:45:00+00:00",
+            "s3Key": "uploads/processing-failed.jpg",
+            "mediaType": "image",
+            "uploadStatus": "completed",
+            "processingStatus": "failed",
+            "failureCode": "THUMBNAIL_PROCESSING_FAILED",
+        },
+        {
             "PK": "PHOTO#deleted",
             "uploadedBy": "guest-1",
             "uploaderName": "Test Guest",
@@ -102,13 +113,22 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
 
     assert response["statusCode"] == 200
     photos = json.loads(response["body"])["guests"][0]["photos"]
-    ready_image, pending_upload, pending_image, video = photos
+    photos_by_pk = {photo["PK"]: photo for photo in photos}
+    ready_image = photos_by_pk["PHOTO#heic-ready"]
+    pending_image = photos_by_pk["PHOTO#heic-pending"]
+    video = photos_by_pk["PHOTO#video"]
 
     assert ready_image["thumbUrl"].endswith("thumbnails/photo.jpg")
     assert "originalUrl" not in ready_image
-    assert pending_upload["uploadStatus"] == "pending"
+    assert set(photos_by_pk) == {
+        "PHOTO#heic-ready",
+        "PHOTO#heic-pending",
+        "PHOTO#video",
+        "PHOTO#processing-failed",
+    }
+    assert pending_image["uploadStatus"] == "completed"
     assert pending_image["processingStatus"] == "pending"
-    assert "thumbUrl" not in pending_upload
+    assert photos_by_pk["PHOTO#processing-failed"]["failureCode"] == "THUMBNAIL_PROCESSING_FAILED"
     assert "thumbUrl" not in pending_image
     assert "originalUrl" not in pending_image
     assert "thumbUrl" not in video
@@ -116,18 +136,38 @@ def test_admin_list_loads_image_urls_but_not_video_urls(monkeypatch):
     assert fake_s3.requested_keys == ["thumbnails/photo.jpg"]
 
 
-def test_admin_list_includes_failed_upload_reason(monkeypatch):
-    items = [{
-        "PK": "PHOTO#failed",
-        "uploadedBy": "guest-1",
-        "uploaderName": "Test Guest",
-        "uploadedAt": "2026-08-14T12:00:00+00:00",
-        "mediaType": "image",
-        "uploadStatus": "failed",
-        "processingStatus": "failed",
-        "failureCode": "UPLOAD_NOT_RECEIVED",
-        "failedAt": 1786708800,
-    }]
+def test_admin_list_excludes_failed_upload_attempts(monkeypatch):
+    items = [
+        {
+            "PK": "PHOTO#pending",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T12:00:00+00:00",
+            "mediaType": "video",
+            "uploadStatus": "pending",
+            "processingStatus": "pending",
+        },
+        {
+            "PK": "PHOTO#cleaning",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T11:55:00+00:00",
+            "mediaType": "video",
+            "uploadStatus": "cleaning",
+            "processingStatus": "failed",
+        },
+        {
+            "PK": "PHOTO#failed",
+            "uploadedBy": "guest-1",
+            "uploaderName": "Test Guest",
+            "uploadedAt": "2026-08-14T11:50:00+00:00",
+            "mediaType": "image",
+            "uploadStatus": "failed",
+            "processingStatus": "failed",
+            "failureCode": "UPLOAD_NOT_RECEIVED",
+            "failedAt": 1786708800,
+        },
+    ]
     monkeypatch.setattr(handler_module, "dynamodb", FakeDynamoDB(items))
     monkeypatch.setattr(handler_module, "s3", RecordingS3())
     monkeypatch.setattr(handler_module, "verify_token", lambda _token: {"isAdmin": True})
@@ -137,7 +177,5 @@ def test_admin_list_includes_failed_upload_reason(monkeypatch):
         {},
     )
 
-    failed = json.loads(response["body"])["guests"][0]["photos"][0]
-    assert failed["uploadStatus"] == "failed"
-    assert failed["failureCode"] == "UPLOAD_NOT_RECEIVED"
-    assert "thumbUrl" not in failed
+    assert response["statusCode"] == 200
+    assert json.loads(response["body"])["guests"] == []

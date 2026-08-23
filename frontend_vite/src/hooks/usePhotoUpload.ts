@@ -183,6 +183,7 @@ export function usePhotoUpload(onSuccess?: () => void) {
         const resultSummary = [
             `Completati: ${summary.ok}`,
             ...(summary.ko > 0 ? [`Errori: ${summary.ko}`] : []),
+            ...(summary.ok > 0 ? [t('gallery.uploadProcessingNotice')] : []),
         ];
         if (revoked) {
             setStatus('error');

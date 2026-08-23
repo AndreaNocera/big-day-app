@@ -31,8 +31,10 @@ modale applicativa in homepage e galleria (con conteggio delle sole categorie
 presenti), thumbnail delle immagini e download amministrativo on demand.
 L'upload diretto su S3 crea un record pending; un evento `ObjectCreated` passa
 da una coda SQS Standard al processore, che verifica l'originale e rende visibile
-il media senza una conferma del frontend. Errori e browser chiusi vengono
-riconciliati da una pulizia oraria. Ogni utente puo'
+il media senza una conferma del frontend. Il record pending e' una sessione
+tecnica e non viene mostrato o conteggiato nella dashboard amministrativa finche'
+l'originale non e' stato ricevuto. Errori e browser chiusi vengono riconciliati
+da una pulizia oraria. Ogni utente puo'
 eliminare fisicamente un
 proprio contenuto; l'admin puo' inoltre eliminare media di qualunque utente in
 modalita' logica o fisica, anche in modo massivo. Sono accettate immagini JPEG,
@@ -117,7 +119,8 @@ qualche minuto.
 
 Una Lambda oraria riconcilia i pending oltre `cleanupAfter`: riaccoda gli oggetti
 validi, elimina quelli invalidi e marca come `failed` gli upload mai ricevuti. I
-record KO restano visibili all'admin per 48 ore, poi vengono eliminati. La DLQ
+record KO restano disponibili per l'audit operativo in DynamoDB per 48 ore, ma
+non vengono esposti nella dashboard amministrativa; poi vengono eliminati. La DLQ
 conserva per 14 giorni i messaggi falliti dopo cinque tentativi ed e' monitorata
 da un allarme CloudWatch. Non si tratta di una transazione ACID distribuita, ma il
 flusso converge verso media completo oppure audit KO e risorse ripulite.
@@ -128,8 +131,9 @@ Un JWT con `isAdmin=true` consente di:
 
 - visualizzare statistiche e risposte RSVP;
 - consultare foto e video raggruppati per autore;
-- vedere nello stesso accordion completati, pending/in elaborazione e KO con
-  tempo trascorso e motivo sintetico;
+- vedere nello stesso accordion i media ricevuti, distinguendo quelli completati
+  dalle immagini con thumbnail ancora in elaborazione o fallita; i tentativi per
+  cui S3 non ha ricevuto un file restano esclusi dalla dashboard;
 - scaricare gli originali;
 - eliminare un singolo media o tutti i media visibili di un utente;
 - caricare foto e video senza codice foto.
@@ -207,7 +211,10 @@ Tabella condivisa da piu' tipi di record, riconoscibili dal prefisso della PK:
 
 I record storici senza `mediaType` e `contentType` sono interpretati come immagini.
 La galleria pubblica espone soltanto immagini `completed/completed` e video
-`completed/not_required`; pending e failed sono restituiti soltanto all'admin.
+`completed/not_required`. La lista amministrativa espone soltanto record con
+`uploadStatus=completed`, includendo anche le immagini la cui elaborazione e'
+ancora pending o e' fallita. Le sessioni di upload `pending`, `cleaning` o
+`failed` restano consultabili soltanto tramite gli strumenti operativi AWS.
 Le chiavi nuove hanno formato
 `uploads/<nome-normalizzato>/<uuid-completo>.<estensione>` e il processore ricava
 la PK direttamente dall'UUID, senza interrogare un indice sulla chiave S3.

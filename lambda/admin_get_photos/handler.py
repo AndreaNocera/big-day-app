@@ -46,6 +46,14 @@ def handler(event, context):
             if item.get("deletedAt"):
                 continue
 
+            # Un record nasce prima del PUT S3 per autorizzazione e
+            # riconciliazione, ma diventa un media amministrabile soltanto
+            # quando l'originale e' stato ricevuto. Pending, cleaning e failed
+            # restano disponibili per l'audit operativo in DynamoDB/CloudWatch.
+            # I record storici privi di uploadStatus erano gia' media completi.
+            if item.get("uploadStatus", "completed") != "completed":
+                continue
+
             uploaded_by = item.get("uploadedBy", "Sconosciuto")
             guest_name = item.get("uploaderName", "Ospite Sconosciuto")
             media_type = infer_media_type(item)
