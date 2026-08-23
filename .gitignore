@@ -57,3 +57,6 @@ frontend_vite/src/locales/fr.ts
 #DB scripts
 scripts/guests.csv
 scripts/upload_guests_aws.py
+
+#personal docs
+docs/
