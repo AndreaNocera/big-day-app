@@ -3,15 +3,46 @@ import {
     Building2,
     Bus,
     CalendarPlus,
+    CarFront,
     ChevronDown,
     Clock3,
     Coffee,
     ExternalLink,
     LogIn,
     LogOut,
+    Map,
     MapPin,
+    Maximize2,
 } from 'lucide-react';
 import { useI18nStore } from '@/store/i18nStore';
+
+const drivingSteps = [
+    { textKey: 'eventGuide.drivingStep1', images: [] },
+    {
+        textKey: 'eventGuide.drivingStep2',
+        images: [
+            { src: '/photos/Foto%201.webp', altKey: 'eventGuide.drivingPhotoAlt1' },
+            { src: '/photos/Foto%202.webp', altKey: 'eventGuide.drivingPhotoAlt2' },
+        ],
+    },
+    {
+        textKey: 'eventGuide.drivingStep3',
+        images: [{ src: '/photos/Foto%203.webp', altKey: 'eventGuide.drivingPhotoAlt3' }],
+    },
+    {
+        textKey: 'eventGuide.drivingStep4',
+        images: [{ src: '/photos/Foto%204.webp', altKey: 'eventGuide.drivingPhotoAlt4' }],
+    },
+    {
+        textKey: 'eventGuide.drivingStep5',
+        images: [{ src: '/photos/Foto%205.webp', altKey: 'eventGuide.drivingPhotoAlt5' }],
+    },
+    {
+        textKey: 'eventGuide.drivingStep6',
+        images: [{ src: '/photos/Foto%206.webp', altKey: 'eventGuide.drivingPhotoAlt6' }],
+    },
+    { textKey: 'eventGuide.drivingStep7', images: [] },
+] as const;
 
 function toUtcCalendarTimestamp(value: string) {
     const date = new Date(value);
@@ -112,6 +143,29 @@ function CeremonyLabel({ label }: { label: string }) {
                     : part
             ))}
         </span>
+    );
+}
+
+function ExpandableUpdateImage({
+    src,
+    alt,
+}: {
+    src: string;
+    alt: string;
+}) {
+    const { t } = useI18nStore();
+
+    return (
+        <a
+            className="home-update-image-link"
+            href={src}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${t('eventGuide.expandImage')}: ${alt}`}
+        >
+            <img src={src} alt={alt} loading="lazy" decoding="async" />
+            <span aria-hidden="true"><Maximize2 size={15} /></span>
+        </a>
     );
 }
 
@@ -273,6 +327,84 @@ export function HomeUpdates() {
                                 <DetailRow icon={<MapPin size={17} />} label={t('home.updatesReturnPoint')} value={t('home.updatesCastleParking')} />
                             </dl>
                         </div>
+                    </div>
+                </details>
+            </article>
+
+            <article className="home-update-card directions">
+                <details className="home-update-accordion">
+                    <summary className="home-update-card-heading">
+                        <span className="home-update-card-icon" aria-hidden="true"><CarFront size={25} /></span>
+                        <h3>{t('eventGuide.drivingTitle')}</h3>
+                        <span className="home-update-card-toggle">
+                            <span className="home-update-card-toggle-closed">{t('home.updatesShowDetails')}</span>
+                            <span className="home-update-card-toggle-open">{t('home.updatesHideDetails')}</span>
+                            <ChevronDown size={18} aria-hidden="true" />
+                        </span>
+                    </summary>
+
+                    <div className="home-update-card-body home-driving-body">
+                        <p className="home-driving-intro">{t('eventGuide.drivingIntro')}</p>
+                        <div className="home-driving-warning" role="note">
+                            <MapPin size={20} aria-hidden="true" />
+                            <strong>{t('eventGuide.drivingWarning')}</strong>
+                        </div>
+
+                        <ol className="home-driving-steps">
+                            {drivingSteps.map((step, index) => (
+                                <li className="home-driving-step" key={step.textKey}>
+                                    <span className="home-driving-step-number" aria-hidden="true">{index + 1}</span>
+                                    <div>
+                                        <p>{t(step.textKey)}</p>
+                                        {step.images.length > 0 && (
+                                            <div className="home-driving-images">
+                                                {step.images.map(image => (
+                                                    <ExpandableUpdateImage
+                                                        key={image.src}
+                                                        src={image.src}
+                                                        alt={t(image.altKey)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                        {index === drivingSteps.length - 1 && (
+                                            <div className="home-parking-options">
+                                                <div>
+                                                    <strong>{t('eventGuide.hotelParkingTitle')}</strong>
+                                                    <span>{t('eventGuide.hotelParkingText')}</span>
+                                                </div>
+                                                <div>
+                                                    <strong>{t('eventGuide.weddingParkingTitle')}</strong>
+                                                    <span>{t('eventGuide.weddingParkingText')}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                </details>
+            </article>
+
+            <article className="home-update-card event-map">
+                <details className="home-update-accordion">
+                    <summary className="home-update-card-heading">
+                        <span className="home-update-card-icon" aria-hidden="true"><Map size={24} /></span>
+                        <h3>{t('eventGuide.eventMapTitle')}</h3>
+                        <span className="home-update-card-toggle">
+                            <span className="home-update-card-toggle-closed">{t('home.updatesShowDetails')}</span>
+                            <span className="home-update-card-toggle-open">{t('home.updatesHideDetails')}</span>
+                            <ChevronDown size={18} aria-hidden="true" />
+                        </span>
+                    </summary>
+
+                    <div className="home-update-card-body home-event-map-body">
+                        <p>{t('eventGuide.eventMapIntro')}</p>
+                        <ExpandableUpdateImage
+                            src="/photos/mappa_evento.webp"
+                            alt={t('eventGuide.eventMapAlt')}
+                        />
                     </div>
                 </details>
             </article>

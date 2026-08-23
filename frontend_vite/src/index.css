@@ -1507,6 +1507,14 @@ textarea {
   border-top: 4px solid #d45c94;
 }
 
+.home-update-card.directions {
+  border-top: 4px solid #d39143;
+}
+
+.home-update-card.event-map {
+  border-top: 4px solid #4f8b73;
+}
+
 .home-update-card-heading {
   display: flex;
   align-items: center;
@@ -1550,6 +1558,16 @@ textarea {
   color: #a73c70;
 }
 
+.home-update-card.directions .home-update-card-icon {
+  background: rgba(211, 145, 67, 0.13);
+  color: #9a5c17;
+}
+
+.home-update-card.event-map .home-update-card-icon {
+  background: rgba(79, 139, 115, 0.13);
+  color: #326b54;
+}
+
 .home-update-card-heading h3 {
   flex: 1;
   margin: 0;
@@ -1576,6 +1594,16 @@ textarea {
 .home-update-card.city .home-update-card-toggle {
   background: rgba(212, 92, 148, 0.1);
   color: #a73c70;
+}
+
+.home-update-card.directions .home-update-card-toggle {
+  background: rgba(211, 145, 67, 0.13);
+  color: #895010;
+}
+
+.home-update-card.event-map .home-update-card-toggle {
+  background: rgba(79, 139, 115, 0.13);
+  color: #326b54;
 }
 
 .home-update-card-toggle svg {
@@ -1723,6 +1751,162 @@ textarea {
   text-decoration: none;
 }
 
+.home-driving-body,
+.home-event-map-body {
+  padding-top: 16px;
+}
+
+.home-driving-intro,
+.home-event-map-body > p {
+  margin: 0 0 14px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.home-driving-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 17px;
+  padding: 13px 14px;
+  border: 1px solid rgba(181, 72, 72, 0.28);
+  border-radius: 16px;
+  background: rgba(255, 238, 238, 0.9);
+  color: #8f2f2f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.home-driving-warning svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.home-driving-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-driving-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.home-driving-step-number {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(211, 145, 67, 0.14);
+  color: #895010;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.home-driving-step > div {
+  min-width: 0;
+  padding: 6px 0 15px;
+  border-bottom: 1px solid rgba(94, 57, 130, 0.1);
+}
+
+.home-driving-step:last-child > div {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.home-driving-step p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.home-driving-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 9px;
+  margin-top: 11px;
+}
+
+.home-update-image-link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(94, 57, 130, 0.12);
+  border-radius: 15px;
+  background: #eee8f1;
+  box-shadow: 0 5px 14px rgba(42, 18, 70, 0.11);
+}
+
+.home-update-image-link img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+
+.home-update-image-link > span {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(35, 12, 72, 0.78);
+  color: white;
+  box-shadow: 0 3px 10px rgba(35, 12, 72, 0.24);
+}
+
+.home-update-image-link:focus-visible {
+  outline: 3px solid rgba(94, 57, 130, 0.34);
+  outline-offset: 3px;
+}
+
+.home-parking-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.home-parking-options > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(244, 238, 250, 0.78);
+}
+
+.home-parking-options strong {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-parking-options span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.home-event-map-body .home-update-image-link img {
+  aspect-ratio: 3 / 2;
+}
+
 .home-content-divider {
   display: grid;
   grid-template-columns: minmax(24px, 1fr) auto minmax(24px, 1fr);
@@ -1798,6 +1982,21 @@ textarea {
   }
 
   .home-calendar-options {
+    grid-template-columns: 1fr;
+  }
+
+  .home-driving-step {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .home-driving-step-number {
+    width: 29px;
+    height: 29px;
+  }
+
+  .home-driving-images,
+  .home-parking-options {
     grid-template-columns: 1fr;
   }
 

@@ -14,9 +14,10 @@ Il progetto e' in una fase operativa avanzata:
 
 - il frontend compila per la produzione;
 - la homepage apre con un blocco multilingua in evidenza dedicato agli ultimi
-  orari di cerimonia, soggiorno e autobus, seguito dal contenuto storico; dalla
-  card della cerimonia l'evento puo' essere aggiunto a Google Calendar oppure
-  scaricato in formato iCalendar compatibile con iOS e altri calendari;
+  orari di cerimonia, soggiorno e autobus, alle indicazioni stradali illustrate
+  e alla mappa dell'evento, seguito dal contenuto storico; dalla card della
+  cerimonia l'evento puo' essere aggiunto a Google Calendar oppure scaricato in
+  formato iCalendar compatibile con iOS e altri calendari;
 - autenticazione, pagine informative e dashboard amministrativa sono presenti;
 - le conferme RSVP sono chiuse sia nell'interfaccia sia nel backend e mostrate
   in sola lettura;
